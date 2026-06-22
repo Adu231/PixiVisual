@@ -638,6 +638,8 @@ export function AdminMarketplace() {
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
 
+  const [manageTemplate, setManageTemplate] = useState<any | null>(null);
+
   const handleApproveTemplate = (title: string) => {
     toast('success', `Approved: "${title}"`);
     setTemplateList(prev => prev.map(item => item.title === title ? { ...item, status: 'active' } : item));
@@ -646,6 +648,29 @@ export function AdminMarketplace() {
   const handleRejectTemplate = (title: string) => {
     toast('error', `Rejected: "${title}"`);
     setTemplateList(prev => prev.filter(item => item.title !== title));
+  };
+
+  const handleSaveManagedTemplate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manageTemplate.title.trim()) {
+      toast('warning', 'Title cannot be empty');
+      return;
+    }
+
+    setTemplateList(prev => prev.map(item => {
+      if (item.title === manageTemplate.originalTitle) {
+        return {
+          ...item,
+          title: manageTemplate.title,
+          price: manageTemplate.price.startsWith('$') ? manageTemplate.price : `$${manageTemplate.price}`,
+          featured: manageTemplate.featured
+        };
+      }
+      return item;
+    }));
+
+    toast('success', `Template "${manageTemplate.title}" updated successfully`);
+    setManageTemplate(null);
   };
 
   const filteredTemplates = templateList.filter(t => {
@@ -745,9 +770,12 @@ export function AdminMarketplace() {
                 <div key={idx} className="p-4 flex items-center gap-4 animate-in fade-in duration-200">
                   <img src={t.preview} alt={t.title} className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                       <p className="text-sm font-semibold text-foreground truncate">{t.title}</p>
                       <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ${t.status === 'active' ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-yellow-500/10 text-yellow-600'}`}>{t.status}</span>
+                      {t.featured && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-primary/10 text-primary capitalize flex-shrink-0">Featured</span>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground">by {t.author} · {t.category} · {t.sales} sales · {t.price}</p>
                   </div>
@@ -758,7 +786,7 @@ export function AdminMarketplace() {
                         <button onClick={() => handleRejectTemplate(t.title)} className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-600 text-xs font-medium hover:bg-red-500/20 transition-all">Reject</button>
                       </>
                     ) : (
-                      <button onClick={() => toast('info', `Viewing ${t.title}...`)} className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:border-primary/30 transition-all">Manage</button>
+                      <button onClick={() => setManageTemplate({ ...t, originalTitle: t.title })} className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:border-primary/30 transition-all">Manage</button>
                     )}
                   </div>
                 </div>
@@ -860,6 +888,103 @@ export function AdminMarketplace() {
                 >
                   Save Settings
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Template Modal */}
+      {manageTemplate && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-2xl p-6 shadow-glow-purple relative animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-display font-bold text-foreground">Manage Template</h3>
+              <button 
+                onClick={() => setManageTemplate(null)} 
+                className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Template Card Preview */}
+            <div className="flex items-center gap-4 p-3 rounded-xl bg-muted/20 border border-border/50 mb-6">
+              <img src={manageTemplate.preview} alt={manageTemplate.title} className="w-20 h-16 rounded-lg object-cover flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">{manageTemplate.title}</p>
+                <p className="text-xs text-muted-foreground">by {manageTemplate.author} · {manageTemplate.sales} sales</p>
+                <span className="text-xs font-bold text-primary">{manageTemplate.price}</span>
+              </div>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSaveManagedTemplate} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Template Title</label>
+                <input 
+                  type="text" 
+                  value={manageTemplate.title} 
+                  onChange={e => setManageTemplate({ ...manageTemplate, title: e.target.value })} 
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Price (USD)</label>
+                  <input 
+                    type="text" 
+                    value={manageTemplate.price} 
+                    onChange={e => setManageTemplate({ ...manageTemplate, price: e.target.value })} 
+                    placeholder="$3"
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+
+                <div className="flex flex-col justify-center">
+                  <label className="text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider block">Featured Listing</label>
+                  <label className="flex items-center gap-2 mt-2 cursor-pointer select-none">
+                    <input 
+                      type="checkbox" 
+                      checked={manageTemplate.featured || false} 
+                      onChange={e => setManageTemplate({ ...manageTemplate, featured: e.target.checked })}
+                      className="w-4 h-4 rounded border-border text-primary bg-background focus:ring-primary transition-all cursor-pointer"
+                    />
+                    <span className="text-sm text-foreground">Feature on Store</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="pt-4 flex justify-between items-center border-t border-border mt-6">
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    toast('error', `Template "${manageTemplate.title}" deleted successfully`);
+                    setTemplateList(prev => prev.filter(item => item.title !== manageTemplate.originalTitle));
+                    setManageTemplate(null);
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-destructive/10 text-destructive text-sm font-semibold hover:bg-destructive/20 transition-all"
+                >
+                  Delete Listing
+                </button>
+
+                <div className="flex gap-3">
+                  <button 
+                    type="button" 
+                    onClick={() => setManageTemplate(null)}
+                    className="px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    className="px-5 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
+                  >
+                    Save Changes
+                  </button>
+                </div>
               </div>
             </form>
           </div>
