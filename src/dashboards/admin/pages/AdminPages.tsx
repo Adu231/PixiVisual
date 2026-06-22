@@ -124,6 +124,38 @@ export function AdminUsers() {
     }
   };
 
+  const handleExportUsers = () => {
+    const headers = ['ID', 'Name', 'Email', 'Role', 'Plan', 'Joined Date', 'Company', 'Location', 'Status'];
+    const rows = usersList.map(u => [
+      u.id,
+      u.name,
+      u.email,
+      u.role,
+      u.plan,
+      u.createdAt || '',
+      u.company || '',
+      u.location || '',
+      u.status || 'active'
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `pixivisual_users_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast('success', `Exported ${usersList.length} users successfully to CSV`);
+  };
+
   return (
     <DashboardLayout sidebarItems={adminSidebarItems} title="User Management" roleLabel="Platform Admin">
       <div className="p-4 lg:p-6 space-y-6">
@@ -133,7 +165,7 @@ export function AdminUsers() {
             <p className="text-sm text-muted-foreground">2.1M registered users · {usersList.length} demo accounts</p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => toast('info', 'Opening user export...')} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border text-sm text-foreground hover:border-primary/30 transition-all">
+            <button onClick={handleExportUsers} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border text-sm text-foreground hover:border-primary/30 transition-all">
               <Download className="w-4 h-4" /> Export
             </button>
             <button onClick={() => setIsInviteOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">
