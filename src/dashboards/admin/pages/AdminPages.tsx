@@ -466,6 +466,60 @@ export function AdminRevenue() {
   const maxVal = Math.max(...monthly);
   const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+  const revenueByPlan = [
+    { plan: 'Enterprise', revenue: 421000, pct: 50, color: 'bg-purple-500' },
+    { plan: 'Business', revenue: 253000, pct: 30, color: 'bg-blue-500' },
+    { plan: 'Pro', revenue: 126000, pct: 15, color: 'bg-primary' },
+    { plan: 'Free (Ads)', revenue: 42000, pct: 5, color: 'bg-muted-foreground' },
+  ];
+
+  const recentTransactions = [
+    { user: 'Agency Corp', plan: 'Enterprise', amount: '$299', date: '2h ago', status: 'success' },
+    { user: 'StyleHouse', plan: 'Business', amount: '$49', date: '4h ago', status: 'success' },
+    { user: 'Alex Rivera', plan: 'Pro', amount: '$19', date: '6h ago', status: 'success' },
+    { user: 'Demo Co', plan: 'Pro', amount: '$19', date: '1d ago', status: 'refunded' },
+    { user: 'TechStart', plan: 'Business', amount: '$49', date: '1d ago', status: 'success' },
+  ];
+
+  const handleExportRevenue = () => {
+    let csvContent = '';
+
+    // Section 1: Monthly Revenue
+    csvContent += '--- MONTHLY REVENUE (LAST 12 MONTHS) ---\n';
+    csvContent += 'Month,Revenue (USD)\n';
+    monthLabels.forEach((label, index) => {
+      csvContent += `${label},${monthly[index]}\n`;
+    });
+    csvContent += '\n';
+
+    // Section 2: Revenue by Plan
+    csvContent += '--- REVENUE BY SUBSCRIPTION PLAN ---\n';
+    csvContent += 'Plan,Revenue (USD),Percentage (%)\n';
+    revenueByPlan.forEach(p => {
+      csvContent += `${p.plan},${p.revenue},${p.pct}\n`;
+    });
+    csvContent += '\n';
+
+    // Section 3: Recent Transactions
+    csvContent += '--- RECENT TRANSACTIONS ---\n';
+    csvContent += 'User,Plan,Amount,Date,Status\n';
+    recentTransactions.forEach(t => {
+      csvContent += `"${t.user.replace(/"/g, '""')}",${t.plan},${t.amount.replace('$', '')},${t.date},${t.status}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `pixivisual_revenue_report_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast('success', 'Revenue report downloaded successfully to CSV');
+  };
+
   return (
     <DashboardLayout sidebarItems={adminSidebarItems} title="Revenue" roleLabel="Platform Admin">
       <div className="p-4 lg:p-6 space-y-6">
@@ -474,7 +528,7 @@ export function AdminRevenue() {
             <h2 className="text-xl font-display font-bold text-foreground">Revenue Overview</h2>
             <p className="text-sm text-muted-foreground">Platform revenue and subscription metrics</p>
           </div>
-          <button onClick={() => toast('info', 'Downloading revenue report...')} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm text-foreground hover:border-primary/30 transition-all">
+          <button onClick={handleExportRevenue} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm text-foreground hover:border-primary/30 transition-all">
             <Download className="w-4 h-4" /> Export Report
           </button>
         </div>
@@ -517,18 +571,13 @@ export function AdminRevenue() {
           <div className="bg-card border border-border rounded-2xl p-5">
             <h3 className="text-sm font-semibold text-foreground mb-4">Revenue by Plan</h3>
             <div className="space-y-3">
-              {[
-                { plan: 'Enterprise', revenue: formatCurrency(421000), pct: 50, color: 'bg-purple-500' },
-                { plan: 'Business', revenue: formatCurrency(253000), pct: 30, color: 'bg-blue-500' },
-                { plan: 'Pro', revenue: formatCurrency(126000), pct: 15, color: 'bg-primary' },
-                { plan: 'Free (Ads)', revenue: formatCurrency(42000), pct: 5, color: 'bg-muted-foreground' },
-              ].map(r => (
+              {revenueByPlan.map(r => (
                 <div key={r.plan}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-medium text-foreground">{r.plan}</span>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground">{r.pct}%</span>
-                      <span className="text-xs font-semibold text-foreground">{r.revenue}</span>
+                      <span className="text-xs font-semibold text-foreground">{formatCurrency(r.revenue)}</span>
                     </div>
                   </div>
                   <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -542,13 +591,7 @@ export function AdminRevenue() {
           <div className="bg-card border border-border rounded-2xl p-5">
             <h3 className="text-sm font-semibold text-foreground mb-4">Recent Transactions</h3>
             <div className="space-y-3">
-              {[
-                { user: 'Agency Corp', plan: 'Enterprise', amount: '$299', date: '2h ago', status: 'success' },
-                { user: 'StyleHouse', plan: 'Business', amount: '$49', date: '4h ago', status: 'success' },
-                { user: 'Alex Rivera', plan: 'Pro', amount: '$19', date: '6h ago', status: 'success' },
-                { user: 'Demo Co', plan: 'Pro', amount: '$19', date: '1d ago', status: 'refunded' },
-                { user: 'TechStart', plan: 'Business', amount: '$49', date: '1d ago', status: 'success' },
-              ].map((t, i) => (
+              {recentTransactions.map((t, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${t.status === 'success' ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
                     {t.status === 'success' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <X className="w-3.5 h-3.5 text-red-500" />}
