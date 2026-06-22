@@ -21,9 +21,18 @@ export const adminSidebarItems = [
 
 /* ─── Users ─────────────────────────────────────────────────── */
 export function AdminUsers() {
-  const users = Object.values(MOCK_USERS);
+  const [usersList, setUsersList] = useState(() => Object.values(MOCK_USERS));
   const [search, setSearch] = useState('');
-  const filtered = users.filter(u =>
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [inviteName, setInviteName] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('designer');
+  const [invitePlan, setInvitePlan] = useState('pro');
+
+  const [viewUser, setViewUser] = useState<any | null>(null);
+  const [activeActionsUserId, setActiveActionsUserId] = useState<string | null>(null);
+
+  const filtered = usersList.filter(u =>
     u.name.toLowerCase().includes(search.toLowerCase()) ||
     u.email.toLowerCase().includes(search.toLowerCase())
   );
@@ -45,19 +54,121 @@ export function AdminUsers() {
     admin: 'Admin',
   };
 
+  const handleInviteSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteName.trim()) {
+      toast('warning', 'Please enter a name');
+      return;
+    }
+    if (!inviteEmail.trim()) {
+      toast('warning', 'Please enter an email address');
+      return;
+    }
+    if (!inviteEmail.includes('@')) {
+      toast('warning', 'Please enter a valid email address');
+      return;
+    }
+
+    const AVATARS = [
+      'https://images.unsplash.com/photo-1494790108755-2616b612b5e5?w=80&h=80&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&h=80&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=80&h=80&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face',
+    ];
+    const randomAvatar = AVATARS[Math.floor(Math.random() * AVATARS.length)];
+
+    const newUser = {
+      id: `user_${Date.now()}`,
+      name: inviteName,
+      email: inviteEmail,
+      avatar: randomAvatar,
+      role: inviteRole,
+      plan: invitePlan,
+      createdAt: new Date().toISOString().split('T')[0],
+      bio: `Platform user invited on ${new Date().toLocaleDateString()}`,
+      company: 'Invited User',
+      location: 'Remote',
+      status: 'active',
+    };
+
+    setUsersList(prev => [newUser, ...prev]);
+    toast('success', `Successfully invited ${inviteName} (${inviteEmail})`);
+
+    // Reset and close
+    setInviteName('');
+    setInviteEmail('');
+    setInviteRole('designer');
+    setInvitePlan('pro');
+    setIsInviteOpen(false);
+  };
+
+  const handleToggleSuspend = (id: string) => {
+    setUsersList(prev => prev.map(u => {
+      if (u.id === id) {
+        const isCurrentlySuspended = u.status === 'suspended';
+        const newStatus = isCurrentlySuspended ? 'active' : 'suspended';
+        toast(isCurrentlySuspended ? 'success' : 'warning', `User ${u.name} has been ${newStatus === 'suspended' ? 'suspended' : 'reactivated'}`);
+        return { ...u, status: newStatus };
+      }
+      return u;
+    }));
+  };
+
+  const handleDeleteUser = (id: string) => {
+    const userToDelete = usersList.find(u => u.id === id);
+    if (userToDelete) {
+      setUsersList(prev => prev.filter(u => u.id !== id));
+      toast('error', `User ${userToDelete.name} has been deleted`);
+    }
+  };
+
+  const handleExportUsers = () => {
+    const headers = ['ID', 'Name', 'Email', 'Role', 'Plan', 'Joined Date', 'Company', 'Location', 'Status'];
+    const rows = usersList.map(u => [
+      u.id,
+      u.name,
+      u.email,
+      u.role,
+      u.plan,
+      u.createdAt || '',
+      u.company || '',
+      u.location || '',
+      u.status || 'active'
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `pixivisual_users_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast('success', `Exported ${usersList.length} users successfully to CSV`);
+  };
+
   return (
     <DashboardLayout sidebarItems={adminSidebarItems} title="User Management" roleLabel="Platform Admin">
       <div className="p-4 lg:p-6 space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-display font-bold text-foreground">User Management</h2>
-            <p className="text-sm text-muted-foreground">2.1M registered users · {users.length} demo accounts</p>
+            <p className="text-sm text-muted-foreground">2.1M registered users · {usersList.length} demo accounts</p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => toast('info', 'Opening user export...')} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border text-sm text-foreground hover:border-primary/30 transition-all">
+            <button onClick={handleExportUsers} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border text-sm text-foreground hover:border-primary/30 transition-all">
               <Download className="w-4 h-4" /> Export
             </button>
-            <button onClick={() => toast('info', 'Opening invite modal...')} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">
+            <button onClick={() => setIsInviteOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">
               + Invite User
             </button>
           </div>
@@ -104,12 +215,17 @@ export function AdminUsers() {
               </thead>
               <tbody className="divide-y divide-border">
                 {filtered.map(u => (
-                  <tr key={u.id} className="hover:bg-muted/30 transition-colors">
+                  <tr key={u.id} className={`hover:bg-muted/30 transition-colors ${u.status === 'suspended' ? 'opacity-65 bg-destructive/[0.02]' : ''}`}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <img src={u.avatar} alt={u.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                        <img src={u.avatar} alt={u.name} className={`w-8 h-8 rounded-full object-cover flex-shrink-0 ${u.status === 'suspended' ? 'grayscale opacity-70' : ''}`} />
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-foreground truncate">{u.name}</p>
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">{u.name}</p>
+                            {u.status === 'suspended' && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-red-500/10 text-red-500 capitalize flex-shrink-0">Suspended</span>
+                            )}
+                          </div>
                           <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                         </div>
                       </div>
@@ -125,12 +241,34 @@ export function AdminUsers() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => toast('info', `Viewing ${u.name}'s profile...`)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center hover:border-primary/30 transition-all">
+                        <button onClick={() => setViewUser(u)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center hover:border-primary/30 transition-all" title="View Profile">
                           <Eye className="w-3 h-3 text-muted-foreground" />
                         </button>
-                        <button onClick={() => toast('info', `More options for ${u.name}...`)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center hover:border-primary/30 transition-all">
-                          <MoreVertical className="w-3 h-3 text-muted-foreground" />
-                        </button>
+                        <div className="relative">
+                          <button onClick={() => setActiveActionsUserId(activeActionsUserId === u.id ? null : u.id)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center hover:border-primary/30 transition-all" title="More Options">
+                            <MoreVertical className="w-3 h-3 text-muted-foreground" />
+                          </button>
+                          {activeActionsUserId === u.id && (
+                            <>
+                              <div className="fixed inset-0 z-40" onClick={() => setActiveActionsUserId(null)} />
+                              <div className="absolute right-0 mt-1 w-36 rounded-xl border border-border bg-card shadow-lg z-50 py-1.5 animate-in fade-in slide-in-from-top-1 duration-100 text-left">
+                                <button 
+                                  onClick={() => { handleToggleSuspend(u.id); setActiveActionsUserId(null); }} 
+                                  className="w-full text-left px-3 py-1.5 text-xs text-foreground hover:bg-muted transition-colors flex items-center gap-1.5"
+                                >
+                                  {u.status === 'suspended' ? 'Activate User' : 'Suspend User'}
+                                </button>
+                                <div className="h-px bg-border my-1" />
+                                <button 
+                                  onClick={() => { handleDeleteUser(u.id); setActiveActionsUserId(null); }} 
+                                  className="w-full text-left px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10 transition-colors font-medium flex items-center gap-1.5"
+                                >
+                                  Delete User
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -140,6 +278,184 @@ export function AdminUsers() {
           </div>
         </div>
       </div>
+
+      {/* Invite Modal Overlay */}
+      {isInviteOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-2xl p-6 shadow-glow-purple relative animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-display font-bold text-foreground">Invite New User</h3>
+              <button 
+                onClick={() => setIsInviteOpen(false)} 
+                className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleInviteSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Full Name</label>
+                <input 
+                  type="text" 
+                  value={inviteName} 
+                  onChange={e => setInviteName(e.target.value)} 
+                  placeholder="e.g. Sarah Connor"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all placeholder:text-muted-foreground"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Email Address</label>
+                <input 
+                  type="email" 
+                  value={inviteEmail} 
+                  onChange={e => setInviteEmail(e.target.value)} 
+                  placeholder="e.g. sarah@domain.com"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all placeholder:text-muted-foreground"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Role</label>
+                  <select 
+                    value={inviteRole} 
+                    onChange={e => setInviteRole(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all cursor-pointer"
+                  >
+                    <option value="content-creator">Creator</option>
+                    <option value="business-owner">Business</option>
+                    <option value="designer">Designer</option>
+                    <option value="marketing-agency">Agency</option>
+                    <option value="freelancer">Freelancer</option>
+                    <option value="enterprise-team">Enterprise</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Subscription Plan</label>
+                  <select 
+                    value={invitePlan} 
+                    onChange={e => setInvitePlan(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all cursor-pointer"
+                  >
+                    <option value="free">Free</option>
+                    <option value="pro">Pro</option>
+                    <option value="business">Business</option>
+                    <option value="enterprise">Enterprise</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-4 flex justify-end gap-3 border-t border-border mt-6">
+                <button 
+                  type="button" 
+                  onClick={() => setIsInviteOpen(false)}
+                  className="px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
+                >
+                  Send Invitation
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* View User Profile Modal */}
+      {viewUser && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-2xl p-6 shadow-glow-purple relative animate-in zoom-in-95 duration-200">
+            {/* Close button */}
+            <button 
+              onClick={() => setViewUser(null)} 
+              className="absolute right-4 top-4 p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Profile Content */}
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="relative">
+                <img 
+                  src={viewUser.avatar} 
+                  alt={viewUser.name} 
+                  className={`w-24 h-24 rounded-full object-cover border-2 border-primary/20 ${viewUser.status === 'suspended' ? 'grayscale opacity-70' : ''}`}
+                />
+                {viewUser.status === 'suspended' && (
+                  <span className="absolute bottom-0 right-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white uppercase shadow-lg">
+                    Suspended
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <h3 className="text-xl font-display font-bold text-foreground">
+                  {viewUser.name}
+                </h3>
+                <p className="text-sm text-muted-foreground">{viewUser.email}</p>
+              </div>
+
+              <div className="flex gap-2">
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${planColors[viewUser.plan] || 'bg-muted'}`}>
+                  {viewUser.plan} Plan
+                </span>
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary capitalize">
+                  {roleLabel[viewUser.role] || viewUser.role}
+                </span>
+              </div>
+
+              {/* Bio & Details */}
+              <div className="w-full text-left space-y-3 pt-4 border-t border-border">
+                {viewUser.bio && (
+                  <div>
+                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">Bio</span>
+                    <p className="text-sm text-foreground">{viewUser.bio}</p>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  {viewUser.company && (
+                    <div>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">Company</span>
+                      <p className="text-sm font-medium text-foreground">{viewUser.company}</p>
+                    </div>
+                  )}
+                  {viewUser.location && (
+                    <div>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">Location</span>
+                      <p className="text-sm font-medium text-foreground">{viewUser.location}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">Joined Date</span>
+                  <p className="text-sm font-medium text-foreground">{viewUser.createdAt || 'N/A'}</p>
+                </div>
+              </div>
+
+              <div className="pt-4 w-full">
+                <button 
+                  onClick={() => setViewUser(null)}
+                  className="w-full px-5 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
+                >
+                  Close Profile
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
