@@ -21,9 +21,18 @@ export const adminSidebarItems = [
 
 /* ─── Users ─────────────────────────────────────────────────── */
 export function AdminUsers() {
-  const users = Object.values(MOCK_USERS);
+  const [usersList, setUsersList] = useState(() => Object.values(MOCK_USERS));
   const [search, setSearch] = useState('');
-  const filtered = users.filter(u =>
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [inviteName, setInviteName] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('designer');
+  const [invitePlan, setInvitePlan] = useState('pro');
+
+  const [viewUser, setViewUser] = useState<any | null>(null);
+  const [activeActionsUserId, setActiveActionsUserId] = useState<string | null>(null);
+
+  const filtered = usersList.filter(u =>
     u.name.toLowerCase().includes(search.toLowerCase()) ||
     u.email.toLowerCase().includes(search.toLowerCase())
   );
@@ -45,19 +54,121 @@ export function AdminUsers() {
     admin: 'Admin',
   };
 
+  const handleInviteSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteName.trim()) {
+      toast('warning', 'Please enter a name');
+      return;
+    }
+    if (!inviteEmail.trim()) {
+      toast('warning', 'Please enter an email address');
+      return;
+    }
+    if (!inviteEmail.includes('@')) {
+      toast('warning', 'Please enter a valid email address');
+      return;
+    }
+
+    const AVATARS = [
+      'https://images.unsplash.com/photo-1494790108755-2616b612b5e5?w=80&h=80&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&h=80&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=80&h=80&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face',
+    ];
+    const randomAvatar = AVATARS[Math.floor(Math.random() * AVATARS.length)];
+
+    const newUser = {
+      id: `user_${Date.now()}`,
+      name: inviteName,
+      email: inviteEmail,
+      avatar: randomAvatar,
+      role: inviteRole,
+      plan: invitePlan,
+      createdAt: new Date().toISOString().split('T')[0],
+      bio: `Platform user invited on ${new Date().toLocaleDateString()}`,
+      company: 'Invited User',
+      location: 'Remote',
+      status: 'active',
+    };
+
+    setUsersList(prev => [newUser, ...prev]);
+    toast('success', `Successfully invited ${inviteName} (${inviteEmail})`);
+
+    // Reset and close
+    setInviteName('');
+    setInviteEmail('');
+    setInviteRole('designer');
+    setInvitePlan('pro');
+    setIsInviteOpen(false);
+  };
+
+  const handleToggleSuspend = (id: string) => {
+    setUsersList(prev => prev.map(u => {
+      if (u.id === id) {
+        const isCurrentlySuspended = u.status === 'suspended';
+        const newStatus = isCurrentlySuspended ? 'active' : 'suspended';
+        toast(isCurrentlySuspended ? 'success' : 'warning', `User ${u.name} has been ${newStatus === 'suspended' ? 'suspended' : 'reactivated'}`);
+        return { ...u, status: newStatus };
+      }
+      return u;
+    }));
+  };
+
+  const handleDeleteUser = (id: string) => {
+    const userToDelete = usersList.find(u => u.id === id);
+    if (userToDelete) {
+      setUsersList(prev => prev.filter(u => u.id !== id));
+      toast('error', `User ${userToDelete.name} has been deleted`);
+    }
+  };
+
+  const handleExportUsers = () => {
+    const headers = ['ID', 'Name', 'Email', 'Role', 'Plan', 'Joined Date', 'Company', 'Location', 'Status'];
+    const rows = usersList.map(u => [
+      u.id,
+      u.name,
+      u.email,
+      u.role,
+      u.plan,
+      u.createdAt || '',
+      u.company || '',
+      u.location || '',
+      u.status || 'active'
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `pixivisual_users_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast('success', `Exported ${usersList.length} users successfully to CSV`);
+  };
+
   return (
     <DashboardLayout sidebarItems={adminSidebarItems} title="User Management" roleLabel="Platform Admin">
       <div className="p-4 lg:p-6 space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-display font-bold text-foreground">User Management</h2>
-            <p className="text-sm text-muted-foreground">2.1M registered users · {users.length} demo accounts</p>
+            <p className="text-sm text-muted-foreground">2.1M registered users · {usersList.length} demo accounts</p>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => toast('info', 'Opening user export...')} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border text-sm text-foreground hover:border-primary/30 transition-all">
+            <button onClick={handleExportUsers} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border text-sm text-foreground hover:border-primary/30 transition-all">
               <Download className="w-4 h-4" /> Export
             </button>
-            <button onClick={() => toast('info', 'Opening invite modal...')} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">
+            <button onClick={() => setIsInviteOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">
               + Invite User
             </button>
           </div>
@@ -104,12 +215,17 @@ export function AdminUsers() {
               </thead>
               <tbody className="divide-y divide-border">
                 {filtered.map(u => (
-                  <tr key={u.id} className="hover:bg-muted/30 transition-colors">
+                  <tr key={u.id} className={`hover:bg-muted/30 transition-colors ${u.status === 'suspended' ? 'opacity-65 bg-destructive/[0.02]' : ''}`}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <img src={u.avatar} alt={u.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                        <img src={u.avatar} alt={u.name} className={`w-8 h-8 rounded-full object-cover flex-shrink-0 ${u.status === 'suspended' ? 'grayscale opacity-70' : ''}`} />
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-foreground truncate">{u.name}</p>
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">{u.name}</p>
+                            {u.status === 'suspended' && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-red-500/10 text-red-500 capitalize flex-shrink-0">Suspended</span>
+                            )}
+                          </div>
                           <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                         </div>
                       </div>
@@ -125,12 +241,34 @@ export function AdminUsers() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => toast('info', `Viewing ${u.name}'s profile...`)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center hover:border-primary/30 transition-all">
+                        <button onClick={() => setViewUser(u)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center hover:border-primary/30 transition-all" title="View Profile">
                           <Eye className="w-3 h-3 text-muted-foreground" />
                         </button>
-                        <button onClick={() => toast('info', `More options for ${u.name}...`)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center hover:border-primary/30 transition-all">
-                          <MoreVertical className="w-3 h-3 text-muted-foreground" />
-                        </button>
+                        <div className="relative">
+                          <button onClick={() => setActiveActionsUserId(activeActionsUserId === u.id ? null : u.id)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center hover:border-primary/30 transition-all" title="More Options">
+                            <MoreVertical className="w-3 h-3 text-muted-foreground" />
+                          </button>
+                          {activeActionsUserId === u.id && (
+                            <>
+                              <div className="fixed inset-0 z-40" onClick={() => setActiveActionsUserId(null)} />
+                              <div className="absolute right-0 mt-1 w-36 rounded-xl border border-border bg-card shadow-lg z-50 py-1.5 animate-in fade-in slide-in-from-top-1 duration-100 text-left">
+                                <button 
+                                  onClick={() => { handleToggleSuspend(u.id); setActiveActionsUserId(null); }} 
+                                  className="w-full text-left px-3 py-1.5 text-xs text-foreground hover:bg-muted transition-colors flex items-center gap-1.5"
+                                >
+                                  {u.status === 'suspended' ? 'Activate User' : 'Suspend User'}
+                                </button>
+                                <div className="h-px bg-border my-1" />
+                                <button 
+                                  onClick={() => { handleDeleteUser(u.id); setActiveActionsUserId(null); }} 
+                                  className="w-full text-left px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10 transition-colors font-medium flex items-center gap-1.5"
+                                >
+                                  Delete User
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -140,6 +278,184 @@ export function AdminUsers() {
           </div>
         </div>
       </div>
+
+      {/* Invite Modal Overlay */}
+      {isInviteOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-2xl p-6 shadow-glow-purple relative animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-display font-bold text-foreground">Invite New User</h3>
+              <button 
+                onClick={() => setIsInviteOpen(false)} 
+                className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleInviteSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Full Name</label>
+                <input 
+                  type="text" 
+                  value={inviteName} 
+                  onChange={e => setInviteName(e.target.value)} 
+                  placeholder="e.g. Sarah Connor"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all placeholder:text-muted-foreground"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Email Address</label>
+                <input 
+                  type="email" 
+                  value={inviteEmail} 
+                  onChange={e => setInviteEmail(e.target.value)} 
+                  placeholder="e.g. sarah@domain.com"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all placeholder:text-muted-foreground"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Role</label>
+                  <select 
+                    value={inviteRole} 
+                    onChange={e => setInviteRole(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all cursor-pointer"
+                  >
+                    <option value="content-creator">Creator</option>
+                    <option value="business-owner">Business</option>
+                    <option value="designer">Designer</option>
+                    <option value="marketing-agency">Agency</option>
+                    <option value="freelancer">Freelancer</option>
+                    <option value="enterprise-team">Enterprise</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Subscription Plan</label>
+                  <select 
+                    value={invitePlan} 
+                    onChange={e => setInvitePlan(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all cursor-pointer"
+                  >
+                    <option value="free">Free</option>
+                    <option value="pro">Pro</option>
+                    <option value="business">Business</option>
+                    <option value="enterprise">Enterprise</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-4 flex justify-end gap-3 border-t border-border mt-6">
+                <button 
+                  type="button" 
+                  onClick={() => setIsInviteOpen(false)}
+                  className="px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
+                >
+                  Send Invitation
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* View User Profile Modal */}
+      {viewUser && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-2xl p-6 shadow-glow-purple relative animate-in zoom-in-95 duration-200">
+            {/* Close button */}
+            <button 
+              onClick={() => setViewUser(null)} 
+              className="absolute right-4 top-4 p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Profile Content */}
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="relative">
+                <img 
+                  src={viewUser.avatar} 
+                  alt={viewUser.name} 
+                  className={`w-24 h-24 rounded-full object-cover border-2 border-primary/20 ${viewUser.status === 'suspended' ? 'grayscale opacity-70' : ''}`}
+                />
+                {viewUser.status === 'suspended' && (
+                  <span className="absolute bottom-0 right-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white uppercase shadow-lg">
+                    Suspended
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <h3 className="text-xl font-display font-bold text-foreground">
+                  {viewUser.name}
+                </h3>
+                <p className="text-sm text-muted-foreground">{viewUser.email}</p>
+              </div>
+
+              <div className="flex gap-2">
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${planColors[viewUser.plan] || 'bg-muted'}`}>
+                  {viewUser.plan} Plan
+                </span>
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary capitalize">
+                  {roleLabel[viewUser.role] || viewUser.role}
+                </span>
+              </div>
+
+              {/* Bio & Details */}
+              <div className="w-full text-left space-y-3 pt-4 border-t border-border">
+                {viewUser.bio && (
+                  <div>
+                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">Bio</span>
+                    <p className="text-sm text-foreground">{viewUser.bio}</p>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  {viewUser.company && (
+                    <div>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">Company</span>
+                      <p className="text-sm font-medium text-foreground">{viewUser.company}</p>
+                    </div>
+                  )}
+                  {viewUser.location && (
+                    <div>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">Location</span>
+                      <p className="text-sm font-medium text-foreground">{viewUser.location}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">Joined Date</span>
+                  <p className="text-sm font-medium text-foreground">{viewUser.createdAt || 'N/A'}</p>
+                </div>
+              </div>
+
+              <div className="pt-4 w-full">
+                <button 
+                  onClick={() => setViewUser(null)}
+                  className="w-full px-5 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
+                >
+                  Close Profile
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
@@ -150,6 +466,60 @@ export function AdminRevenue() {
   const maxVal = Math.max(...monthly);
   const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+  const revenueByPlan = [
+    { plan: 'Enterprise', revenue: 421000, pct: 50, color: 'bg-purple-500' },
+    { plan: 'Business', revenue: 253000, pct: 30, color: 'bg-blue-500' },
+    { plan: 'Pro', revenue: 126000, pct: 15, color: 'bg-primary' },
+    { plan: 'Free (Ads)', revenue: 42000, pct: 5, color: 'bg-muted-foreground' },
+  ];
+
+  const recentTransactions = [
+    { user: 'Agency Corp', plan: 'Enterprise', amount: '$299', date: '2h ago', status: 'success' },
+    { user: 'StyleHouse', plan: 'Business', amount: '$49', date: '4h ago', status: 'success' },
+    { user: 'Alex Rivera', plan: 'Pro', amount: '$19', date: '6h ago', status: 'success' },
+    { user: 'Demo Co', plan: 'Pro', amount: '$19', date: '1d ago', status: 'refunded' },
+    { user: 'TechStart', plan: 'Business', amount: '$49', date: '1d ago', status: 'success' },
+  ];
+
+  const handleExportRevenue = () => {
+    let csvContent = '';
+
+    // Section 1: Monthly Revenue
+    csvContent += '--- MONTHLY REVENUE (LAST 12 MONTHS) ---\n';
+    csvContent += 'Month,Revenue (USD)\n';
+    monthLabels.forEach((label, index) => {
+      csvContent += `${label},${monthly[index]}\n`;
+    });
+    csvContent += '\n';
+
+    // Section 2: Revenue by Plan
+    csvContent += '--- REVENUE BY SUBSCRIPTION PLAN ---\n';
+    csvContent += 'Plan,Revenue (USD),Percentage (%)\n';
+    revenueByPlan.forEach(p => {
+      csvContent += `${p.plan},${p.revenue},${p.pct}\n`;
+    });
+    csvContent += '\n';
+
+    // Section 3: Recent Transactions
+    csvContent += '--- RECENT TRANSACTIONS ---\n';
+    csvContent += 'User,Plan,Amount,Date,Status\n';
+    recentTransactions.forEach(t => {
+      csvContent += `"${t.user.replace(/"/g, '""')}",${t.plan},${t.amount.replace('$', '')},${t.date},${t.status}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `pixivisual_revenue_report_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast('success', 'Revenue report downloaded successfully to CSV');
+  };
+
   return (
     <DashboardLayout sidebarItems={adminSidebarItems} title="Revenue" roleLabel="Platform Admin">
       <div className="p-4 lg:p-6 space-y-6">
@@ -158,7 +528,7 @@ export function AdminRevenue() {
             <h2 className="text-xl font-display font-bold text-foreground">Revenue Overview</h2>
             <p className="text-sm text-muted-foreground">Platform revenue and subscription metrics</p>
           </div>
-          <button onClick={() => toast('info', 'Downloading revenue report...')} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm text-foreground hover:border-primary/30 transition-all">
+          <button onClick={handleExportRevenue} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm text-foreground hover:border-primary/30 transition-all">
             <Download className="w-4 h-4" /> Export Report
           </button>
         </div>
@@ -188,10 +558,17 @@ export function AdminRevenue() {
           </div>
           <div className="flex items-end gap-2 h-44">
             {monthly.map((v, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
-                <div className="w-full rounded-t-lg gradient-primary opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
-                  style={{ height: `${(v / maxVal) * 100}%` }} title={`${monthLabels[i]}: ${formatCurrency(v)}`} />
-                <span className="text-xs text-muted-foreground">{monthLabels[i].slice(0, 1)}</span>
+              <div key={i} className="flex-1 flex flex-col gap-2 h-full">
+                {/* Bar Container */}
+                <div className="flex-1 flex items-end justify-center">
+                  <div 
+                    className="w-full rounded-t-lg gradient-primary opacity-70 hover:opacity-100 transition-all duration-300 cursor-pointer"
+                    style={{ height: `${(v / maxVal) * 100}%` }} 
+                    title={`${monthLabels[i]}: ${formatCurrency(v)}`} 
+                  />
+                </div>
+                {/* Label */}
+                <span className="text-xs text-muted-foreground text-center">{monthLabels[i]}</span>
               </div>
             ))}
           </div>
@@ -201,18 +578,13 @@ export function AdminRevenue() {
           <div className="bg-card border border-border rounded-2xl p-5">
             <h3 className="text-sm font-semibold text-foreground mb-4">Revenue by Plan</h3>
             <div className="space-y-3">
-              {[
-                { plan: 'Enterprise', revenue: formatCurrency(421000), pct: 50, color: 'bg-purple-500' },
-                { plan: 'Business', revenue: formatCurrency(253000), pct: 30, color: 'bg-blue-500' },
-                { plan: 'Pro', revenue: formatCurrency(126000), pct: 15, color: 'bg-primary' },
-                { plan: 'Free (Ads)', revenue: formatCurrency(42000), pct: 5, color: 'bg-muted-foreground' },
-              ].map(r => (
+              {revenueByPlan.map(r => (
                 <div key={r.plan}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-medium text-foreground">{r.plan}</span>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground">{r.pct}%</span>
-                      <span className="text-xs font-semibold text-foreground">{r.revenue}</span>
+                      <span className="text-xs font-semibold text-foreground">{formatCurrency(r.revenue)}</span>
                     </div>
                   </div>
                   <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -226,13 +598,7 @@ export function AdminRevenue() {
           <div className="bg-card border border-border rounded-2xl p-5">
             <h3 className="text-sm font-semibold text-foreground mb-4">Recent Transactions</h3>
             <div className="space-y-3">
-              {[
-                { user: 'Agency Corp', plan: 'Enterprise', amount: '$299', date: '2h ago', status: 'success' },
-                { user: 'StyleHouse', plan: 'Business', amount: '$49', date: '4h ago', status: 'success' },
-                { user: 'Alex Rivera', plan: 'Pro', amount: '$19', date: '6h ago', status: 'success' },
-                { user: 'Demo Co', plan: 'Pro', amount: '$19', date: '1d ago', status: 'refunded' },
-                { user: 'TechStart', plan: 'Business', amount: '$49', date: '1d ago', status: 'success' },
-              ].map((t, i) => (
+              {recentTransactions.map((t, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${t.status === 'success' ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
                     {t.status === 'success' ? <Check className="w-3.5 h-3.5 text-green-500" /> : <X className="w-3.5 h-3.5 text-red-500" />}
@@ -254,13 +620,64 @@ export function AdminRevenue() {
 
 /* ─── Marketplace ─────────────────────────────────────────────── */
 export function AdminMarketplace() {
-  const templates = [
+  const [templateList, setTemplateList] = useState(() => [
     { title: 'Minimal Business Card', author: 'Maya Chen', category: 'Branding', sales: 234, price: '$3', status: 'active', preview: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&h=90&fit=crop' },
     { title: 'Bold Social Media Kit', author: 'Alex Rivera', category: 'Social Media', sales: 189, price: '$5', status: 'active', preview: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=120&h=90&fit=crop' },
     { title: 'Corporate Presentation', author: 'Sam Torres', category: 'Presentation', sales: 142, price: '$8', status: 'active', preview: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=120&h=90&fit=crop' },
     { title: 'Modern Logo Pack', author: 'Jordan Lee', category: 'Branding', sales: 98, price: '$12', status: 'pending', preview: 'https://images.unsplash.com/photo-1634942537034-2531766767d1?w=120&h=90&fit=crop' },
     { title: 'E-commerce Banner Set', author: 'Marcus Williams', category: 'Marketing', sales: 76, price: '$6', status: 'pending', preview: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=120&h=90&fit=crop' },
-  ];
+  ]);
+
+  const [showSettings, setShowSettings] = useState(false);
+  const [commissionRate, setCommissionRate] = useState(20);
+  const [moderationRequired, setModerationRequired] = useState(true);
+  const [allowUploads, setAllowUploads] = useState(true);
+  const [maxFileSize, setMaxFileSize] = useState(50);
+
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
+
+  const [manageTemplate, setManageTemplate] = useState<any | null>(null);
+
+  const handleApproveTemplate = (title: string) => {
+    toast('success', `Approved: "${title}"`);
+    setTemplateList(prev => prev.map(item => item.title === title ? { ...item, status: 'active' } : item));
+  };
+
+  const handleRejectTemplate = (title: string) => {
+    toast('error', `Rejected: "${title}"`);
+    setTemplateList(prev => prev.filter(item => item.title !== title));
+  };
+
+  const handleSaveManagedTemplate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manageTemplate.title.trim()) {
+      toast('warning', 'Title cannot be empty');
+      return;
+    }
+
+    setTemplateList(prev => prev.map(item => {
+      if (item.title === manageTemplate.originalTitle) {
+        return {
+          ...item,
+          title: manageTemplate.title,
+          price: manageTemplate.price.startsWith('$') ? manageTemplate.price : `$${manageTemplate.price}`,
+          featured: manageTemplate.featured
+        };
+      }
+      return item;
+    }));
+
+    toast('success', `Template "${manageTemplate.title}" updated successfully`);
+    setManageTemplate(null);
+  };
+
+  const filteredTemplates = templateList.filter(t => {
+    const categoryMatch = filterCategory === 'all' || t.category.toLowerCase() === filterCategory.toLowerCase();
+    const statusMatch = filterStatus === 'all' || t.status.toLowerCase() === filterStatus.toLowerCase();
+    return categoryMatch && statusMatch;
+  });
 
   return (
     <DashboardLayout sidebarItems={adminSidebarItems} title="Marketplace" roleLabel="Platform Admin">
@@ -270,7 +687,7 @@ export function AdminMarketplace() {
             <h2 className="text-xl font-display font-bold text-foreground">Marketplace Management</h2>
             <p className="text-sm text-muted-foreground">Moderate and manage template listings</p>
           </div>
-          <button onClick={() => toast('info', 'Opening marketplace settings...')} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">
+          <button onClick={() => setShowSettings(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">
             Marketplace Settings
           </button>
         </div>
@@ -293,37 +710,286 @@ export function AdminMarketplace() {
           <div className="p-4 border-b border-border flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">Template Listings</h3>
             <div className="flex gap-2">
-              <button onClick={() => toast('info', 'Filtering listings...')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:border-primary/30 transition-all">
+              <button 
+                onClick={() => setShowFilters(!showFilters)} 
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition-all ${showFilters ? 'bg-primary/10 border-primary text-primary font-medium' : 'border-border text-muted-foreground hover:border-primary/30'}`}
+              >
                 <Filter className="w-3 h-3" /> Filter
               </button>
             </div>
           </div>
-          <div className="divide-y divide-border">
-            {templates.map((t, i) => (
-              <div key={i} className="p-4 flex items-center gap-4">
-                <img src={t.preview} alt={t.title} className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <p className="text-sm font-semibold text-foreground truncate">{t.title}</p>
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ${t.status === 'active' ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-yellow-500/10 text-yellow-600'}`}>{t.status}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">by {t.author} · {t.category} · {t.sales} sales · {t.price}</p>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {t.status === 'pending' ? (
-                    <>
-                      <button onClick={() => toast('success', `${t.title} approved!`)} className="px-3 py-1.5 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium hover:bg-green-500/20 transition-all">Approve</button>
-                      <button onClick={() => toast('error', `${t.title} rejected.`)} className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-600 text-xs font-medium hover:bg-red-500/20 transition-all">Reject</button>
-                    </>
-                  ) : (
-                    <button onClick={() => toast('info', `Viewing ${t.title}...`)} className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:border-primary/30 transition-all">Manage</button>
-                  )}
-                </div>
+
+          {showFilters && (
+            <div className="p-4 border-b border-border bg-muted/20 flex flex-wrap gap-4 items-center animate-in slide-in-from-top-1 duration-200">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Category:</span>
+                <select 
+                  value={filterCategory} 
+                  onChange={e => setFilterCategory(e.target.value)}
+                  className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground outline-none focus:border-primary transition-all cursor-pointer"
+                >
+                  <option value="all">All Categories</option>
+                  <option value="branding">Branding</option>
+                  <option value="social media">Social Media</option>
+                  <option value="presentation">Presentation</option>
+                  <option value="marketing">Marketing</option>
+                </select>
               </div>
-            ))}
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Status:</span>
+                <select 
+                  value={filterStatus} 
+                  onChange={e => setFilterStatus(e.target.value)}
+                  className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground outline-none focus:border-primary transition-all cursor-pointer"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="active">Active</option>
+                  <option value="pending">Pending</option>
+                </select>
+              </div>
+
+              {(filterCategory !== 'all' || filterStatus !== 'all') && (
+                <button 
+                  onClick={() => { setFilterCategory('all'); setFilterStatus('all'); }}
+                  className="text-xs text-primary hover:underline font-medium"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+          )}
+
+          <div className="divide-y divide-border">
+            {filteredTemplates.length === 0 ? (
+              <div className="p-8 text-center text-sm text-muted-foreground">
+                No templates match the selected filter criteria.
+              </div>
+            ) : (
+              filteredTemplates.map((t, idx) => (
+                <div key={idx} className="p-4 flex items-center gap-4 animate-in fade-in duration-200">
+                  <img src={t.preview} alt={t.title} className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                      <p className="text-sm font-semibold text-foreground truncate">{t.title}</p>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ${t.status === 'active' ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-yellow-500/10 text-yellow-600'}`}>{t.status}</span>
+                      {t.featured && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-primary/10 text-primary capitalize flex-shrink-0">Featured</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">by {t.author} · {t.category} · {t.sales} sales · {t.price}</p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {t.status === 'pending' ? (
+                      <>
+                        <button onClick={() => handleApproveTemplate(t.title)} className="px-3 py-1.5 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium hover:bg-green-500/20 transition-all">Approve</button>
+                        <button onClick={() => handleRejectTemplate(t.title)} className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-600 text-xs font-medium hover:bg-red-500/20 transition-all">Reject</button>
+                      </>
+                    ) : (
+                      <button onClick={() => setManageTemplate({ ...t, originalTitle: t.title })} className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:border-primary/30 transition-all">Manage</button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
+
+      {/* Marketplace Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-2xl p-6 shadow-glow-purple relative animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-display font-bold text-foreground">Marketplace Settings</h3>
+              <button 
+                onClick={() => setShowSettings(false)} 
+                className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              toast('success', 'Marketplace settings saved successfully');
+              setShowSettings(false);
+            }} className="space-y-4">
+              
+              {/* Allow Uploads toggle */}
+              <div className="flex items-center justify-between py-1">
+                <div>
+                  <label className="text-sm font-semibold text-foreground block">Allow New Listings</label>
+                  <span className="text-xs text-muted-foreground">Let creators upload templates</span>
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={allowUploads} 
+                  onChange={e => setAllowUploads(e.target.checked)}
+                  className="w-4 h-4 rounded border-border text-primary bg-background focus:ring-primary transition-all cursor-pointer"
+                />
+              </div>
+
+              {/* Moderation required toggle */}
+              <div className="flex items-center justify-between py-1">
+                <div>
+                  <label className="text-sm font-semibold text-foreground block">Require Admin Moderation</label>
+                  <span className="text-xs text-muted-foreground">Review templates before publishing</span>
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={moderationRequired} 
+                  onChange={e => setModerationRequired(e.target.checked)}
+                  className="w-4 h-4 rounded border-border text-primary bg-background focus:ring-primary transition-all cursor-pointer"
+                />
+              </div>
+
+              {/* Commission Rate */}
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Platform Commission (%)</label>
+                <input 
+                  type="number" 
+                  value={commissionRate} 
+                  onChange={e => setCommissionRate(Number(e.target.value))} 
+                  min="0"
+                  max="100"
+                  placeholder="20"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all placeholder:text-muted-foreground"
+                />
+              </div>
+
+              {/* Max File Size */}
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Max Template Size (MB)</label>
+                <input 
+                  type="number" 
+                  value={maxFileSize} 
+                  onChange={e => setMaxFileSize(Number(e.target.value))} 
+                  min="1"
+                  max="1000"
+                  placeholder="50"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all placeholder:text-muted-foreground"
+                />
+              </div>
+
+              <div className="pt-4 flex justify-end gap-3 border-t border-border mt-6">
+                <button 
+                  type="button" 
+                  onClick={() => setShowSettings(false)}
+                  className="px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
+                >
+                  Save Settings
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Template Modal */}
+      {manageTemplate && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-2xl p-6 shadow-glow-purple relative animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-display font-bold text-foreground">Manage Template</h3>
+              <button 
+                onClick={() => setManageTemplate(null)} 
+                className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Template Card Preview */}
+            <div className="flex items-center gap-4 p-3 rounded-xl bg-muted/20 border border-border/50 mb-6">
+              <img src={manageTemplate.preview} alt={manageTemplate.title} className="w-20 h-16 rounded-lg object-cover flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">{manageTemplate.title}</p>
+                <p className="text-xs text-muted-foreground">by {manageTemplate.author} · {manageTemplate.sales} sales</p>
+                <span className="text-xs font-bold text-primary">{manageTemplate.price}</span>
+              </div>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSaveManagedTemplate} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Template Title</label>
+                <input 
+                  type="text" 
+                  value={manageTemplate.title} 
+                  onChange={e => setManageTemplate({ ...manageTemplate, title: e.target.value })} 
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Price (USD)</label>
+                  <input 
+                    type="text" 
+                    value={manageTemplate.price} 
+                    onChange={e => setManageTemplate({ ...manageTemplate, price: e.target.value })} 
+                    placeholder="$3"
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all"
+                  />
+                </div>
+
+                <div className="flex flex-col justify-center">
+                  <label className="text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider block">Featured Listing</label>
+                  <label className="flex items-center gap-2 mt-2 cursor-pointer select-none">
+                    <input 
+                      type="checkbox" 
+                      checked={manageTemplate.featured || false} 
+                      onChange={e => setManageTemplate({ ...manageTemplate, featured: e.target.checked })}
+                      className="w-4 h-4 rounded border-border text-primary bg-background focus:ring-primary transition-all cursor-pointer"
+                    />
+                    <span className="text-sm text-foreground">Feature on Store</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="pt-4 flex justify-between items-center border-t border-border mt-6">
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    toast('error', `Template "${manageTemplate.title}" deleted successfully`);
+                    setTemplateList(prev => prev.filter(item => item.title !== manageTemplate.originalTitle));
+                    setManageTemplate(null);
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-destructive/10 text-destructive text-sm font-semibold hover:bg-destructive/20 transition-all"
+                >
+                  Delete Listing
+                </button>
+
+                <div className="flex gap-3">
+                  <button 
+                    type="button" 
+                    onClick={() => setManageTemplate(null)}
+                    className="px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    className="px-5 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
