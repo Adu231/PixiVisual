@@ -558,10 +558,17 @@ export function AdminRevenue() {
           </div>
           <div className="flex items-end gap-2 h-44">
             {monthly.map((v, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
-                <div className="w-full rounded-t-lg gradient-primary opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
-                  style={{ height: `${(v / maxVal) * 100}%` }} title={`${monthLabels[i]}: ${formatCurrency(v)}`} />
-                <span className="text-xs text-muted-foreground">{monthLabels[i].slice(0, 1)}</span>
+              <div key={i} className="flex-1 flex flex-col gap-2 h-full">
+                {/* Bar Container */}
+                <div className="flex-1 flex items-end justify-center">
+                  <div 
+                    className="w-full rounded-t-lg gradient-primary opacity-70 hover:opacity-100 transition-all duration-300 cursor-pointer"
+                    style={{ height: `${(v / maxVal) * 100}%` }} 
+                    title={`${monthLabels[i]}: ${formatCurrency(v)}`} 
+                  />
+                </div>
+                {/* Label */}
+                <span className="text-xs text-muted-foreground text-center">{monthLabels[i]}</span>
               </div>
             ))}
           </div>
