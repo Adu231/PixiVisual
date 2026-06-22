@@ -634,17 +634,25 @@ export function AdminMarketplace() {
   const [allowUploads, setAllowUploads] = useState(true);
   const [maxFileSize, setMaxFileSize] = useState(50);
 
-  const handleApproveTemplate = (index: number) => {
-    const t = templateList[index];
-    toast('success', `Approved: "${t.title}"`);
-    setTemplateList(prev => prev.map((item, idx) => idx === index ? { ...item, status: 'active' } : item));
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
+
+  const handleApproveTemplate = (title: string) => {
+    toast('success', `Approved: "${title}"`);
+    setTemplateList(prev => prev.map(item => item.title === title ? { ...item, status: 'active' } : item));
   };
 
-  const handleRejectTemplate = (index: number) => {
-    const t = templateList[index];
-    toast('error', `Rejected: "${t.title}"`);
-    setTemplateList(prev => prev.filter((_, idx) => idx !== index));
+  const handleRejectTemplate = (title: string) => {
+    toast('error', `Rejected: "${title}"`);
+    setTemplateList(prev => prev.filter(item => item.title !== title));
   };
+
+  const filteredTemplates = templateList.filter(t => {
+    const categoryMatch = filterCategory === 'all' || t.category.toLowerCase() === filterCategory.toLowerCase();
+    const statusMatch = filterStatus === 'all' || t.status.toLowerCase() === filterStatus.toLowerCase();
+    return categoryMatch && statusMatch;
+  });
 
   return (
     <DashboardLayout sidebarItems={adminSidebarItems} title="Marketplace" roleLabel="Platform Admin">
@@ -677,34 +685,85 @@ export function AdminMarketplace() {
           <div className="p-4 border-b border-border flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">Template Listings</h3>
             <div className="flex gap-2">
-              <button onClick={() => toast('info', 'Filtering listings...')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:border-primary/30 transition-all">
+              <button 
+                onClick={() => setShowFilters(!showFilters)} 
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition-all ${showFilters ? 'bg-primary/10 border-primary text-primary font-medium' : 'border-border text-muted-foreground hover:border-primary/30'}`}
+              >
                 <Filter className="w-3 h-3" /> Filter
               </button>
             </div>
           </div>
-          <div className="divide-y divide-border">
-            {templateList.map((t, i) => (
-              <div key={i} className="p-4 flex items-center gap-4">
-                <img src={t.preview} alt={t.title} className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <p className="text-sm font-semibold text-foreground truncate">{t.title}</p>
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ${t.status === 'active' ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-yellow-500/10 text-yellow-600'}`}>{t.status}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">by {t.author} · {t.category} · {t.sales} sales · {t.price}</p>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {t.status === 'pending' ? (
-                    <>
-                      <button onClick={() => handleApproveTemplate(i)} className="px-3 py-1.5 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium hover:bg-green-500/20 transition-all">Approve</button>
-                      <button onClick={() => handleRejectTemplate(i)} className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-600 text-xs font-medium hover:bg-red-500/20 transition-all">Reject</button>
-                    </>
-                  ) : (
-                    <button onClick={() => toast('info', `Viewing ${t.title}...`)} className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:border-primary/30 transition-all">Manage</button>
-                  )}
-                </div>
+
+          {showFilters && (
+            <div className="p-4 border-b border-border bg-muted/20 flex flex-wrap gap-4 items-center animate-in slide-in-from-top-1 duration-200">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Category:</span>
+                <select 
+                  value={filterCategory} 
+                  onChange={e => setFilterCategory(e.target.value)}
+                  className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground outline-none focus:border-primary transition-all cursor-pointer"
+                >
+                  <option value="all">All Categories</option>
+                  <option value="branding">Branding</option>
+                  <option value="social media">Social Media</option>
+                  <option value="presentation">Presentation</option>
+                  <option value="marketing">Marketing</option>
+                </select>
               </div>
-            ))}
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Status:</span>
+                <select 
+                  value={filterStatus} 
+                  onChange={e => setFilterStatus(e.target.value)}
+                  className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground outline-none focus:border-primary transition-all cursor-pointer"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="active">Active</option>
+                  <option value="pending">Pending</option>
+                </select>
+              </div>
+
+              {(filterCategory !== 'all' || filterStatus !== 'all') && (
+                <button 
+                  onClick={() => { setFilterCategory('all'); setFilterStatus('all'); }}
+                  className="text-xs text-primary hover:underline font-medium"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+          )}
+
+          <div className="divide-y divide-border">
+            {filteredTemplates.length === 0 ? (
+              <div className="p-8 text-center text-sm text-muted-foreground">
+                No templates match the selected filter criteria.
+              </div>
+            ) : (
+              filteredTemplates.map((t, idx) => (
+                <div key={idx} className="p-4 flex items-center gap-4 animate-in fade-in duration-200">
+                  <img src={t.preview} alt={t.title} className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <p className="text-sm font-semibold text-foreground truncate">{t.title}</p>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ${t.status === 'active' ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-yellow-500/10 text-yellow-600'}`}>{t.status}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">by {t.author} · {t.category} · {t.sales} sales · {t.price}</p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {t.status === 'pending' ? (
+                      <>
+                        <button onClick={() => handleApproveTemplate(t.title)} className="px-3 py-1.5 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium hover:bg-green-500/20 transition-all">Approve</button>
+                        <button onClick={() => handleRejectTemplate(t.title)} className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-600 text-xs font-medium hover:bg-red-500/20 transition-all">Reject</button>
+                      </>
+                    ) : (
+                      <button onClick={() => toast('info', `Viewing ${t.title}...`)} className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:border-primary/30 transition-all">Manage</button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
