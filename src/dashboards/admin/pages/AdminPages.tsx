@@ -786,7 +786,7 @@ export function AdminMarketplace() {
                         <button onClick={() => handleRejectTemplate(t.title)} className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-600 text-xs font-medium hover:bg-red-500/20 transition-all">Reject</button>
                       </>
                     ) : (
-                      <button onClick={() => setManageTemplate({ ...t, originalTitle: t.title })} className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:border-primary/30 transition-all">Manage</button>
+                      <button onClick={() => setManageTemplate({ ...t, originalTitle: t.title })} className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-all">Manage</button>
                     )}
                   </div>
                 </div>
