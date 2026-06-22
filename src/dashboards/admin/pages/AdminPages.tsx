@@ -21,9 +21,15 @@ export const adminSidebarItems = [
 
 /* ─── Users ─────────────────────────────────────────────────── */
 export function AdminUsers() {
-  const users = Object.values(MOCK_USERS);
+  const [usersList, setUsersList] = useState(() => Object.values(MOCK_USERS));
   const [search, setSearch] = useState('');
-  const filtered = users.filter(u =>
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [inviteName, setInviteName] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('designer');
+  const [invitePlan, setInvitePlan] = useState('pro');
+
+  const filtered = usersList.filter(u =>
     u.name.toLowerCase().includes(search.toLowerCase()) ||
     u.email.toLowerCase().includes(search.toLowerCase())
   );
@@ -45,19 +51,68 @@ export function AdminUsers() {
     admin: 'Admin',
   };
 
+  const handleInviteSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteName.trim()) {
+      toast('warning', 'Please enter a name');
+      return;
+    }
+    if (!inviteEmail.trim()) {
+      toast('warning', 'Please enter an email address');
+      return;
+    }
+    if (!inviteEmail.includes('@')) {
+      toast('warning', 'Please enter a valid email address');
+      return;
+    }
+
+    const AVATARS = [
+      'https://images.unsplash.com/photo-1494790108755-2616b612b5e5?w=80&h=80&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&h=80&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=80&h=80&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face',
+    ];
+    const randomAvatar = AVATARS[Math.floor(Math.random() * AVATARS.length)];
+
+    const newUser = {
+      id: `user_${Date.now()}`,
+      name: inviteName,
+      email: inviteEmail,
+      avatar: randomAvatar,
+      role: inviteRole,
+      plan: invitePlan,
+      createdAt: new Date().toISOString().split('T')[0],
+      bio: `Platform user invited on ${new Date().toLocaleDateString()}`,
+      company: 'Invited User',
+      location: 'Remote',
+    };
+
+    setUsersList(prev => [newUser, ...prev]);
+    toast('success', `Successfully invited ${inviteName} (${inviteEmail})`);
+
+    // Reset and close
+    setInviteName('');
+    setInviteEmail('');
+    setInviteRole('designer');
+    setInvitePlan('pro');
+    setIsInviteOpen(false);
+  };
+
   return (
     <DashboardLayout sidebarItems={adminSidebarItems} title="User Management" roleLabel="Platform Admin">
       <div className="p-4 lg:p-6 space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-display font-bold text-foreground">User Management</h2>
-            <p className="text-sm text-muted-foreground">2.1M registered users · {users.length} demo accounts</p>
+            <p className="text-sm text-muted-foreground">2.1M registered users · {usersList.length} demo accounts</p>
           </div>
           <div className="flex gap-2">
             <button onClick={() => toast('info', 'Opening user export...')} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border text-sm text-foreground hover:border-primary/30 transition-all">
               <Download className="w-4 h-4" /> Export
             </button>
-            <button onClick={() => toast('info', 'Opening invite modal...')} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">
+            <button onClick={() => setIsInviteOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">
               + Invite User
             </button>
           </div>
@@ -140,6 +195,98 @@ export function AdminUsers() {
           </div>
         </div>
       </div>
+
+      {/* Invite Modal Overlay */}
+      {isInviteOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-2xl p-6 shadow-glow-purple relative animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-display font-bold text-foreground">Invite New User</h3>
+              <button 
+                onClick={() => setIsInviteOpen(false)} 
+                className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleInviteSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Full Name</label>
+                <input 
+                  type="text" 
+                  value={inviteName} 
+                  onChange={e => setInviteName(e.target.value)} 
+                  placeholder="e.g. Sarah Connor"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all placeholder:text-muted-foreground"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Email Address</label>
+                <input 
+                  type="email" 
+                  value={inviteEmail} 
+                  onChange={e => setInviteEmail(e.target.value)} 
+                  placeholder="e.g. sarah@domain.com"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all placeholder:text-muted-foreground"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Role</label>
+                  <select 
+                    value={inviteRole} 
+                    onChange={e => setInviteRole(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all cursor-pointer"
+                  >
+                    <option value="content-creator">Creator</option>
+                    <option value="business-owner">Business</option>
+                    <option value="designer">Designer</option>
+                    <option value="marketing-agency">Agency</option>
+                    <option value="freelancer">Freelancer</option>
+                    <option value="enterprise-team">Enterprise</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Subscription Plan</label>
+                  <select 
+                    value={invitePlan} 
+                    onChange={e => setInvitePlan(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all cursor-pointer"
+                  >
+                    <option value="free">Free</option>
+                    <option value="pro">Pro</option>
+                    <option value="business">Business</option>
+                    <option value="enterprise">Enterprise</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-4 flex justify-end gap-3 border-t border-border mt-6">
+                <button 
+                  type="button" 
+                  onClick={() => setIsInviteOpen(false)}
+                  className="px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
+                >
+                  Send Invitation
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
