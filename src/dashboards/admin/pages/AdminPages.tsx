@@ -620,13 +620,31 @@ export function AdminRevenue() {
 
 /* ─── Marketplace ─────────────────────────────────────────────── */
 export function AdminMarketplace() {
-  const templates = [
+  const [templateList, setTemplateList] = useState(() => [
     { title: 'Minimal Business Card', author: 'Maya Chen', category: 'Branding', sales: 234, price: '$3', status: 'active', preview: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&h=90&fit=crop' },
     { title: 'Bold Social Media Kit', author: 'Alex Rivera', category: 'Social Media', sales: 189, price: '$5', status: 'active', preview: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=120&h=90&fit=crop' },
     { title: 'Corporate Presentation', author: 'Sam Torres', category: 'Presentation', sales: 142, price: '$8', status: 'active', preview: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=120&h=90&fit=crop' },
     { title: 'Modern Logo Pack', author: 'Jordan Lee', category: 'Branding', sales: 98, price: '$12', status: 'pending', preview: 'https://images.unsplash.com/photo-1634942537034-2531766767d1?w=120&h=90&fit=crop' },
     { title: 'E-commerce Banner Set', author: 'Marcus Williams', category: 'Marketing', sales: 76, price: '$6', status: 'pending', preview: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=120&h=90&fit=crop' },
-  ];
+  ]);
+
+  const [showSettings, setShowSettings] = useState(false);
+  const [commissionRate, setCommissionRate] = useState(20);
+  const [moderationRequired, setModerationRequired] = useState(true);
+  const [allowUploads, setAllowUploads] = useState(true);
+  const [maxFileSize, setMaxFileSize] = useState(50);
+
+  const handleApproveTemplate = (index: number) => {
+    const t = templateList[index];
+    toast('success', `Approved: "${t.title}"`);
+    setTemplateList(prev => prev.map((item, idx) => idx === index ? { ...item, status: 'active' } : item));
+  };
+
+  const handleRejectTemplate = (index: number) => {
+    const t = templateList[index];
+    toast('error', `Rejected: "${t.title}"`);
+    setTemplateList(prev => prev.filter((_, idx) => idx !== index));
+  };
 
   return (
     <DashboardLayout sidebarItems={adminSidebarItems} title="Marketplace" roleLabel="Platform Admin">
@@ -636,7 +654,7 @@ export function AdminMarketplace() {
             <h2 className="text-xl font-display font-bold text-foreground">Marketplace Management</h2>
             <p className="text-sm text-muted-foreground">Moderate and manage template listings</p>
           </div>
-          <button onClick={() => toast('info', 'Opening marketplace settings...')} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">
+          <button onClick={() => setShowSettings(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">
             Marketplace Settings
           </button>
         </div>
@@ -665,7 +683,7 @@ export function AdminMarketplace() {
             </div>
           </div>
           <div className="divide-y divide-border">
-            {templates.map((t, i) => (
+            {templateList.map((t, i) => (
               <div key={i} className="p-4 flex items-center gap-4">
                 <img src={t.preview} alt={t.title} className="w-16 h-12 rounded-lg object-cover flex-shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -678,8 +696,8 @@ export function AdminMarketplace() {
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {t.status === 'pending' ? (
                     <>
-                      <button onClick={() => toast('success', `${t.title} approved!`)} className="px-3 py-1.5 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium hover:bg-green-500/20 transition-all">Approve</button>
-                      <button onClick={() => toast('error', `${t.title} rejected.`)} className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-600 text-xs font-medium hover:bg-red-500/20 transition-all">Reject</button>
+                      <button onClick={() => handleApproveTemplate(i)} className="px-3 py-1.5 rounded-lg bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium hover:bg-green-500/20 transition-all">Approve</button>
+                      <button onClick={() => handleRejectTemplate(i)} className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-600 text-xs font-medium hover:bg-red-500/20 transition-all">Reject</button>
                     </>
                   ) : (
                     <button onClick={() => toast('info', `Viewing ${t.title}...`)} className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:border-primary/30 transition-all">Manage</button>
@@ -690,6 +708,104 @@ export function AdminMarketplace() {
           </div>
         </div>
       </div>
+
+      {/* Marketplace Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-2xl p-6 shadow-glow-purple relative animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-display font-bold text-foreground">Marketplace Settings</h3>
+              <button 
+                onClick={() => setShowSettings(false)} 
+                className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              toast('success', 'Marketplace settings saved successfully');
+              setShowSettings(false);
+            }} className="space-y-4">
+              
+              {/* Allow Uploads toggle */}
+              <div className="flex items-center justify-between py-1">
+                <div>
+                  <label className="text-sm font-semibold text-foreground block">Allow New Listings</label>
+                  <span className="text-xs text-muted-foreground">Let creators upload templates</span>
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={allowUploads} 
+                  onChange={e => setAllowUploads(e.target.checked)}
+                  className="w-4 h-4 rounded border-border text-primary bg-background focus:ring-primary transition-all cursor-pointer"
+                />
+              </div>
+
+              {/* Moderation required toggle */}
+              <div className="flex items-center justify-between py-1">
+                <div>
+                  <label className="text-sm font-semibold text-foreground block">Require Admin Moderation</label>
+                  <span className="text-xs text-muted-foreground">Review templates before publishing</span>
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={moderationRequired} 
+                  onChange={e => setModerationRequired(e.target.checked)}
+                  className="w-4 h-4 rounded border-border text-primary bg-background focus:ring-primary transition-all cursor-pointer"
+                />
+              </div>
+
+              {/* Commission Rate */}
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Platform Commission (%)</label>
+                <input 
+                  type="number" 
+                  value={commissionRate} 
+                  onChange={e => setCommissionRate(Number(e.target.value))} 
+                  min="0"
+                  max="100"
+                  placeholder="20"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all placeholder:text-muted-foreground"
+                />
+              </div>
+
+              {/* Max File Size */}
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Max Template Size (MB)</label>
+                <input 
+                  type="number" 
+                  value={maxFileSize} 
+                  onChange={e => setMaxFileSize(Number(e.target.value))} 
+                  min="1"
+                  max="1000"
+                  placeholder="50"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all placeholder:text-muted-foreground"
+                />
+              </div>
+
+              <div className="pt-4 flex justify-end gap-3 border-t border-border mt-6">
+                <button 
+                  type="button" 
+                  onClick={() => setShowSettings(false)}
+                  className="px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
+                >
+                  Save Settings
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
