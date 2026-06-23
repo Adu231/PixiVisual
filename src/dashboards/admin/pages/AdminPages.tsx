@@ -996,8 +996,101 @@ export function AdminMarketplace() {
 
 /* ─── Analytics ─────────────────────────────────────────────── */
 export function AdminAnalytics() {
-  const weeklySignups = [840, 1020, 980, 1240, 1180, 890, 1340];
-  const maxSignups = Math.max(...weeklySignups);
+  const [timeframe, setTimeframe] = useState<'7D' | '30D' | '90D'>('7D');
+
+  const statsData = {
+    '7D': [
+      { label: 'Daily Active Users', value: '184K', delta: '+8%', up: true },
+      { label: 'Designs Created Today', value: '62K', delta: '+12%', up: true },
+      { label: 'New Signups (7d)', value: '8,490', delta: '+340', up: true },
+      { label: 'Churn Rate', value: '2.1%', delta: '-0.3%', up: false },
+    ],
+    '30D': [
+      { label: 'Daily Active Users', value: '198K', delta: '+14%', up: true },
+      { label: 'Designs Created (30d)', value: '1.9M', delta: '+18%', up: true },
+      { label: 'New Signups (30d)', value: '38,240', delta: '+2,450', up: true },
+      { label: 'Churn Rate', value: '1.8%', delta: '-0.5%', up: false },
+    ],
+    '90D': [
+      { label: 'Daily Active Users', value: '215K', delta: '+22%', up: true },
+      { label: 'Designs Created (90d)', value: '5.8M', delta: '+25%', up: true },
+      { label: 'New Signups (90d)', value: '118.5K', delta: '+12.4K', up: true },
+      { label: 'Churn Rate', value: '1.6%', delta: '-0.8%', up: false },
+    ],
+  };
+
+  const chartData = {
+    '7D': {
+      values: [840, 1020, 980, 1240, 1180, 890, 1340],
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      title: 'Daily Signups (Last 7 Days)',
+    },
+    '30D': {
+      values: [6200, 7100, 8500, 9200, 10800],
+      labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
+      title: 'Weekly Signups (Last 30 Days)',
+    },
+    '90D': {
+      values: [34800, 38600, 42100],
+      labels: ['Month 1', 'Month 2', 'Month 3'],
+      title: 'Monthly Signups (Last 90 Days)',
+    },
+  };
+
+  const featuresData = {
+    '7D': [
+      { feature: 'AI Image Generation', usage: 89, users: '164K' },
+      { feature: 'Social Media Posts', usage: 76, users: '140K' },
+      { feature: 'Logo Generator', usage: 64, users: '118K' },
+      { feature: 'Template Editor', usage: 58, users: '107K' },
+      { feature: 'Brand Kit', usage: 43, users: '79K' },
+    ],
+    '30D': [
+      { feature: 'AI Image Generation', usage: 92, users: '172K' },
+      { feature: 'Social Media Posts', usage: 78, users: '146K' },
+      { feature: 'Logo Generator', usage: 62, users: '116K' },
+      { feature: 'Template Editor', usage: 59, users: '110K' },
+      { feature: 'Brand Kit', usage: 45, users: '84K' },
+    ],
+    '90D': [
+      { feature: 'AI Image Generation', usage: 95, users: '204K' },
+      { feature: 'Social Media Posts', usage: 82, users: '176K' },
+      { feature: 'Logo Generator', usage: 60, users: '129K' },
+      { feature: 'Template Editor', usage: 55, users: '118K' },
+      { feature: 'Brand Kit', usage: 48, users: '103K' },
+    ],
+  };
+
+  const geographyData = {
+    '7D': [
+      { region: 'North America', pct: 38, users: '798K' },
+      { region: 'Europe', pct: 28, users: '588K' },
+      { region: 'Asia Pacific', pct: 22, users: '462K' },
+      { region: 'Latin America', pct: 8, users: '168K' },
+      { region: 'Rest of World', pct: 4, users: '84K' },
+    ],
+    '30D': [
+      { region: 'North America', pct: 40, users: '840K' },
+      { region: 'Europe', pct: 26, users: '546K' },
+      { region: 'Asia Pacific', pct: 24, users: '504K' },
+      { region: 'Latin America', pct: 7, users: '147K' },
+      { region: 'Rest of World', pct: 3, users: '63K' },
+    ],
+    '90D': [
+      { region: 'North America', pct: 42, users: '903K' },
+      { region: 'Europe', pct: 25, users: '537K' },
+      { region: 'Asia Pacific', pct: 25, users: '537K' },
+      { region: 'Latin America', pct: 6, users: '129K' },
+      { region: 'Rest of World', pct: 2, users: '43K' },
+    ],
+  };
+
+  const currentStats = statsData[timeframe];
+  const currentChart = chartData[timeframe];
+  const currentFeatures = featuresData[timeframe];
+  const currentGeography = geographyData[timeframe];
+
+  const maxSignups = Math.max(...currentChart.values);
 
   return (
     <DashboardLayout sidebarItems={adminSidebarItems} title="Analytics" roleLabel="Platform Admin">
@@ -1008,9 +1101,9 @@ export function AdminAnalytics() {
             <p className="text-sm text-muted-foreground">Platform-wide metrics and growth insights</p>
           </div>
           <div className="flex gap-2">
-            {['7D', '30D', '90D'].map(p => (
-              <button key={p} onClick={() => toast('info', `Switching to ${p} view...`)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${p === '30D' ? 'gradient-primary text-white' : 'border border-border text-muted-foreground hover:border-primary/30'}`}>
+            {(['7D', '30D', '90D'] as const).map(p => (
+              <button key={p} onClick={() => setTimeframe(p)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${timeframe === p ? 'gradient-primary text-white font-semibold' : 'border border-border text-muted-foreground hover:border-primary/30'}`}>
                 {p}
               </button>
             ))}
@@ -1018,31 +1111,34 @@ export function AdminAnalytics() {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { label: 'Daily Active Users', value: '184K', delta: '+8%', up: true },
-            { label: 'Designs Created Today', value: '62K', delta: '+12%', up: true },
-            { label: 'New Signups (7d)', value: '8,490', delta: '+340', up: true },
-            { label: 'Churn Rate', value: '2.1%', delta: '-0.3%', up: false },
-          ].map(s => (
+          {currentStats.map(s => (
             <div key={s.label} className="bg-card border border-border rounded-2xl p-4">
               <div className="text-xl font-display font-bold text-foreground">{s.value}</div>
               <div className="text-xs text-muted-foreground mt-0.5">{s.label}</div>
-              <div className={`flex items-center gap-0.5 text-xs font-medium mt-1 ${s.up ? 'text-green-500' : 'text-green-500'}`}>
-                <ArrowUp className="w-3 h-3" />{s.delta}
+              <div className={`flex items-center gap-0.5 text-xs font-medium mt-1 ${s.up ? 'text-green-500' : 'text-destructive'}`}>
+                {s.up ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
+                {s.delta}
               </div>
             </div>
           ))}
         </div>
 
         <div className="bg-card border border-border rounded-2xl p-5">
-          <h3 className="text-sm font-semibold text-foreground mb-5">Daily Signups (Last 7 Days)</h3>
+          <h3 className="text-sm font-semibold text-foreground mb-5">{currentChart.title}</h3>
           <div className="flex items-end gap-3 h-40">
-            {weeklySignups.map((v, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                <span className="text-xs text-primary font-medium">{v}</span>
-                <div className="w-full rounded-t-lg gradient-primary hover:opacity-90 transition-opacity cursor-pointer"
-                  style={{ height: `${(v / maxSignups) * 100}%` }} />
-                <span className="text-xs text-muted-foreground">{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}</span>
+            {currentChart.values.map((v, i) => (
+              <div key={i} className="flex-1 flex flex-col gap-2 h-full">
+                {/* Bar Container */}
+                <div className="flex-1 flex flex-col justify-end items-center">
+                  <span className="text-[10px] sm:text-xs text-primary font-medium mb-1">{v}</span>
+                  <div 
+                    className="w-full rounded-t-lg gradient-primary hover:opacity-90 transition-all duration-300 cursor-pointer"
+                    style={{ height: `${(v / maxSignups) * 80}%` }}
+                    title={`${currentChart.labels[i]}: ${v} signups`}
+                  />
+                </div>
+                {/* Label */}
+                <span className="text-xs text-muted-foreground text-center">{currentChart.labels[i]}</span>
               </div>
             ))}
           </div>
@@ -1052,13 +1148,7 @@ export function AdminAnalytics() {
           <div className="bg-card border border-border rounded-2xl p-5">
             <h3 className="text-sm font-semibold text-foreground mb-4">Top Features Used</h3>
             <div className="space-y-3">
-              {[
-                { feature: 'AI Image Generation', usage: 89, users: '164K' },
-                { feature: 'Social Media Posts', usage: 76, users: '140K' },
-                { feature: 'Logo Generator', usage: 64, users: '118K' },
-                { feature: 'Template Editor', usage: 58, users: '107K' },
-                { feature: 'Brand Kit', usage: 43, users: '79K' },
-              ].map(f => (
+              {currentFeatures.map(f => (
                 <div key={f.feature}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-medium text-foreground">{f.feature}</span>
@@ -1075,13 +1165,7 @@ export function AdminAnalytics() {
           <div className="bg-card border border-border rounded-2xl p-5">
             <h3 className="text-sm font-semibold text-foreground mb-4">Geographic Distribution</h3>
             <div className="space-y-3">
-              {[
-                { region: 'North America', pct: 38, users: '798K' },
-                { region: 'Europe', pct: 28, users: '588K' },
-                { region: 'Asia Pacific', pct: 22, users: '462K' },
-                { region: 'Latin America', pct: 8, users: '168K' },
-                { region: 'Rest of World', pct: 4, users: '84K' },
-              ].map(r => (
+              {currentGeography.map(r => (
                 <div key={r.region} className="flex items-center gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between mb-1">
