@@ -1501,6 +1501,61 @@ export function AdminReports() {
     }, 3000);
   };
 
+  const downloadReport = (title: string, type: string) => {
+    let csvContent = '';
+    
+    if (type === 'Financial') {
+      csvContent = 'Month,Revenue,Subscriptions,Commission,Payouts\n' +
+        'January,124800,1020,12480,112320\n' +
+        'February,132500,1080,13250,119250\n' +
+        'March,141200,1150,14120,127080\n' +
+        'April,158000,1280,15800,142200\n' +
+        'May,169400,1370,16940,152460\n' +
+        'June,184200,1490,18420,165780\n';
+    } else if (type === 'Growth') {
+      csvContent = 'Date,Daily Active Users,New Signups,Churn Rate\n' +
+        '2026-06-18,181200,890,2.2%\n' +
+        '2026-06-19,182400,980,2.1%\n' +
+        '2026-06-20,183100,1020,2.1%\n' +
+        '2026-06-21,183900,1180,2.0%\n' +
+        '2026-06-22,184500,1240,2.1%\n' +
+        '2026-06-23,184900,1340,2.1%\n';
+    } else if (type === 'Moderation') {
+      csvContent = 'Item Title,Type,Author,Action,Date\n' +
+        'Modern Business Card Set,Template,designer@pixivisual.com,Approved,Just now\n' +
+        'E-commerce Banner Pack,Template,creator@pixivisual.com,Approved,3 hours ago\n' +
+        'Inappropriate content report,Report,System,Rejected,6 hours ago\n' +
+        'Social Media Story Kit,Template,freelancer@pixivisual.com,Approved,1 day ago\n' +
+        'Agency account upgrade request,Account,agency@pixivisual.com,Approved,2 days ago\n';
+    } else if (type === 'Marketplace') {
+      csvContent = 'Template Title,Category,Sales,Revenue,Commission\n' +
+        'Minimalist Resume,Resume,240,4800,720\n' +
+        'Real Estate Brochure,Flyer,180,5400,810\n' +
+        'Corporate Pitch Deck,Presentation,310,12400,1860\n' +
+        'Instagram Grid Planner,Social,520,10400,1560\n' +
+        '3D Abstract Backgrounds,Graphics,140,3500,525\n';
+    } else {
+      // Default / Retention
+      csvContent = 'Cohort,Active Users,Retention Rate,Churn Rate\n' +
+        'Jan 2026,2400,92.5%,7.5%\n' +
+        'Feb 2026,2800,89.1%,10.9%\n' +
+        'Mar 2026,3100,86.2%,13.8%\n' +
+        'Apr 2026,3400,82.4%,17.6%\n' +
+        'May 2026,3900,78.9%,21.1%\n';
+    }
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${title.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_report.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast('success', `Downloaded: ${title}`);
+  };
+
   const typeColors: Record<string, string> = {
     Financial: 'bg-green-500/10 text-green-600 dark:text-green-400',
     Growth: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
@@ -1547,7 +1602,7 @@ export function AdminReports() {
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Generating...
                   </div>
                 ) : (
-                  <button onClick={() => toast('success', `Downloading ${r.title}...`)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs text-foreground hover:border-primary/30 hover:text-primary transition-all">
+                  <button onClick={() => downloadReport(r.title, r.type)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs text-foreground hover:border-primary/30 hover:text-primary transition-all">
                     <Download className="w-3.5 h-3.5" /> Download
                   </button>
                 )}
