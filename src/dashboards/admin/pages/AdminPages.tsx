@@ -1198,6 +1198,7 @@ export function AdminModeration() {
   ]);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [previewItem, setPreviewItem] = useState<any | null>(null);
 
   const typeColors: Record<string, string> = {
     template: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
@@ -1287,7 +1288,7 @@ export function AdminModeration() {
                     <button onClick={() => reject(i)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-500/10 text-red-600 text-xs font-medium hover:bg-red-500/20 transition-all">
                       <X className="w-3.5 h-3.5" /> Reject
                     </button>
-                    <button onClick={() => toast('info', `Reviewing ${item.title}...`)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border text-muted-foreground text-xs font-medium hover:border-primary/30 transition-all">
+                    <button onClick={() => setPreviewItem(item)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border text-muted-foreground text-xs font-medium hover:border-primary/30 transition-all">
                       <Eye className="w-3.5 h-3.5" /> Preview
                     </button>
                   </div>
@@ -1297,6 +1298,132 @@ export function AdminModeration() {
           </div>
         )}
       </div>
+
+      {/* Preview Modal */}
+      {previewItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="p-5 border-b border-border flex items-center justify-between bg-primary/5">
+              <div>
+                <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${typeColors[previewItem.type]}`}>
+                  {previewItem.type.toUpperCase()}
+                </span>
+                <h3 className="text-lg font-bold text-foreground mt-2">{previewItem.title}</h3>
+              </div>
+              <button 
+                onClick={() => setPreviewItem(null)}
+                className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-xs text-muted-foreground block">Submitted By</span>
+                  <span className="font-medium text-foreground">{previewItem.author}</span>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground block">Time Submitted</span>
+                  <span className="font-medium text-foreground">{previewItem.submittedAt}</span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-xs text-muted-foreground block">Reason for Review</span>
+                  <span className="font-medium text-foreground">{previewItem.reason}</span>
+                </div>
+              </div>
+
+              <div className="border-t border-border pt-4">
+                <span className="text-xs text-muted-foreground block mb-2">Item Specifications & Metadata</span>
+                {previewItem.type === 'template' && (
+                  <div className="space-y-3 bg-secondary/30 p-3 rounded-xl border border-border/50">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Category:</span>
+                      <span className="text-foreground font-semibold">Templates & Layouts</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Format:</span>
+                      <span className="text-foreground font-semibold">Fully Customizable Canvas</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">File Size:</span>
+                      <span className="text-foreground font-semibold">4.8 MB</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed mt-2 pt-2 border-t border-border/40">
+                      This template conforms to the high-fidelity vector styling guidelines and uses system-licensed typography.
+                    </p>
+                  </div>
+                )}
+
+                {previewItem.type === 'report' && (
+                  <div className="space-y-3 bg-destructive/5 p-3 rounded-xl border border-destructive/20">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Reported Item:</span>
+                      <span className="text-foreground font-semibold">Canvas-ID: #98421</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Report Category:</span>
+                      <span className="text-destructive font-semibold">Inappropriate Content</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed mt-2 pt-2 border-t border-border/40">
+                      Flagged by automated heuristic checker: contains possible watermark or intellectual property violations. Review required before making public in the templates list.
+                    </p>
+                  </div>
+                )}
+
+                {previewItem.type === 'account' && (
+                  <div className="space-y-3 bg-primary/5 p-3 rounded-xl border border-primary/20">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Requested Upgrade:</span>
+                      <span className="text-primary font-semibold">Agency Pro Tier</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Monthly Billing:</span>
+                      <span className="text-foreground font-semibold">$149.00 / month</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed mt-2 pt-2 border-t border-border/40">
+                      User has provided valid company tax documentation. Tax verification status: Verified. Needs administrator approval to provision extra compute and template slots.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-5 border-t border-border flex justify-end gap-3 bg-secondary/20">
+              <button 
+                onClick={() => setPreviewItem(null)}
+                className="px-4 py-2 text-xs font-semibold rounded-xl border border-border text-foreground hover:bg-accent transition-all"
+              >
+                Close
+              </button>
+              <button 
+                onClick={() => {
+                  const idx = items.findIndex(it => it.title === previewItem.title);
+                  if (idx !== -1) reject(idx);
+                  setPreviewItem(null);
+                }}
+                className="px-4 py-2 text-xs font-semibold rounded-xl bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all"
+              >
+                Reject Item
+              </button>
+              <button 
+                onClick={() => {
+                  const idx = items.findIndex(it => it.title === previewItem.title);
+                  if (idx !== -1) approve(idx);
+                  setPreviewItem(null);
+                }}
+                className="px-4 py-2 text-xs font-semibold rounded-xl gradient-primary text-white hover:opacity-90 transition-all shadow-glow-purple"
+              >
+                Approve Item
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
