@@ -9,6 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import { getDashboardRoute } from '@/lib/auth';
 import { getInitials } from '@/lib/utils';
 import { APP_NAME } from '@/constants';
+import { toast } from '@/components/ui/Toast';
 
 interface SidebarItem {
   label: string;
@@ -29,6 +30,12 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifications, setNotifications] = useState(3);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notificationsList, setNotificationsList] = useState([
+    { id: 1, title: 'New System Submission', message: 'Modern Business Card Set has been submitted for review.', time: '2h ago', read: false },
+    { id: 2, title: 'Security Alert', message: 'New login detected from dynamic IP address.', time: '5h ago', read: false },
+    { id: 3, title: 'Billing Generated', message: 'Monthly platform transaction invoice generated.', time: '1d ago', read: false }
+  ]);
   const { isDark, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const location = useLocation();
@@ -214,17 +221,83 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
 
-            <button
-              onClick={() => setNotifications(0)}
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors relative"
-            >
-              <Bell className="w-4 h-4" />
-              {notifications > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-destructive text-white text-2xs rounded-full flex items-center justify-center font-bold text-[9px]">
-                  {notifications}
-                </span>
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors relative"
+              >
+                <Bell className="w-4 h-4" />
+                {notifications > 0 && (
+                  <span className="absolute top-1 right-1 w-4 h-4 bg-destructive text-white text-2xs rounded-full flex items-center justify-center font-bold text-[9px]">
+                    {notifications}
+                  </span>
+                )}
+              </button>
+
+              {showNotifications && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
+                  <div className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200">
+                    <div className="p-4 border-b border-border flex items-center justify-between bg-primary/5">
+                      <span className="text-sm font-bold text-foreground">Notifications</span>
+                      {notifications > 0 && (
+                        <button 
+                          onClick={() => {
+                            setNotifications(0);
+                            setNotificationsList(prev => prev.map(n => ({ ...n, read: true })));
+                            toast('success', 'All notifications marked as read');
+                          }}
+                          className="text-2xs text-primary font-semibold hover:underline"
+                        >
+                          Mark all as read
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="max-h-72 overflow-y-auto divide-y divide-border/40">
+                      {notificationsList.length === 0 ? (
+                        <div className="p-8 text-center text-muted-foreground text-xs">
+                          No notifications found.
+                        </div>
+                      ) : (
+                        notificationsList.map(n => (
+                          <div 
+                            key={n.id} 
+                            onClick={() => {
+                              if (!n.read) {
+                                setNotifications(prev => Math.max(0, prev - 1));
+                                setNotificationsList(prev => prev.map(item => item.id === n.id ? { ...item, read: true } : item));
+                              }
+                            }}
+                            className={`p-3.5 hover:bg-muted/30 cursor-pointer transition-colors ${n.read ? 'opacity-55' : 'bg-primary/5'}`}
+                          >
+                            <div className="flex justify-between items-start mb-0.5">
+                              <p className="text-xs font-bold text-foreground truncate">{n.title}</p>
+                              <span className="text-3xs text-muted-foreground text-[10px] whitespace-nowrap ml-2">{n.time}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground leading-normal">{n.message}</p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <div className="p-3 border-t border-border flex justify-between items-center bg-secondary/20">
+                      <button 
+                        onClick={() => {
+                          setNotificationsList([]);
+                          setNotifications(0);
+                          setShowNotifications(false);
+                          toast('success', 'Cleared all notifications');
+                        }}
+                        className="text-2xs text-destructive font-semibold hover:underline w-full text-center"
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                  </div>
+                </>
               )}
-            </button>
+            </div>
           </div>
         </header>
 
