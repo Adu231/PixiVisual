@@ -1197,6 +1197,8 @@ export function AdminModeration() {
     { type: 'account', title: 'Agency account upgrade request', author: 'agency@pixivisual.com', submittedAt: '2d ago', reason: 'Plan upgrade' },
   ]);
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   const typeColors: Record<string, string> = {
     template: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
     report: 'bg-red-500/10 text-red-600',
@@ -1212,6 +1214,30 @@ export function AdminModeration() {
     setItems(p => p.filter((_, idx) => idx !== i));
   };
 
+  const handleRefresh = () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    toast('info', 'Refreshing moderation queue...');
+    setTimeout(() => {
+      const pool = [
+        { type: 'template', title: 'Modern Business Card Set', author: 'designer@pixivisual.com', submittedAt: '2h ago', reason: 'New submission' },
+        { type: 'template', title: 'E-commerce Banner Pack', author: 'creator@pixivisual.com', submittedAt: '5h ago', reason: 'New submission' },
+        { type: 'report', title: 'Inappropriate content report', author: 'System', submittedAt: '1d ago', reason: 'User report' },
+        { type: 'template', title: 'Social Media Story Kit', author: 'freelancer@pixivisual.com', submittedAt: '1d ago', reason: 'New submission' },
+        { type: 'account', title: 'Agency account upgrade request', author: 'agency@pixivisual.com', submittedAt: '2d ago', reason: 'Plan upgrade' },
+        { type: 'template', title: 'Minimalist Portfolio Page', author: 'artistic@pixivisual.com', submittedAt: '1h ago', reason: 'New submission' },
+        { type: 'report', title: 'Copyright infringement claim', author: 'Copyright Bot', submittedAt: '3h ago', reason: 'IP owner report' },
+        { type: 'account', title: 'Enterprise plan request', author: 'enterprise@corporate.com', submittedAt: '4h ago', reason: 'Plan upgrade' },
+      ];
+      // Randomly select 4 to 6 items from the pool to make it feel alive
+      const shuffled = [...pool].sort(() => 0.5 - Math.random());
+      const count = Math.floor(Math.random() * 3) + 4; // 4 to 6 items
+      setItems(shuffled.slice(0, count));
+      setIsRefreshing(false);
+      toast('success', 'Moderation queue updated!');
+    }, 800);
+  };
+
   return (
     <DashboardLayout sidebarItems={adminSidebarItems} title="Content Moderation" roleLabel="Platform Admin">
       <div className="p-4 lg:p-6 space-y-6">
@@ -1220,8 +1246,12 @@ export function AdminModeration() {
             <h2 className="text-xl font-display font-bold text-foreground">Content Moderation</h2>
             <p className="text-sm text-muted-foreground">{items.length} items pending review</p>
           </div>
-          <button onClick={() => toast('info', 'Refreshing queue...')} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border text-sm text-foreground hover:border-primary/30 transition-all">
-            <RefreshCw className="w-4 h-4" /> Refresh
+          <button 
+            onClick={handleRefresh} 
+            disabled={isRefreshing}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border text-sm text-foreground hover:border-primary/30 disabled:opacity-55 transition-all"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} /> Refresh
           </button>
         </div>
 
