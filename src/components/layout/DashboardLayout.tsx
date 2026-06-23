@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, Zap, ChevronLeft, ChevronRight, Bell, Search,
@@ -26,20 +26,58 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children, sidebarItems, title, roleLabel }: DashboardLayoutProps) {
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [notifications, setNotifications] = useState(3);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notificationsList, setNotificationsList] = useState([
-    { id: 1, title: 'New System Submission', message: 'Modern Business Card Set has been submitted for review.', time: '2h ago', read: false },
-    { id: 2, title: 'Security Alert', message: 'New login detected from dynamic IP address.', time: '5h ago', read: false },
-    { id: 3, title: 'Billing Generated', message: 'Monthly platform transaction invoice generated.', time: '1d ago', read: false }
-  ]);
   const { isDark, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchQuery, setSearchQueryState] = useState(() => {
+    return new URLSearchParams(window.location.search).get('q') || '';
+  });
+  const setSearchQuery = (val: string) => {
+    setSearchQueryState(val);
+    const params = new URLSearchParams(window.location.search);
+    if (val) {
+      params.set('q', val);
+    } else {
+      params.delete('q');
+    }
+    const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+    window.history.replaceState(null, '', newUrl);
+    window.dispatchEvent(new Event('creator_search_changed'));
+  };
+
+  useEffect(() => {
+    const handleUrlChange = () => {
+      const q = new URLSearchParams(window.location.search).get('q') || '';
+      setSearchQueryState(q);
+    };
+    window.addEventListener('popstate', handleUrlChange);
+    window.addEventListener('creator_search_changed', handleUrlChange);
+    return () => {
+      window.removeEventListener('popstate', handleUrlChange);
+      window.removeEventListener('creator_search_changed', handleUrlChange);
+    };
+  }, []);
+
+  const isCreatorPath = location.pathname.includes('/creator');
+  const [notifications, setNotifications] = useState(isCreatorPath ? 4 : 3);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notificationsList, setNotificationsList] = useState(() => {
+    const pathIsCreator = window.location.pathname.includes('/creator');
+    return pathIsCreator ? [
+      { id: 1, title: 'AI Video Render Complete', message: 'Your video "Summer Promo 2026" has finished generating.', time: '10m ago', read: false },
+      { id: 2, title: 'Trending Alert', message: 'Your YouTube Thumbnail template is trending under #creator-hub.', time: '2h ago', read: false },
+      { id: 3, title: 'New System Notification', message: 'System updates scheduled for Sunday at 02:00 AM UTC.', time: '4h ago', read: false },
+      { id: 4, title: 'Social Integration Connected', message: 'Instagram and Twitter accounts synced successfully.', time: '1d ago', read: false }
+    ] : [
+      { id: 1, title: 'New System Submission', message: 'Modern Business Card Set has been submitted for review.', time: '2h ago', read: false },
+      { id: 2, title: 'Security Alert', message: 'New login detected from dynamic IP address.', time: '5h ago', read: false },
+      { id: 3, title: 'Billing Generated', message: 'Monthly platform transaction invoice generated.', time: '1d ago', read: false }
+    ];
+  });
 
   const handleLogout = () => {
     logout();
@@ -92,6 +130,7 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         <Link
           to={user ? getDashboardRoute(user.role) : '/'}
+          onClick={() => setMobileOpen(false)}
           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
             location.pathname === (user ? getDashboardRoute(user.role) : '/')
               ? 'bg-primary/10 text-primary font-medium'
@@ -107,6 +146,7 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
           <Link
             key={item.href}
             to={item.href}
+            onClick={() => setMobileOpen(false)}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative ${
               location.pathname === item.href
                 ? 'bg-primary/10 text-primary font-medium'
@@ -134,6 +174,7 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
       <div className="p-3 border-t border-border space-y-1">
         <Link
           to="/settings"
+          onClick={() => setMobileOpen(false)}
           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all ${collapsed ? 'justify-center' : ''}`}
           title={collapsed ? 'Settings' : undefined}
         >
@@ -142,6 +183,7 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
         </Link>
         <Link
           to="/profile"
+          onClick={() => setMobileOpen(false)}
           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all ${collapsed ? 'justify-center' : ''}`}
           title={collapsed ? 'Profile' : undefined}
         >
@@ -149,7 +191,10 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
           {!collapsed && <span className="text-sm">Profile</span>}
         </Link>
         <button
-          onClick={handleLogout}
+          onClick={() => {
+            setMobileOpen(false);
+            handleLogout();
+          }}
           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all ${collapsed ? 'justify-center' : ''}`}
           title={collapsed ? 'Sign Out' : undefined}
         >
