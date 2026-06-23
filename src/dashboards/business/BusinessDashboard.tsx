@@ -63,6 +63,68 @@ export default function BusinessDashboard() {
   const [newCampaignChannel, setNewCampaignChannel] = useState('Social Media');
   const [newCampaignEndDate, setNewCampaignEndDate] = useState('Aug 31, 2025');
 
+  const [quickCreateType, setQuickCreateType] = useState<string | null>(null);
+  const [quickPrompt, setQuickPrompt] = useState('');
+  const [quickText, setQuickText] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedAsset, setGeneratedAsset] = useState<{ title: string; image: string; type: string } | null>(null);
+
+  const startQuickCreate = (item: string) => {
+    setQuickCreateType(item);
+    setQuickPrompt('');
+    setQuickText('');
+    setGeneratedAsset(null);
+    setIsGenerating(false);
+  };
+
+  const handleGenerateQuickAsset = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickPrompt.trim()) {
+      toast('warning', 'Please enter a prompt describing the asset');
+      return;
+    }
+    setIsGenerating(true);
+    setTimeout(() => {
+      const defaultImages: Record<string, string> = {
+        'Ad Creative': 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop',
+        'Social Post': 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&h=400&fit=crop',
+        'Email Header': 'https://images.unsplash.com/photo-1634942537034-2531766767d1?w=600&h=400&fit=crop',
+        'Product Mock': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=400&fit=crop',
+      };
+      setGeneratedAsset({
+        title: quickPrompt.trim(),
+        image: defaultImages[quickCreateType || 'Social Post'] || defaultImages['Social Post'],
+        type: quickCreateType || 'Social Post'
+      });
+      setIsGenerating(false);
+      toast('success', 'Asset generated successfully!');
+    }, 1200);
+  };
+
+  const handleDownloadQuickAsset = async (url: string, filename: string) => {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+      toast('success', `Downloaded: ${filename}`);
+    } catch (err) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   const handleCreateCampaign = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!newCampaignName.trim()) { toast('warning', 'Enter a campaign name'); return; }
@@ -293,7 +355,7 @@ export default function BusinessDashboard() {
             </div>
             <div className="grid grid-cols-2 gap-2">
               {['Ad Creative', 'Social Post', 'Email Header', 'Product Mock'].map(item => (
-                <button key={item} onClick={() => toast('info', `Creating ${item}...`)} className="py-2 px-3 rounded-xl border border-border text-xs font-medium text-foreground hover:border-primary/30 hover:bg-primary/5 transition-all">
+                <button key={item} onClick={() => startQuickCreate(item)} className="py-2 px-3 rounded-xl border border-border text-xs font-medium text-foreground hover:border-primary/30 hover:bg-primary/5 transition-all">
                   {item}
                 </button>
               ))}
@@ -374,6 +436,107 @@ export default function BusinessDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Quick Create AI Generator Modal */}
+      {quickCreateType && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col">
+            {/* Header */}
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground">AI Quick Creator: {quickCreateType}</h3>
+              <button 
+                onClick={() => setQuickCreateType(null)}
+                className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 space-y-4">
+              {!generatedAsset && !isGenerating && (
+                <form onSubmit={handleGenerateQuickAsset} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Generation Prompt</label>
+                    <textarea 
+                      required
+                      rows={3}
+                      value={quickPrompt}
+                      onChange={e => setQuickPrompt(e.target.value)}
+                      placeholder={`Describe the visual style or content for this ${quickCreateType.toLowerCase()}...`}
+                      className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-all resize-none animate-in fade-in duration-200"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Text Overlay (Optional)</label>
+                    <input 
+                      type="text"
+                      value={quickText}
+                      onChange={e => setQuickText(e.target.value)}
+                      placeholder="e.g. 50% Off All Summer Gear!"
+                      className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-all"
+                    />
+                  </div>
+
+                  <button 
+                    type="submit"
+                    className="w-full py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
+                  >
+                    Generate AI Asset
+                  </button>
+                </form>
+              )}
+
+              {isGenerating && (
+                <div className="py-10 flex flex-col items-center justify-center space-y-3 text-center animate-in fade-in duration-200">
+                  <div className="w-10 h-10 border-4 border-t-primary border-r-primary border-b-border border-l-border rounded-full animate-spin" />
+                  <p className="text-sm font-medium text-foreground">AI Generator is running...</p>
+                  <p className="text-xs text-muted-foreground">Crafting templates and rendering textures</p>
+                </div>
+              )}
+
+              {generatedAsset && (
+                <div className="space-y-4 animate-in fade-in duration-200">
+                  <div className="relative aspect-video rounded-xl overflow-hidden border border-border bg-black/20 group/preview flex items-center justify-center">
+                    <img 
+                      src={generatedAsset.image} 
+                      alt="AI Generated" 
+                      className="absolute inset-0 w-full h-full object-cover opacity-80" 
+                    />
+                    {quickText && (
+                      <div className="relative z-10 px-4 py-2 bg-black/60 backdrop-blur-xs text-white text-center rounded-lg border border-white/20 max-w-[80%] shadow-lg">
+                        <p className="text-xs font-bold uppercase tracking-wider text-primary mb-0.5">
+                          {generatedAsset.type}
+                        </p>
+                        <p className="text-sm font-bold font-display leading-tight">{quickText}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    <strong>Prompt:</strong> "{generatedAsset.title}"
+                  </p>
+
+                  <div className="flex gap-3">
+                    <button 
+                      onClick={() => handleDownloadQuickAsset(generatedAsset.image, `${generatedAsset.type.toLowerCase().replace(/\s+/g, '_')}_asset.png`)}
+                      className="flex-1 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
+                    >
+                      Download PNG
+                    </button>
+                    <button 
+                      onClick={() => setQuickCreateType(null)}
+                      className="flex-1 py-2.5 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted transition-all"
+                    >
+                      Save & Close
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
