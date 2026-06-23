@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Users, DollarSign, BarChart2, Shield, Store, FileText, TrendingUp, AlertTriangle, Check, X, ArrowRight, Eye } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { toast } from '@/components/ui/Toast';
@@ -15,8 +16,10 @@ const pendingItems = [
 ];
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const users = Object.values(MOCK_USERS);
   const [modItems, setModItems] = useState(pendingItems);
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
 
   const handleApprove = (index: number) => {
     toast('success', `${modItems[index].title} approved!`);
@@ -70,12 +73,20 @@ export default function AdminDashboard() {
             <h3 className="text-sm font-display font-semibold text-foreground">Revenue (Last 7 Days)</h3>
             <span className="text-xs text-muted-foreground">Total: {formatCurrency(842000)}/mo</span>
           </div>
-          <div className="flex items-end gap-2 h-36">
+          <div className="flex items-end gap-3 h-40">
             {[62000, 78000, 71000, 89000, 95000, 82000, 88000].map((v, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div className="w-full rounded-t-lg gradient-primary opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
-                  style={{ height: `${(v / 95000) * 100}%` }} title={formatCurrency(v)} />
-                <span className="text-xs text-muted-foreground">{['M','T','W','T','F','S','S'][i]}</span>
+              <div key={i} className="flex-1 flex flex-col gap-2 h-full">
+                {/* Bar Container */}
+                <div className="flex-1 flex flex-col justify-end items-center">
+                  <span className="text-[10px] text-muted-foreground font-semibold mb-1">${(v / 1000).toFixed(0)}k</span>
+                  <div 
+                    className="w-full rounded-t-lg gradient-primary opacity-80 hover:opacity-100 transition-all duration-300 cursor-pointer shadow-glow-purple/20"
+                    style={{ height: `${(v / 95000) * 80}%` }} 
+                    title={`${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}: ${formatCurrency(v)}`} 
+                  />
+                </div>
+                {/* Label */}
+                <span className="text-xs text-muted-foreground text-center font-medium">{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}</span>
               </div>
             ))}
           </div>
@@ -85,8 +96,8 @@ export default function AdminDashboard() {
           {/* Users Table */}
           <div className="bg-card border border-border rounded-2xl overflow-hidden">
             <div className="p-4 flex items-center justify-between border-b border-border">
-              <h3 className="text-sm font-display font-semibold text-foreground">Demo Users</h3>
-              <button onClick={() => toast('info', 'Opening full user management...')}
+              <h3 className="text-sm font-display font-semibold text-foreground">Users</h3>
+              <button onClick={() => navigate('/dashboard/admin/users')}
                 className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
                 Manage <ArrowRight className="w-3 h-3" />
               </button>
@@ -101,9 +112,9 @@ export default function AdminDashboard() {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${planColors[u.plan]}`}>{u.plan}</span>
-                    <button onClick={() => toast('info', `Viewing ${u.name}'s profile...`)}
+                    <button onClick={() => setSelectedUser(u)}
                       className="w-7 h-7 rounded-lg border border-border flex items-center justify-center hover:border-primary/30 transition-all">
-                      <Eye className="w-3 h-3 text-muted-foreground" />
+                      <Eye className="w-3.5 h-3.5 text-muted-foreground" />
                     </button>
                   </div>
                 </div>
@@ -182,6 +193,87 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      {/* User Profile Modal */}
+      {selectedUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="p-5 border-b border-border flex flex-col items-center text-center relative bg-primary/5">
+              <button 
+                onClick={() => setSelectedUser(null)}
+                className="absolute top-4 right-4 p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              
+              <img 
+                src={selectedUser.avatar} 
+                alt={selectedUser.name} 
+                className="w-16 h-16 rounded-full object-cover border-2 border-primary mb-3 shadow-glow-purple/20"
+              />
+              <h3 className="text-base font-bold text-foreground">{selectedUser.name}</h3>
+              <p className="text-xs text-muted-foreground mb-2">{selectedUser.email}</p>
+              <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize ${planColors[selectedUser.plan]}`}>
+                {selectedUser.plan} Plan
+              </span>
+            </div>
+
+            {/* Body */}
+            <div className="p-5 space-y-3.5 text-sm">
+              <div className="flex justify-between border-b border-border/40 pb-2">
+                <span className="text-muted-foreground text-xs">Account Status</span>
+                <span className="font-semibold text-green-500 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500" /> Active
+                </span>
+              </div>
+              <div className="flex justify-between border-b border-border/40 pb-2">
+                <span className="text-muted-foreground text-xs">Role</span>
+                <span className="font-semibold text-foreground capitalize">
+                  {selectedUser.plan === 'enterprise' || selectedUser.plan === 'business' ? 'Agency Creator' : 'Standard User'}
+                </span>
+              </div>
+              <div className="flex justify-between border-b border-border/40 pb-2">
+                <span className="text-muted-foreground text-xs">Member Since</span>
+                <span className="font-semibold text-foreground">Nov 14, 2024</span>
+              </div>
+              
+              <div className="pt-2">
+                <span className="text-xs text-muted-foreground block mb-2 font-semibold">Usage Summary</span>
+                <div className="grid grid-cols-2 gap-2 text-center">
+                  <div className="bg-secondary/40 p-2.5 rounded-xl border border-border/50">
+                    <span className="text-lg font-bold text-foreground block">142</span>
+                    <span className="text-[10px] text-muted-foreground">Designs Created</span>
+                  </div>
+                  <div className="bg-secondary/40 p-2.5 rounded-xl border border-border/50">
+                    <span className="text-lg font-bold text-foreground block">1.2 GB</span>
+                    <span className="text-[10px] text-muted-foreground">Cloud Storage</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-5 border-t border-border flex justify-end gap-3 bg-secondary/20">
+              <button 
+                onClick={() => setSelectedUser(null)}
+                className="flex-1 px-4 py-2 text-xs font-semibold rounded-xl border border-border text-foreground hover:bg-accent transition-all"
+              >
+                Close
+              </button>
+              <button 
+                onClick={() => {
+                  setSelectedUser(null);
+                  navigate('/dashboard/admin/users');
+                }}
+                className="flex-1 px-4 py-2 text-xs font-semibold rounded-xl gradient-primary text-white hover:opacity-90 transition-all shadow-glow-purple"
+              >
+                Manage Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

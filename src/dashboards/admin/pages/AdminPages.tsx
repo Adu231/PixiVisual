@@ -1,5 +1,5 @@
 // Admin sub-pages — each sidebar route gets its own component
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Users, DollarSign, Store, BarChart2, Shield, FileText,
   Search, Eye, Check, X, TrendingUp, ArrowUp, ArrowDown,
@@ -786,7 +786,7 @@ export function AdminMarketplace() {
                         <button onClick={() => handleRejectTemplate(t.title)} className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-600 text-xs font-medium hover:bg-red-500/20 transition-all">Reject</button>
                       </>
                     ) : (
-                      <button onClick={() => setManageTemplate({ ...t, originalTitle: t.title })} className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:border-primary/30 transition-all">Manage</button>
+                      <button onClick={() => setManageTemplate({ ...t, originalTitle: t.title })} className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-all">Manage</button>
                     )}
                   </div>
                 </div>
@@ -996,8 +996,101 @@ export function AdminMarketplace() {
 
 /* ─── Analytics ─────────────────────────────────────────────── */
 export function AdminAnalytics() {
-  const weeklySignups = [840, 1020, 980, 1240, 1180, 890, 1340];
-  const maxSignups = Math.max(...weeklySignups);
+  const [timeframe, setTimeframe] = useState<'7D' | '30D' | '90D'>('7D');
+
+  const statsData = {
+    '7D': [
+      { label: 'Daily Active Users', value: '184K', delta: '+8%', up: true },
+      { label: 'Designs Created Today', value: '62K', delta: '+12%', up: true },
+      { label: 'New Signups (7d)', value: '8,490', delta: '+340', up: true },
+      { label: 'Churn Rate', value: '2.1%', delta: '-0.3%', up: false },
+    ],
+    '30D': [
+      { label: 'Daily Active Users', value: '198K', delta: '+14%', up: true },
+      { label: 'Designs Created (30d)', value: '1.9M', delta: '+18%', up: true },
+      { label: 'New Signups (30d)', value: '38,240', delta: '+2,450', up: true },
+      { label: 'Churn Rate', value: '1.8%', delta: '-0.5%', up: false },
+    ],
+    '90D': [
+      { label: 'Daily Active Users', value: '215K', delta: '+22%', up: true },
+      { label: 'Designs Created (90d)', value: '5.8M', delta: '+25%', up: true },
+      { label: 'New Signups (90d)', value: '118.5K', delta: '+12.4K', up: true },
+      { label: 'Churn Rate', value: '1.6%', delta: '-0.8%', up: false },
+    ],
+  };
+
+  const chartData = {
+    '7D': {
+      values: [840, 1020, 980, 1240, 1180, 890, 1340],
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      title: 'Daily Signups (Last 7 Days)',
+    },
+    '30D': {
+      values: [6200, 7100, 8500, 9200, 10800],
+      labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
+      title: 'Weekly Signups (Last 30 Days)',
+    },
+    '90D': {
+      values: [34800, 38600, 42100],
+      labels: ['Month 1', 'Month 2', 'Month 3'],
+      title: 'Monthly Signups (Last 90 Days)',
+    },
+  };
+
+  const featuresData = {
+    '7D': [
+      { feature: 'AI Image Generation', usage: 89, users: '164K' },
+      { feature: 'Social Media Posts', usage: 76, users: '140K' },
+      { feature: 'Logo Generator', usage: 64, users: '118K' },
+      { feature: 'Template Editor', usage: 58, users: '107K' },
+      { feature: 'Brand Kit', usage: 43, users: '79K' },
+    ],
+    '30D': [
+      { feature: 'AI Image Generation', usage: 92, users: '172K' },
+      { feature: 'Social Media Posts', usage: 78, users: '146K' },
+      { feature: 'Logo Generator', usage: 62, users: '116K' },
+      { feature: 'Template Editor', usage: 59, users: '110K' },
+      { feature: 'Brand Kit', usage: 45, users: '84K' },
+    ],
+    '90D': [
+      { feature: 'AI Image Generation', usage: 95, users: '204K' },
+      { feature: 'Social Media Posts', usage: 82, users: '176K' },
+      { feature: 'Logo Generator', usage: 60, users: '129K' },
+      { feature: 'Template Editor', usage: 55, users: '118K' },
+      { feature: 'Brand Kit', usage: 48, users: '103K' },
+    ],
+  };
+
+  const geographyData = {
+    '7D': [
+      { region: 'North America', pct: 38, users: '798K' },
+      { region: 'Europe', pct: 28, users: '588K' },
+      { region: 'Asia Pacific', pct: 22, users: '462K' },
+      { region: 'Latin America', pct: 8, users: '168K' },
+      { region: 'Rest of World', pct: 4, users: '84K' },
+    ],
+    '30D': [
+      { region: 'North America', pct: 40, users: '840K' },
+      { region: 'Europe', pct: 26, users: '546K' },
+      { region: 'Asia Pacific', pct: 24, users: '504K' },
+      { region: 'Latin America', pct: 7, users: '147K' },
+      { region: 'Rest of World', pct: 3, users: '63K' },
+    ],
+    '90D': [
+      { region: 'North America', pct: 42, users: '903K' },
+      { region: 'Europe', pct: 25, users: '537K' },
+      { region: 'Asia Pacific', pct: 25, users: '537K' },
+      { region: 'Latin America', pct: 6, users: '129K' },
+      { region: 'Rest of World', pct: 2, users: '43K' },
+    ],
+  };
+
+  const currentStats = statsData[timeframe];
+  const currentChart = chartData[timeframe];
+  const currentFeatures = featuresData[timeframe];
+  const currentGeography = geographyData[timeframe];
+
+  const maxSignups = Math.max(...currentChart.values);
 
   return (
     <DashboardLayout sidebarItems={adminSidebarItems} title="Analytics" roleLabel="Platform Admin">
@@ -1008,9 +1101,9 @@ export function AdminAnalytics() {
             <p className="text-sm text-muted-foreground">Platform-wide metrics and growth insights</p>
           </div>
           <div className="flex gap-2">
-            {['7D', '30D', '90D'].map(p => (
-              <button key={p} onClick={() => toast('info', `Switching to ${p} view...`)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${p === '30D' ? 'gradient-primary text-white' : 'border border-border text-muted-foreground hover:border-primary/30'}`}>
+            {(['7D', '30D', '90D'] as const).map(p => (
+              <button key={p} onClick={() => setTimeframe(p)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${timeframe === p ? 'gradient-primary text-white font-semibold' : 'border border-border text-muted-foreground hover:border-primary/30'}`}>
                 {p}
               </button>
             ))}
@@ -1018,31 +1111,34 @@ export function AdminAnalytics() {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { label: 'Daily Active Users', value: '184K', delta: '+8%', up: true },
-            { label: 'Designs Created Today', value: '62K', delta: '+12%', up: true },
-            { label: 'New Signups (7d)', value: '8,490', delta: '+340', up: true },
-            { label: 'Churn Rate', value: '2.1%', delta: '-0.3%', up: false },
-          ].map(s => (
+          {currentStats.map(s => (
             <div key={s.label} className="bg-card border border-border rounded-2xl p-4">
               <div className="text-xl font-display font-bold text-foreground">{s.value}</div>
               <div className="text-xs text-muted-foreground mt-0.5">{s.label}</div>
-              <div className={`flex items-center gap-0.5 text-xs font-medium mt-1 ${s.up ? 'text-green-500' : 'text-green-500'}`}>
-                <ArrowUp className="w-3 h-3" />{s.delta}
+              <div className={`flex items-center gap-0.5 text-xs font-medium mt-1 ${s.up ? 'text-green-500' : 'text-destructive'}`}>
+                {s.up ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
+                {s.delta}
               </div>
             </div>
           ))}
         </div>
 
         <div className="bg-card border border-border rounded-2xl p-5">
-          <h3 className="text-sm font-semibold text-foreground mb-5">Daily Signups (Last 7 Days)</h3>
+          <h3 className="text-sm font-semibold text-foreground mb-5">{currentChart.title}</h3>
           <div className="flex items-end gap-3 h-40">
-            {weeklySignups.map((v, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                <span className="text-xs text-primary font-medium">{v}</span>
-                <div className="w-full rounded-t-lg gradient-primary hover:opacity-90 transition-opacity cursor-pointer"
-                  style={{ height: `${(v / maxSignups) * 100}%` }} />
-                <span className="text-xs text-muted-foreground">{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}</span>
+            {currentChart.values.map((v, i) => (
+              <div key={i} className="flex-1 flex flex-col gap-2 h-full">
+                {/* Bar Container */}
+                <div className="flex-1 flex flex-col justify-end items-center">
+                  <span className="text-[10px] sm:text-xs text-primary font-medium mb-1">{v}</span>
+                  <div 
+                    className="w-full rounded-t-lg gradient-primary hover:opacity-90 transition-all duration-300 cursor-pointer"
+                    style={{ height: `${(v / maxSignups) * 80}%` }}
+                    title={`${currentChart.labels[i]}: ${v} signups`}
+                  />
+                </div>
+                {/* Label */}
+                <span className="text-xs text-muted-foreground text-center">{currentChart.labels[i]}</span>
               </div>
             ))}
           </div>
@@ -1052,13 +1148,7 @@ export function AdminAnalytics() {
           <div className="bg-card border border-border rounded-2xl p-5">
             <h3 className="text-sm font-semibold text-foreground mb-4">Top Features Used</h3>
             <div className="space-y-3">
-              {[
-                { feature: 'AI Image Generation', usage: 89, users: '164K' },
-                { feature: 'Social Media Posts', usage: 76, users: '140K' },
-                { feature: 'Logo Generator', usage: 64, users: '118K' },
-                { feature: 'Template Editor', usage: 58, users: '107K' },
-                { feature: 'Brand Kit', usage: 43, users: '79K' },
-              ].map(f => (
+              {currentFeatures.map(f => (
                 <div key={f.feature}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-medium text-foreground">{f.feature}</span>
@@ -1075,13 +1165,7 @@ export function AdminAnalytics() {
           <div className="bg-card border border-border rounded-2xl p-5">
             <h3 className="text-sm font-semibold text-foreground mb-4">Geographic Distribution</h3>
             <div className="space-y-3">
-              {[
-                { region: 'North America', pct: 38, users: '798K' },
-                { region: 'Europe', pct: 28, users: '588K' },
-                { region: 'Asia Pacific', pct: 22, users: '462K' },
-                { region: 'Latin America', pct: 8, users: '168K' },
-                { region: 'Rest of World', pct: 4, users: '84K' },
-              ].map(r => (
+              {currentGeography.map(r => (
                 <div key={r.region} className="flex items-center gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between mb-1">
@@ -1113,6 +1197,9 @@ export function AdminModeration() {
     { type: 'account', title: 'Agency account upgrade request', author: 'agency@pixivisual.com', submittedAt: '2d ago', reason: 'Plan upgrade' },
   ]);
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [previewItem, setPreviewItem] = useState<any | null>(null);
+
   const typeColors: Record<string, string> = {
     template: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
     report: 'bg-red-500/10 text-red-600',
@@ -1128,6 +1215,30 @@ export function AdminModeration() {
     setItems(p => p.filter((_, idx) => idx !== i));
   };
 
+  const handleRefresh = () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    toast('info', 'Refreshing moderation queue...');
+    setTimeout(() => {
+      const pool = [
+        { type: 'template', title: 'Modern Business Card Set', author: 'designer@pixivisual.com', submittedAt: '2h ago', reason: 'New submission' },
+        { type: 'template', title: 'E-commerce Banner Pack', author: 'creator@pixivisual.com', submittedAt: '5h ago', reason: 'New submission' },
+        { type: 'report', title: 'Inappropriate content report', author: 'System', submittedAt: '1d ago', reason: 'User report' },
+        { type: 'template', title: 'Social Media Story Kit', author: 'freelancer@pixivisual.com', submittedAt: '1d ago', reason: 'New submission' },
+        { type: 'account', title: 'Agency account upgrade request', author: 'agency@pixivisual.com', submittedAt: '2d ago', reason: 'Plan upgrade' },
+        { type: 'template', title: 'Minimalist Portfolio Page', author: 'artistic@pixivisual.com', submittedAt: '1h ago', reason: 'New submission' },
+        { type: 'report', title: 'Copyright infringement claim', author: 'Copyright Bot', submittedAt: '3h ago', reason: 'IP owner report' },
+        { type: 'account', title: 'Enterprise plan request', author: 'enterprise@corporate.com', submittedAt: '4h ago', reason: 'Plan upgrade' },
+      ];
+      // Randomly select 4 to 6 items from the pool to make it feel alive
+      const shuffled = [...pool].sort(() => 0.5 - Math.random());
+      const count = Math.floor(Math.random() * 3) + 4; // 4 to 6 items
+      setItems(shuffled.slice(0, count));
+      setIsRefreshing(false);
+      toast('success', 'Moderation queue updated!');
+    }, 800);
+  };
+
   return (
     <DashboardLayout sidebarItems={adminSidebarItems} title="Content Moderation" roleLabel="Platform Admin">
       <div className="p-4 lg:p-6 space-y-6">
@@ -1136,8 +1247,12 @@ export function AdminModeration() {
             <h2 className="text-xl font-display font-bold text-foreground">Content Moderation</h2>
             <p className="text-sm text-muted-foreground">{items.length} items pending review</p>
           </div>
-          <button onClick={() => toast('info', 'Refreshing queue...')} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border text-sm text-foreground hover:border-primary/30 transition-all">
-            <RefreshCw className="w-4 h-4" /> Refresh
+          <button 
+            onClick={handleRefresh} 
+            disabled={isRefreshing}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border text-sm text-foreground hover:border-primary/30 disabled:opacity-55 transition-all"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} /> Refresh
           </button>
         </div>
 
@@ -1173,7 +1288,7 @@ export function AdminModeration() {
                     <button onClick={() => reject(i)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-500/10 text-red-600 text-xs font-medium hover:bg-red-500/20 transition-all">
                       <X className="w-3.5 h-3.5" /> Reject
                     </button>
-                    <button onClick={() => toast('info', `Reviewing ${item.title}...`)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border text-muted-foreground text-xs font-medium hover:border-primary/30 transition-all">
+                    <button onClick={() => setPreviewItem(item)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border text-muted-foreground text-xs font-medium hover:border-primary/30 transition-all">
                       <Eye className="w-3.5 h-3.5" /> Preview
                     </button>
                   </div>
@@ -1183,19 +1298,263 @@ export function AdminModeration() {
           </div>
         )}
       </div>
+
+      {/* Preview Modal */}
+      {previewItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="p-5 border-b border-border flex items-center justify-between bg-primary/5">
+              <div>
+                <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${typeColors[previewItem.type]}`}>
+                  {previewItem.type.toUpperCase()}
+                </span>
+                <h3 className="text-lg font-bold text-foreground mt-2">{previewItem.title}</h3>
+              </div>
+              <button 
+                onClick={() => setPreviewItem(null)}
+                className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-xs text-muted-foreground block">Submitted By</span>
+                  <span className="font-medium text-foreground">{previewItem.author}</span>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground block">Time Submitted</span>
+                  <span className="font-medium text-foreground">{previewItem.submittedAt}</span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-xs text-muted-foreground block">Reason for Review</span>
+                  <span className="font-medium text-foreground">{previewItem.reason}</span>
+                </div>
+              </div>
+
+              <div className="border-t border-border pt-4">
+                <span className="text-xs text-muted-foreground block mb-2">Item Specifications & Metadata</span>
+                {previewItem.type === 'template' && (
+                  <div className="space-y-3 bg-secondary/30 p-3 rounded-xl border border-border/50">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Category:</span>
+                      <span className="text-foreground font-semibold">Templates & Layouts</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Format:</span>
+                      <span className="text-foreground font-semibold">Fully Customizable Canvas</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">File Size:</span>
+                      <span className="text-foreground font-semibold">4.8 MB</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed mt-2 pt-2 border-t border-border/40">
+                      This template conforms to the high-fidelity vector styling guidelines and uses system-licensed typography.
+                    </p>
+                  </div>
+                )}
+
+                {previewItem.type === 'report' && (
+                  <div className="space-y-3 bg-destructive/5 p-3 rounded-xl border border-destructive/20">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Reported Item:</span>
+                      <span className="text-foreground font-semibold">Canvas-ID: #98421</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Report Category:</span>
+                      <span className="text-destructive font-semibold">Inappropriate Content</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed mt-2 pt-2 border-t border-border/40">
+                      Flagged by automated heuristic checker: contains possible watermark or intellectual property violations. Review required before making public in the templates list.
+                    </p>
+                  </div>
+                )}
+
+                {previewItem.type === 'account' && (
+                  <div className="space-y-3 bg-primary/5 p-3 rounded-xl border border-primary/20">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Requested Upgrade:</span>
+                      <span className="text-primary font-semibold">Agency Pro Tier</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Monthly Billing:</span>
+                      <span className="text-foreground font-semibold">$149.00 / month</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed mt-2 pt-2 border-t border-border/40">
+                      User has provided valid company tax documentation. Tax verification status: Verified. Needs administrator approval to provision extra compute and template slots.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-5 border-t border-border flex justify-end gap-3 bg-secondary/20">
+              <button 
+                onClick={() => setPreviewItem(null)}
+                className="px-4 py-2 text-xs font-semibold rounded-xl border border-border text-foreground hover:bg-accent transition-all"
+              >
+                Close
+              </button>
+              <button 
+                onClick={() => {
+                  const idx = items.findIndex(it => it.title === previewItem.title);
+                  if (idx !== -1) reject(idx);
+                  setPreviewItem(null);
+                }}
+                className="px-4 py-2 text-xs font-semibold rounded-xl bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all"
+              >
+                Reject Item
+              </button>
+              <button 
+                onClick={() => {
+                  const idx = items.findIndex(it => it.title === previewItem.title);
+                  if (idx !== -1) approve(idx);
+                  setPreviewItem(null);
+                }}
+                className="px-4 py-2 text-xs font-semibold rounded-xl gradient-primary text-white hover:opacity-90 transition-all shadow-glow-purple"
+              >
+                Approve Item
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
 
 /* ─── Reports ────────────────────────────────────────────────── */
 export function AdminReports() {
-  const reports = [
-    { title: 'Monthly Revenue Report', type: 'Financial', generated: 'Jul 1, 2025', size: '2.4 MB', status: 'ready' },
-    { title: 'User Growth Analysis', type: 'Growth', generated: 'Jul 1, 2025', size: '1.8 MB', status: 'ready' },
-    { title: 'Content Moderation Summary', type: 'Moderation', generated: 'Jun 30, 2025', size: '840 KB', status: 'ready' },
-    { title: 'Marketplace Performance Q2', type: 'Marketplace', generated: 'Jun 30, 2025', size: '3.2 MB', status: 'ready' },
-    { title: 'Churn & Retention Report', type: 'Retention', generated: 'Generating...', size: '—', status: 'generating' },
-  ];
+  const [reportsList, setReportsList] = useState([
+    { id: 1, title: 'Monthly Revenue Report', type: 'Financial', generated: 'Jul 1, 2025', size: '2.4 MB', status: 'ready' },
+    { id: 2, title: 'User Growth Analysis', type: 'Growth', generated: 'Jul 1, 2025', size: '1.8 MB', status: 'ready' },
+    { id: 3, title: 'Content Moderation Summary', type: 'Moderation', generated: 'Jun 30, 2025', size: '840 KB', status: 'ready' },
+    { id: 4, title: 'Marketplace Performance Q2', type: 'Marketplace', generated: 'Jun 30, 2025', size: '3.2 MB', status: 'ready' },
+    { id: 5, title: 'Churn & Retention Report', type: 'Retention', generated: 'Generating...', size: '—', status: 'generating' },
+  ]);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [titleInput, setTitleInput] = useState('');
+  const [typeInput, setTypeInput] = useState('Financial');
+  const [generatedCount, setGeneratedCount] = useState(284);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setReportsList(prev => prev.map(rep => {
+        if (rep.title === 'Churn & Retention Report' && rep.status === 'generating') {
+          return {
+            ...rep,
+            generated: 'Just now',
+            size: '1.4 MB',
+            status: 'ready'
+          };
+        }
+        return rep;
+      }));
+      setGeneratedCount(c => c + 1);
+      toast('success', 'Background job: Churn & Retention Report has finished generating!');
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleGenerate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!titleInput.trim()) {
+      toast('error', 'Please enter a report title.');
+      return;
+    }
+
+    const uniqueId = Date.now();
+    const newReport = {
+      id: uniqueId,
+      title: titleInput.trim(),
+      type: typeInput,
+      generated: 'Generating...',
+      size: '—',
+      status: 'generating'
+    };
+
+    setReportsList(prev => [newReport, ...prev]);
+    setIsModalOpen(false);
+    setTitleInput('');
+    toast('info', 'Report generation queued in background...');
+
+    setTimeout(() => {
+      setReportsList(prev => prev.map(rep => {
+        if (rep.id === uniqueId) {
+          return {
+            ...rep,
+            generated: 'Just now',
+            size: `${(Math.random() * 3 + 0.5).toFixed(1)} MB`,
+            status: 'ready'
+          };
+        }
+        return rep;
+      }));
+      setGeneratedCount(c => c + 1);
+      toast('success', `Custom report "${newReport.title}" generated successfully!`);
+    }, 3000);
+  };
+
+  const downloadReport = (title: string, type: string) => {
+    let csvContent = '';
+    
+    if (type === 'Financial') {
+      csvContent = 'Month,Revenue,Subscriptions,Commission,Payouts\n' +
+        'January,124800,1020,12480,112320\n' +
+        'February,132500,1080,13250,119250\n' +
+        'March,141200,1150,14120,127080\n' +
+        'April,158000,1280,15800,142200\n' +
+        'May,169400,1370,16940,152460\n' +
+        'June,184200,1490,18420,165780\n';
+    } else if (type === 'Growth') {
+      csvContent = 'Date,Daily Active Users,New Signups,Churn Rate\n' +
+        '2026-06-18,181200,890,2.2%\n' +
+        '2026-06-19,182400,980,2.1%\n' +
+        '2026-06-20,183100,1020,2.1%\n' +
+        '2026-06-21,183900,1180,2.0%\n' +
+        '2026-06-22,184500,1240,2.1%\n' +
+        '2026-06-23,184900,1340,2.1%\n';
+    } else if (type === 'Moderation') {
+      csvContent = 'Item Title,Type,Author,Action,Date\n' +
+        'Modern Business Card Set,Template,designer@pixivisual.com,Approved,Just now\n' +
+        'E-commerce Banner Pack,Template,creator@pixivisual.com,Approved,3 hours ago\n' +
+        'Inappropriate content report,Report,System,Rejected,6 hours ago\n' +
+        'Social Media Story Kit,Template,freelancer@pixivisual.com,Approved,1 day ago\n' +
+        'Agency account upgrade request,Account,agency@pixivisual.com,Approved,2 days ago\n';
+    } else if (type === 'Marketplace') {
+      csvContent = 'Template Title,Category,Sales,Revenue,Commission\n' +
+        'Minimalist Resume,Resume,240,4800,720\n' +
+        'Real Estate Brochure,Flyer,180,5400,810\n' +
+        'Corporate Pitch Deck,Presentation,310,12400,1860\n' +
+        'Instagram Grid Planner,Social,520,10400,1560\n' +
+        '3D Abstract Backgrounds,Graphics,140,3500,525\n';
+    } else {
+      // Default / Retention
+      csvContent = 'Cohort,Active Users,Retention Rate,Churn Rate\n' +
+        'Jan 2026,2400,92.5%,7.5%\n' +
+        'Feb 2026,2800,89.1%,10.9%\n' +
+        'Mar 2026,3100,86.2%,13.8%\n' +
+        'Apr 2026,3400,82.4%,17.6%\n' +
+        'May 2026,3900,78.9%,21.1%\n';
+    }
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${title.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_report.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast('success', `Downloaded: ${title}`);
+  };
 
   const typeColors: Record<string, string> = {
     Financial: 'bg-green-500/10 text-green-600 dark:text-green-400',
@@ -1213,7 +1572,10 @@ export function AdminReports() {
             <h2 className="text-xl font-display font-bold text-foreground">Platform Reports</h2>
             <p className="text-sm text-muted-foreground">Generate and download platform reports</p>
           </div>
-          <button onClick={() => toast('success', 'Custom report queued for generation...')} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">
+          <button 
+            onClick={() => setIsModalOpen(true)} 
+            className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
+          >
             Generate Report
           </button>
         </div>
@@ -1223,8 +1585,8 @@ export function AdminReports() {
             <h3 className="text-sm font-semibold text-foreground">Available Reports</h3>
           </div>
           <div className="divide-y divide-border">
-            {reports.map((r, i) => (
-              <div key={i} className="p-4 flex items-center gap-4">
+            {reportsList.map((r, i) => (
+              <div key={r.id || i} className="p-4 flex items-center gap-4">
                 <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <FileText className="w-4 h-4 text-primary" />
                 </div>
@@ -1240,7 +1602,7 @@ export function AdminReports() {
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Generating...
                   </div>
                 ) : (
-                  <button onClick={() => toast('success', `Downloading ${r.title}...`)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs text-foreground hover:border-primary/30 hover:text-primary transition-all">
+                  <button onClick={() => downloadReport(r.title, r.type)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs text-foreground hover:border-primary/30 hover:text-primary transition-all">
                     <Download className="w-3.5 h-3.5" /> Download
                   </button>
                 )}
@@ -1251,7 +1613,7 @@ export function AdminReports() {
 
         <div className="grid sm:grid-cols-3 gap-4">
           {[
-            { label: 'Reports Generated', value: '284', delta: 'This month' },
+            { label: 'Reports Generated', value: String(generatedCount), delta: 'This month' },
             { label: 'Scheduled Reports', value: '12', delta: 'Auto-generated' },
             { label: 'Data Coverage', value: '99.9%', delta: 'Uptime' },
           ].map(s => (
@@ -1263,6 +1625,73 @@ export function AdminReports() {
           ))}
         </div>
       </div>
+
+      {/* Generate Report Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground">Generate Platform Report</h3>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Form */}
+            <form onSubmit={handleGenerate}>
+              <div className="p-5 space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Report Title</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={titleInput}
+                    onChange={e => setTitleInput(e.target.value)}
+                    placeholder="e.g., Q3 Performance Summary"
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Report Type</label>
+                  <select 
+                    value={typeInput}
+                    onChange={e => setTypeInput(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all appearance-none"
+                  >
+                    <option value="Financial">Financial (Revenue, Taxes, Payouts)</option>
+                    <option value="Growth">Growth (Signups, Retention, Active Users)</option>
+                    <option value="Moderation">Moderation (Approvals, Reports, Violations)</option>
+                    <option value="Marketplace">Marketplace (Templates, Sales, Commissions)</option>
+                    <option value="Retention">Retention (Churn rates, Cohort details)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-5 border-t border-border flex justify-end gap-3 bg-secondary/20">
+                <button 
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold rounded-xl border border-border text-foreground hover:bg-accent transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="px-5 py-2 text-xs font-semibold rounded-xl gradient-primary text-white hover:opacity-90 transition-all shadow-glow-purple"
+                >
+                  Generate Report
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
