@@ -1090,6 +1090,34 @@ export function BusinessBilling() {
     }
   };
 
+  const downloadInvoice = (inv: typeof paymentHistory[0]) => {
+    const invoiceContent = `=========================================
+               PIXIVISUAL
+            INVOICE RECEIPT
+=========================================
+Invoice Date:    ${inv.date}
+Plan Type:       ${inv.plan}
+Status:          ${inv.status.toUpperCase()}
+Amount Charged:  ${inv.amount}
+Payment Method:  ${billingDetails.cardBrand} ending in ${billingDetails.cardLast4}
+Billing Contact: ${billingDetails.email}
+Billing Address: ${billingDetails.address}
+
+Thank you for choosing PixiVisual!
+=========================================`;
+
+    const blob = new Blob([invoiceContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `invoice_${inv.date.toLowerCase().replace(/[\s,]+/g, '_')}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast('success', `Invoice downloaded for ${inv.date}`);
+  };
+
   return (
     <DashboardLayout sidebarItems={businessSidebarItems} title="Billing" roleLabel="Business Owner">
       <div className="p-4 lg:p-6 space-y-6">
@@ -1169,7 +1197,7 @@ export function BusinessBilling() {
                 </div>
                 <span className="text-sm font-bold text-foreground">{inv.amount}</span>
                 <span className="text-xs bg-green-500/10 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full font-medium">{inv.status}</span>
-                <button onClick={() => toast('success', `Downloading invoice for ${inv.date}...`)} className="text-xs text-primary hover:underline">Invoice</button>
+                <button onClick={() => downloadInvoice(inv)} className="text-xs text-primary hover:underline">Invoice</button>
               </div>
             ))}
           </div>
