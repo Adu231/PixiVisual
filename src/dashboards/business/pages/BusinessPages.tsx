@@ -1015,6 +1015,109 @@ export function BusinessAnalytics() {
 }
 
 export function BusinessBilling() {
+  const [currentPlan, setCurrentPlan] = useState({
+    name: 'Business Plan',
+    price: '$49/month',
+    renewalDate: 'Aug 1, 2025',
+    status: 'Active'
+  });
+
+  const [paymentHistory, setPaymentHistory] = useState([
+    { date: 'Jul 1, 2025', amount: '$49.00', status: 'paid', plan: 'Business Monthly' },
+    { date: 'Jun 1, 2025', amount: '$49.00', status: 'paid', plan: 'Business Monthly' },
+    { date: 'May 1, 2025', amount: '$49.00', status: 'paid', plan: 'Business Monthly' },
+  ]);
+
+  const [billingDetails, setBillingDetails] = useState({
+    cardBrand: 'Visa',
+    cardLast4: '4242',
+    email: 'billing@acmebrand.com',
+    address: '123 Creative Way, Suite 400, San Francisco, CA'
+  });
+
+  const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
+  const [isManageOpen, setIsManageOpen] = useState(false);
+
+  // Form edit states
+  const [editEmail, setEditEmail] = useState('billing@acmebrand.com');
+  const [editCard, setEditCard] = useState('4242');
+  const [editAddress, setEditAddress] = useState('123 Creative Way, Suite 400, San Francisco, CA');
+
+  // Promo code states
+  const [promoInput, setPromoInput] = useState('');
+  const [discountApplied, setDiscountApplied] = useState(false);
+
+  const handleUpgrade = () => {
+    const priceAmount = discountApplied ? 159 : 199;
+    
+    setCurrentPlan({
+      name: 'Enterprise Plan',
+      price: `$${priceAmount}/month`,
+      renewalDate: 'Aug 1, 2025',
+      status: 'Active'
+    });
+
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    
+    setPaymentHistory(prev => [
+      { date: formattedDate, amount: `$${priceAmount}.00`, status: 'paid', plan: 'Enterprise Monthly' },
+      ...prev
+    ]);
+
+    setIsUpgradeOpen(false);
+    toast('success', `Plan upgraded to Enterprise successfully! Charged $${priceAmount}.00.`);
+  };
+
+  const handleSaveBilling = (e: React.FormEvent) => {
+    e.preventDefault();
+    setBillingDetails({
+      cardBrand: 'Visa',
+      cardLast4: editCard.slice(-4) || '4242',
+      email: editEmail,
+      address: editAddress
+    });
+    setIsManageOpen(false);
+    toast('success', 'Billing information updated successfully!');
+  };
+
+  const applyPromoCode = () => {
+    if (promoInput.trim().toUpperCase() === 'PIXI20') {
+      setDiscountApplied(true);
+      toast('success', 'Promo code applied! 20% discount added.');
+    } else {
+      toast('error', 'Invalid promo code. Try "PIXI20".');
+    }
+  };
+
+  const downloadInvoice = (inv: typeof paymentHistory[0]) => {
+    const invoiceContent = `=========================================
+               PIXIVISUAL
+            INVOICE RECEIPT
+=========================================
+Invoice Date:    ${inv.date}
+Plan Type:       ${inv.plan}
+Status:          ${inv.status.toUpperCase()}
+Amount Charged:  ${inv.amount}
+Payment Method:  ${billingDetails.cardBrand} ending in ${billingDetails.cardLast4}
+Billing Contact: ${billingDetails.email}
+Billing Address: ${billingDetails.address}
+
+Thank you for choosing PixiVisual!
+=========================================`;
+
+    const blob = new Blob([invoiceContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `invoice_${inv.date.toLowerCase().replace(/[\s,]+/g, '_')}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast('success', `Invoice downloaded for ${inv.date}`);
+  };
+
   return (
     <DashboardLayout sidebarItems={businessSidebarItems} title="Billing" roleLabel="Business Owner">
       <div className="p-4 lg:p-6 space-y-6">
@@ -1022,27 +1125,71 @@ export function BusinessBilling() {
           <h2 className="text-xl font-display font-bold text-foreground">Billing & Subscription</h2>
           <p className="text-sm text-muted-foreground">Manage your plan and payment methods</p>
         </div>
+        
+        {/* Active plan details */}
         <div className="bg-gradient-to-br from-primary/5 to-pink-500/5 border border-primary/20 rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-base font-display font-bold text-foreground">Business Plan</h3>
-              <p className="text-sm text-muted-foreground">$49/month · Renews Aug 1, 2025</p>
+              <h3 className="text-base font-display font-bold text-foreground">{currentPlan.name}</h3>
+              <p className="text-sm text-muted-foreground">{currentPlan.price} · Renews {currentPlan.renewalDate}</p>
             </div>
-            <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-semibold">Active</span>
+            <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-semibold">{currentPlan.status}</span>
           </div>
           <div className="flex gap-3">
-            <button onClick={() => toast('info', 'Opening plan upgrade...')} className="px-4 py-2 rounded-xl gradient-primary text-white text-sm font-medium hover:opacity-90 transition-all">Upgrade to Enterprise</button>
-            <button onClick={() => toast('info', 'Opening billing settings...')} className="px-4 py-2 rounded-xl border border-border text-foreground text-sm font-medium hover:border-primary/30 transition-all">Manage Billing</button>
+            {currentPlan.name !== 'Enterprise Plan' ? (
+              <button 
+                onClick={() => setIsUpgradeOpen(true)} 
+                className="px-4 py-2 rounded-xl gradient-primary text-white text-sm font-medium hover:opacity-90 transition-all shadow-glow-purple"
+              >
+                Upgrade to Enterprise
+              </button>
+            ) : (
+              <button 
+                disabled
+                className="px-4 py-2 rounded-xl bg-secondary border border-border text-muted-foreground text-sm font-medium cursor-not-allowed"
+              >
+                Upgraded to Enterprise
+              </button>
+            )}
+            <button 
+              onClick={() => {
+                setEditEmail(billingDetails.email);
+                setEditCard(billingDetails.cardLast4);
+                setEditAddress(billingDetails.address);
+                setIsManageOpen(true);
+              }} 
+              className="px-4 py-2 rounded-xl border border-border text-foreground text-sm font-medium hover:border-primary/30 transition-all bg-card"
+            >
+              Manage Billing
+            </button>
           </div>
         </div>
+
+        {/* Current payment info cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-card border border-border rounded-2xl p-5 space-y-2">
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase">Payment Method</h4>
+            <div className="flex items-center gap-3">
+              <div className="px-2 py-1 bg-secondary rounded border border-border font-bold text-xs tracking-wider text-foreground">
+                {billingDetails.cardBrand.toUpperCase()}
+              </div>
+              <p className="text-sm font-medium text-foreground">•••• •••• •••• {billingDetails.cardLast4}</p>
+            </div>
+          </div>
+          <div className="bg-card border border-border rounded-2xl p-5 space-y-2">
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase">Billing Contacts</h4>
+            <p className="text-sm text-foreground truncate">{billingDetails.email}</p>
+            <p className="text-xs text-muted-foreground truncate">{billingDetails.address}</p>
+          </div>
+        </div>
+
+        {/* Invoice history */}
         <div className="bg-card border border-border rounded-2xl overflow-hidden">
-          <div className="p-4 border-b border-border"><h3 className="text-sm font-semibold text-foreground">Payment History</h3></div>
+          <div className="p-4 border-b border-border">
+            <h3 className="text-sm font-semibold text-foreground">Payment History</h3>
+          </div>
           <div className="divide-y divide-border">
-            {[
-              { date: 'Jul 1, 2025', amount: '$49.00', status: 'paid', plan: 'Business Monthly' },
-              { date: 'Jun 1, 2025', amount: '$49.00', status: 'paid', plan: 'Business Monthly' },
-              { date: 'May 1, 2025', amount: '$49.00', status: 'paid', plan: 'Business Monthly' },
-            ].map((inv, i) => (
+            {paymentHistory.map((inv, i) => (
               <div key={i} className="p-4 flex items-center gap-3">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-foreground">{inv.plan}</p>
@@ -1050,12 +1197,184 @@ export function BusinessBilling() {
                 </div>
                 <span className="text-sm font-bold text-foreground">{inv.amount}</span>
                 <span className="text-xs bg-green-500/10 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full font-medium">{inv.status}</span>
-                <button onClick={() => toast('info', 'Downloading invoice...')} className="text-xs text-primary hover:underline">Invoice</button>
+                <button onClick={() => downloadInvoice(inv)} className="text-xs text-primary hover:underline">Invoice</button>
               </div>
             ))}
           </div>
         </div>
       </div>
+
+      {/* Upgrade to Enterprise Modal */}
+      {isUpgradeOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground">Upgrade to Enterprise</h3>
+              <button 
+                onClick={() => { setIsUpgradeOpen(false); }}
+                className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 space-y-4">
+              <div className="space-y-2 text-xs text-muted-foreground">
+                <p className="font-semibold text-foreground text-sm">Enterprise Tier Features Include:</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-green-500 font-bold">✓</span>
+                  <span>Unlimited visual creations & premium brand voices</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-green-500 font-bold">✓</span>
+                  <span>Dedicated customer support and account manager</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-green-500 font-bold">✓</span>
+                  <span>Custom brand layout preset grids & typography presets</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-green-500 font-bold">✓</span>
+                  <span>Priority API render times</span>
+                </div>
+              </div>
+
+              {/* Promo Code section */}
+              <div className="border border-border rounded-xl p-4 bg-secondary/30 space-y-3">
+                <label className="block text-xs font-semibold text-muted-foreground">Promo Code (Try: PIXI20)</label>
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    value={promoInput}
+                    onChange={e => setPromoInput(e.target.value)}
+                    placeholder="Enter code"
+                    className="flex-1 bg-card border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary/50"
+                  />
+                  <button 
+                    type="button"
+                    onClick={applyPromoCode}
+                    className="px-3 py-1.5 rounded-lg border border-border text-xs text-foreground hover:bg-accent transition-all"
+                  >
+                    Apply
+                  </button>
+                </div>
+                {discountApplied && (
+                  <p className="text-xs text-green-500 font-semibold">20% discount applied successfully!</p>
+                )}
+              </div>
+
+              {/* Pricing breakdown */}
+              <div className="flex items-center justify-between pt-2 border-t border-border">
+                <span className="text-xs text-muted-foreground">Subscription Fee:</span>
+                <span className="text-sm font-bold text-foreground">
+                  {discountApplied ? (
+                    <span>
+                      <span className="line-through text-muted-foreground mr-1.5">$199.00</span>
+                      <span className="text-primary">$159.00 / mo</span>
+                    </span>
+                  ) : '$199.00 / mo'}
+                </span>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-5 border-t border-border flex justify-end gap-3 bg-secondary/20">
+              <button 
+                type="button"
+                onClick={() => { setIsUpgradeOpen(false); }}
+                className="px-4 py-2 text-xs font-semibold rounded-xl border border-border text-foreground hover:bg-accent transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleUpgrade}
+                className="px-5 py-2 text-xs font-semibold rounded-xl gradient-primary text-white hover:opacity-90 transition-all shadow-glow-purple"
+              >
+                Confirm Upgrade
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Billing Modal */}
+      {isManageOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground">Edit Billing Details</h3>
+              <button 
+                onClick={() => { setIsManageOpen(false); }}
+                className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSaveBilling}>
+              <div className="p-5 space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Card Number (Last 4 digits)</label>
+                  <input 
+                    type="text" 
+                    required
+                    maxLength={4}
+                    value={editCard}
+                    onChange={e => setEditCard(e.target.value.replace(/\D/g, ''))}
+                    placeholder="e.g. 4242"
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Billing Email</label>
+                  <input 
+                    type="email" 
+                    required
+                    value={editEmail}
+                    onChange={e => setEditEmail(e.target.value)}
+                    placeholder="e.g. billing@company.com"
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Billing Address</label>
+                  <textarea 
+                    required
+                    rows={2}
+                    value={editAddress}
+                    onChange={e => setEditAddress(e.target.value)}
+                    placeholder="Enter full address"
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all resize-none"
+                  />
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-5 border-t border-border flex justify-end gap-3 bg-secondary/20">
+                <button 
+                  type="button"
+                  onClick={() => { setIsManageOpen(false); }}
+                  className="px-4 py-2 text-xs font-semibold rounded-xl border border-border text-foreground hover:bg-accent transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="px-5 py-2 text-xs font-semibold rounded-xl gradient-primary text-white hover:opacity-90 transition-all shadow-glow-purple"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
