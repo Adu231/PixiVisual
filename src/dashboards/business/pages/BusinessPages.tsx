@@ -1,6 +1,6 @@
 // Business sub-pages
 import { useState } from 'react';
-import { TrendingUp, Palette, BarChart2, DollarSign, Share2, Plus, Target, Layers, X } from 'lucide-react';
+import { TrendingUp, Palette, BarChart2, DollarSign, Share2, Plus, Target, Layers, X, Download } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { toast } from '@/components/ui/Toast';
 import { formatCurrency } from '@/lib/utils';
@@ -275,6 +275,52 @@ export function BusinessMarketing() {
   const [titleInput, setTitleInput] = useState('');
   const [typeInput, setTypeInput] = useState('Banner');
   const [assetImage, setAssetImage] = useState<string | null>(null);
+  const [activeAsset, setActiveAsset] = useState<typeof assetsList[0] | null>(null);
+
+  const getHighResUrl = (url: string) => {
+    if (url.includes('unsplash.com')) {
+      return url.replace('w=200&h=150', 'w=800&h=600');
+    }
+    return url;
+  };
+
+  const handleDownload = async (url: string, filename: string) => {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+      toast('success', `Downloaded: ${filename}`);
+    } catch (err) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const downloadPDF = (asset: typeof assetsList[0]) => {
+    const content = `%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << >> /Contents 4 0 R >>\nendobj\n4 0 obj\n<< /Length 51 >>\nstream\nBT\n/F1 12 Tf\n70 700 Td\n(PixiVisual Marketing Asset: ${asset.title}) Tj\nET\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f\n0000000009 00000 n\n0000000056 00000 n\n0000000111 00000 n\n0000000212 00000 n\ntrailer\n<< /Size 5 /Root 1 0 R >>\nstartxref\n312\n%%EOF`;
+    const blob = new Blob([content], { type: 'application/pdf' });
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = `${asset.title.toLowerCase().replace(/\s+/g, '_')}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(blobUrl);
+    toast('success', `PDF Downloaded for "${asset.title}"`);
+  };
 
   const handleCreateAsset = (e: React.FormEvent) => {
     e.preventDefault();
@@ -324,7 +370,7 @@ export function BusinessMarketing() {
             <div 
               key={a.title} 
               className="group bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/20 hover:shadow-card-hover transition-all cursor-pointer relative" 
-              onClick={() => toast('info', `Opening ${a.title}...`)}
+              onClick={() => setActiveAsset(a)}
             >
               <img src={a.thumb} alt={a.title} className="w-full h-28 object-cover group-hover:scale-105 transition-transform duration-300" />
               <div className="p-3">
@@ -438,6 +484,92 @@ export function BusinessMarketing() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Active Asset Details Modal */}
+      {activeAsset && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col md:flex-row">
+            {/* Left side: Image preview */}
+            <div className="w-full md:w-1/2 bg-secondary/30 p-5 flex items-center justify-center border-b md:border-b-0 md:border-r border-border">
+              <div className="relative group/preview w-full aspect-video md:aspect-square rounded-xl overflow-hidden border border-border bg-card">
+                <img 
+                  src={getHighResUrl(activeAsset.thumb)} 
+                  alt={activeAsset.title} 
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover/preview:scale-105" 
+                />
+              </div>
+            </div>
+
+            {/* Right side: Asset info & downloads */}
+            <div className="w-full md:w-1/2 p-6 flex flex-col justify-between space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="inline-block px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-primary/10 text-primary mb-2">
+                      {activeAsset.type}
+                    </span>
+                    <h3 className="text-lg font-bold text-foreground leading-tight">{activeAsset.title}</h3>
+                  </div>
+                  <button 
+                    onClick={() => setActiveAsset(null)}
+                    className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="p-3 rounded-xl bg-secondary/40 border border-border/60">
+                    <p className="text-2xs text-muted-foreground uppercase font-semibold">Resolution</p>
+                    <p className="font-bold text-foreground mt-0.5">
+                      {activeAsset.type === 'Banner' ? '1200 × 630 px' :
+                       activeAsset.type === 'Social' ? '1080 × 1080 px' :
+                       activeAsset.type === 'Email' ? '600 × 300 px' : '1080 × 1350 px'}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-secondary/40 border border-border/60">
+                    <p className="text-2xs text-muted-foreground uppercase font-semibold">File Size</p>
+                    <p className="font-bold text-foreground mt-0.5">
+                      {activeAsset.title.length % 2 === 0 ? '1.4 MB' : '820 KB'}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-secondary/40 border border-border/60">
+                    <p className="text-2xs text-muted-foreground uppercase font-semibold">Format</p>
+                    <p className="font-bold text-foreground mt-0.5">PNG Image</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-secondary/40 border border-border/60">
+                    <p className="text-2xs text-muted-foreground uppercase font-semibold">Last Activity</p>
+                    <p className="font-bold text-foreground mt-0.5">{activeAsset.updated}</p>
+                  </div>
+                </div>
+
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  This {activeAsset.type.toLowerCase()} asset is fully generated and ready for use. It is formatted to the optimal dimensions and aspect ratio for standard publishing platforms.
+                </p>
+              </div>
+
+              {/* Download actions */}
+              <div className="space-y-2">
+                <button 
+                  onClick={() => {
+                    const filename = `${activeAsset.title.toLowerCase().replace(/\s+/g, '_')}.png`;
+                    handleDownload(activeAsset.thumb, filename);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
+                >
+                  <Download className="w-4 h-4" /> Download PNG
+                </button>
+                <button 
+                  onClick={() => downloadPDF(activeAsset)}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border hover:bg-accent text-foreground text-sm font-semibold transition-all"
+                >
+                  Download PDF
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
