@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Plus, TrendingUp, Users, DollarSign, Target, BarChart2, Palette, Layers, Share2, ArrowRight, ArrowUpRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, TrendingUp, Users, DollarSign, Target, BarChart2, Palette, Layers, Share2, ArrowRight, ArrowUpRight, X } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/Toast';
@@ -15,12 +16,45 @@ const sidebarItems = [
 
 export default function BusinessDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+
   const [campaignsList, setCampaignsList] = useState([
     { name: 'Summer Sale 2025', status: 'active', budget: 5000, spent: 3200, impressions: 142000, clicks: 8400, conversions: 342 },
     { name: 'Product Launch Q3', status: 'draft', budget: 8000, spent: 0, impressions: 0, clicks: 0, conversions: 0 },
     { name: 'Brand Awareness', status: 'active', budget: 3000, spent: 1800, impressions: 89000, clicks: 4200, conversions: 187 },
     { name: 'Holiday Campaign', status: 'paused', budget: 12000, spent: 2100, impressions: 31000, clicks: 1900, conversions: 56 },
   ]);
+
+  const [editingCampaign, setEditingCampaign] = useState<typeof campaignsList[0] | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editBudget, setEditBudget] = useState('');
+  const [editStatus, setEditStatus] = useState('draft');
+
+  const startEditingCampaign = (c: typeof campaignsList[0]) => {
+    setEditingCampaign(c);
+    setEditName(c.name);
+    setEditBudget(c.budget.toString());
+    setEditStatus(c.status);
+  };
+
+  const handleUpdateCampaign = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editName.trim()) {
+      toast('warning', 'Campaign name cannot be empty');
+      return;
+    }
+    const budgetVal = parseFloat(editBudget) || 0;
+    setCampaignsList(prev => prev.map(item => 
+      item.name === editingCampaign?.name ? {
+        ...item,
+        name: editName.trim(),
+        budget: budgetVal,
+        status: editStatus
+      } : item
+    ));
+    setEditingCampaign(null);
+    toast('success', `Campaign "${editName}" updated successfully!`);
+  };
 
   const [showNewCampaign, setShowNewCampaign] = useState(false);
   const [newCampaignName, setNewCampaignName] = useState('');
@@ -220,7 +254,7 @@ export default function BusinessDashboard() {
                     <td className="px-4 py-3 text-right text-sm text-foreground">{c.conversions}</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => toast('info', `Editing ${c.name}...`)} className="px-2.5 py-1 rounded-lg border border-border text-xs text-foreground hover:border-primary/30 hover:text-primary transition-all">Edit</button>
+                        <button onClick={() => startEditingCampaign(c)} className="px-2.5 py-1 rounded-lg border border-border text-xs text-foreground hover:border-primary/30 hover:text-primary transition-all">Edit</button>
                         <button 
                           onClick={() => {
                             setCampaignsList(prev => prev.filter(item => item.name !== c.name));
@@ -244,7 +278,7 @@ export default function BusinessDashboard() {
           <div className="bg-card border border-border rounded-2xl p-5">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-sm font-semibold text-foreground">Brand Kit</h4>
-              <button onClick={() => toast('info', 'Opening brand kit...')} className="text-xs text-primary hover:underline">Edit</button>
+              <button onClick={() => navigate('/dashboard/business/brand')} className="text-xs text-primary hover:underline">Edit</button>
             </div>
             <div className="flex gap-2 mb-3">
               {['#7C3AED', '#EC4899', '#2563EB', '#10B981', '#F59E0B'].map(color => (
@@ -267,6 +301,82 @@ export default function BusinessDashboard() {
           </div>
         </div>
       </div>
+      {/* Edit Campaign Modal */}
+      {editingCampaign && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col">
+            {/* Header */}
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground">Edit Campaign: {editingCampaign.name}</h3>
+              <button 
+                onClick={() => { setEditingCampaign(null); }}
+                className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleUpdateCampaign}>
+              <div className="p-5 space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Campaign Name</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={editName}
+                    onChange={e => setEditName(e.target.value)}
+                    placeholder="Campaign Name"
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Budget ($)</label>
+                  <input 
+                    type="number" 
+                    required
+                    value={editBudget}
+                    onChange={e => setEditBudget(e.target.value)}
+                    placeholder="e.g. 5000"
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Status</label>
+                  <select 
+                    value={editStatus}
+                    onChange={e => setEditStatus(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all appearance-none"
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="active">Active</option>
+                    <option value="paused">Paused</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-5 border-t border-border flex justify-end gap-3 bg-secondary/20">
+                <button 
+                  type="button"
+                  onClick={() => { setEditingCampaign(null); }}
+                  className="px-4 py-2 text-xs font-semibold rounded-xl border border-border text-foreground hover:bg-accent transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="px-5 py-2 text-xs font-semibold rounded-xl gradient-primary text-white hover:opacity-90 transition-all shadow-glow-purple"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
