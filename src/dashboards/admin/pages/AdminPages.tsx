@@ -1,5 +1,5 @@
 // Admin sub-pages — each sidebar route gets its own component
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Users, DollarSign, Store, BarChart2, Shield, FileText,
   Search, Eye, Check, X, TrendingUp, ArrowUp, ArrowDown,
@@ -1430,13 +1430,131 @@ export function AdminModeration() {
 
 /* ─── Reports ────────────────────────────────────────────────── */
 export function AdminReports() {
-  const reports = [
-    { title: 'Monthly Revenue Report', type: 'Financial', generated: 'Jul 1, 2025', size: '2.4 MB', status: 'ready' },
-    { title: 'User Growth Analysis', type: 'Growth', generated: 'Jul 1, 2025', size: '1.8 MB', status: 'ready' },
-    { title: 'Content Moderation Summary', type: 'Moderation', generated: 'Jun 30, 2025', size: '840 KB', status: 'ready' },
-    { title: 'Marketplace Performance Q2', type: 'Marketplace', generated: 'Jun 30, 2025', size: '3.2 MB', status: 'ready' },
-    { title: 'Churn & Retention Report', type: 'Retention', generated: 'Generating...', size: '—', status: 'generating' },
-  ];
+  const [reportsList, setReportsList] = useState([
+    { id: 1, title: 'Monthly Revenue Report', type: 'Financial', generated: 'Jul 1, 2025', size: '2.4 MB', status: 'ready' },
+    { id: 2, title: 'User Growth Analysis', type: 'Growth', generated: 'Jul 1, 2025', size: '1.8 MB', status: 'ready' },
+    { id: 3, title: 'Content Moderation Summary', type: 'Moderation', generated: 'Jun 30, 2025', size: '840 KB', status: 'ready' },
+    { id: 4, title: 'Marketplace Performance Q2', type: 'Marketplace', generated: 'Jun 30, 2025', size: '3.2 MB', status: 'ready' },
+    { id: 5, title: 'Churn & Retention Report', type: 'Retention', generated: 'Generating...', size: '—', status: 'generating' },
+  ]);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [titleInput, setTitleInput] = useState('');
+  const [typeInput, setTypeInput] = useState('Financial');
+  const [generatedCount, setGeneratedCount] = useState(284);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setReportsList(prev => prev.map(rep => {
+        if (rep.title === 'Churn & Retention Report' && rep.status === 'generating') {
+          return {
+            ...rep,
+            generated: 'Just now',
+            size: '1.4 MB',
+            status: 'ready'
+          };
+        }
+        return rep;
+      }));
+      setGeneratedCount(c => c + 1);
+      toast('success', 'Background job: Churn & Retention Report has finished generating!');
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleGenerate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!titleInput.trim()) {
+      toast('error', 'Please enter a report title.');
+      return;
+    }
+
+    const uniqueId = Date.now();
+    const newReport = {
+      id: uniqueId,
+      title: titleInput.trim(),
+      type: typeInput,
+      generated: 'Generating...',
+      size: '—',
+      status: 'generating'
+    };
+
+    setReportsList(prev => [newReport, ...prev]);
+    setIsModalOpen(false);
+    setTitleInput('');
+    toast('info', 'Report generation queued in background...');
+
+    setTimeout(() => {
+      setReportsList(prev => prev.map(rep => {
+        if (rep.id === uniqueId) {
+          return {
+            ...rep,
+            generated: 'Just now',
+            size: `${(Math.random() * 3 + 0.5).toFixed(1)} MB`,
+            status: 'ready'
+          };
+        }
+        return rep;
+      }));
+      setGeneratedCount(c => c + 1);
+      toast('success', `Custom report "${newReport.title}" generated successfully!`);
+    }, 3000);
+  };
+
+  const downloadReport = (title: string, type: string) => {
+    let csvContent = '';
+    
+    if (type === 'Financial') {
+      csvContent = 'Month,Revenue,Subscriptions,Commission,Payouts\n' +
+        'January,124800,1020,12480,112320\n' +
+        'February,132500,1080,13250,119250\n' +
+        'March,141200,1150,14120,127080\n' +
+        'April,158000,1280,15800,142200\n' +
+        'May,169400,1370,16940,152460\n' +
+        'June,184200,1490,18420,165780\n';
+    } else if (type === 'Growth') {
+      csvContent = 'Date,Daily Active Users,New Signups,Churn Rate\n' +
+        '2026-06-18,181200,890,2.2%\n' +
+        '2026-06-19,182400,980,2.1%\n' +
+        '2026-06-20,183100,1020,2.1%\n' +
+        '2026-06-21,183900,1180,2.0%\n' +
+        '2026-06-22,184500,1240,2.1%\n' +
+        '2026-06-23,184900,1340,2.1%\n';
+    } else if (type === 'Moderation') {
+      csvContent = 'Item Title,Type,Author,Action,Date\n' +
+        'Modern Business Card Set,Template,designer@pixivisual.com,Approved,Just now\n' +
+        'E-commerce Banner Pack,Template,creator@pixivisual.com,Approved,3 hours ago\n' +
+        'Inappropriate content report,Report,System,Rejected,6 hours ago\n' +
+        'Social Media Story Kit,Template,freelancer@pixivisual.com,Approved,1 day ago\n' +
+        'Agency account upgrade request,Account,agency@pixivisual.com,Approved,2 days ago\n';
+    } else if (type === 'Marketplace') {
+      csvContent = 'Template Title,Category,Sales,Revenue,Commission\n' +
+        'Minimalist Resume,Resume,240,4800,720\n' +
+        'Real Estate Brochure,Flyer,180,5400,810\n' +
+        'Corporate Pitch Deck,Presentation,310,12400,1860\n' +
+        'Instagram Grid Planner,Social,520,10400,1560\n' +
+        '3D Abstract Backgrounds,Graphics,140,3500,525\n';
+    } else {
+      // Default / Retention
+      csvContent = 'Cohort,Active Users,Retention Rate,Churn Rate\n' +
+        'Jan 2026,2400,92.5%,7.5%\n' +
+        'Feb 2026,2800,89.1%,10.9%\n' +
+        'Mar 2026,3100,86.2%,13.8%\n' +
+        'Apr 2026,3400,82.4%,17.6%\n' +
+        'May 2026,3900,78.9%,21.1%\n';
+    }
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${title.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_report.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast('success', `Downloaded: ${title}`);
+  };
 
   const typeColors: Record<string, string> = {
     Financial: 'bg-green-500/10 text-green-600 dark:text-green-400',
@@ -1454,7 +1572,10 @@ export function AdminReports() {
             <h2 className="text-xl font-display font-bold text-foreground">Platform Reports</h2>
             <p className="text-sm text-muted-foreground">Generate and download platform reports</p>
           </div>
-          <button onClick={() => toast('success', 'Custom report queued for generation...')} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">
+          <button 
+            onClick={() => setIsModalOpen(true)} 
+            className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
+          >
             Generate Report
           </button>
         </div>
@@ -1464,8 +1585,8 @@ export function AdminReports() {
             <h3 className="text-sm font-semibold text-foreground">Available Reports</h3>
           </div>
           <div className="divide-y divide-border">
-            {reports.map((r, i) => (
-              <div key={i} className="p-4 flex items-center gap-4">
+            {reportsList.map((r, i) => (
+              <div key={r.id || i} className="p-4 flex items-center gap-4">
                 <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <FileText className="w-4 h-4 text-primary" />
                 </div>
@@ -1481,7 +1602,7 @@ export function AdminReports() {
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Generating...
                   </div>
                 ) : (
-                  <button onClick={() => toast('success', `Downloading ${r.title}...`)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs text-foreground hover:border-primary/30 hover:text-primary transition-all">
+                  <button onClick={() => downloadReport(r.title, r.type)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs text-foreground hover:border-primary/30 hover:text-primary transition-all">
                     <Download className="w-3.5 h-3.5" /> Download
                   </button>
                 )}
@@ -1492,7 +1613,7 @@ export function AdminReports() {
 
         <div className="grid sm:grid-cols-3 gap-4">
           {[
-            { label: 'Reports Generated', value: '284', delta: 'This month' },
+            { label: 'Reports Generated', value: String(generatedCount), delta: 'This month' },
             { label: 'Scheduled Reports', value: '12', delta: 'Auto-generated' },
             { label: 'Data Coverage', value: '99.9%', delta: 'Uptime' },
           ].map(s => (
@@ -1504,6 +1625,73 @@ export function AdminReports() {
           ))}
         </div>
       </div>
+
+      {/* Generate Report Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground">Generate Platform Report</h3>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Form */}
+            <form onSubmit={handleGenerate}>
+              <div className="p-5 space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Report Title</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={titleInput}
+                    onChange={e => setTitleInput(e.target.value)}
+                    placeholder="e.g., Q3 Performance Summary"
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Report Type</label>
+                  <select 
+                    value={typeInput}
+                    onChange={e => setTypeInput(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all appearance-none"
+                  >
+                    <option value="Financial">Financial (Revenue, Taxes, Payouts)</option>
+                    <option value="Growth">Growth (Signups, Retention, Active Users)</option>
+                    <option value="Moderation">Moderation (Approvals, Reports, Violations)</option>
+                    <option value="Marketplace">Marketplace (Templates, Sales, Commissions)</option>
+                    <option value="Retention">Retention (Churn rates, Cohort details)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-5 border-t border-border flex justify-end gap-3 bg-secondary/20">
+                <button 
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold rounded-xl border border-border text-foreground hover:bg-accent transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="px-5 py-2 text-xs font-semibold rounded-xl gradient-primary text-white hover:opacity-90 transition-all shadow-glow-purple"
+                >
+                  Generate Report
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
