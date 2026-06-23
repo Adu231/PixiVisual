@@ -1038,11 +1038,18 @@ export function AdminAnalytics() {
           <h3 className="text-sm font-semibold text-foreground mb-5">Daily Signups (Last 7 Days)</h3>
           <div className="flex items-end gap-3 h-40">
             {weeklySignups.map((v, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                <span className="text-xs text-primary font-medium">{v}</span>
-                <div className="w-full rounded-t-lg gradient-primary hover:opacity-90 transition-opacity cursor-pointer"
-                  style={{ height: `${(v / maxSignups) * 100}%` }} />
-                <span className="text-xs text-muted-foreground">{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}</span>
+              <div key={i} className="flex-1 flex flex-col gap-2 h-full">
+                {/* Bar Container */}
+                <div className="flex-1 flex flex-col justify-end items-center">
+                  <span className="text-[10px] sm:text-xs text-primary font-medium mb-1">{v}</span>
+                  <div 
+                    className="w-full rounded-t-lg gradient-primary hover:opacity-90 transition-all duration-300 cursor-pointer"
+                    style={{ height: `${(v / maxSignups) * 80}%` }}
+                    title={`${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}: ${v} signups`}
+                  />
+                </div>
+                {/* Label */}
+                <span className="text-xs text-muted-foreground text-center">{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}</span>
               </div>
             ))}
           </div>
