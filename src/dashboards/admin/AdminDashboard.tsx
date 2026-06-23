@@ -70,12 +70,20 @@ export default function AdminDashboard() {
             <h3 className="text-sm font-display font-semibold text-foreground">Revenue (Last 7 Days)</h3>
             <span className="text-xs text-muted-foreground">Total: {formatCurrency(842000)}/mo</span>
           </div>
-          <div className="flex items-end gap-2 h-36">
+          <div className="flex items-end gap-3 h-40">
             {[62000, 78000, 71000, 89000, 95000, 82000, 88000].map((v, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div className="w-full rounded-t-lg gradient-primary opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
-                  style={{ height: `${(v / 95000) * 100}%` }} title={formatCurrency(v)} />
-                <span className="text-xs text-muted-foreground">{['M','T','W','T','F','S','S'][i]}</span>
+              <div key={i} className="flex-1 flex flex-col gap-2 h-full">
+                {/* Bar Container */}
+                <div className="flex-1 flex flex-col justify-end items-center">
+                  <span className="text-[10px] text-muted-foreground font-semibold mb-1">${(v / 1000).toFixed(0)}k</span>
+                  <div 
+                    className="w-full rounded-t-lg gradient-primary opacity-80 hover:opacity-100 transition-all duration-300 cursor-pointer shadow-glow-purple/20"
+                    style={{ height: `${(v / 95000) * 80}%` }} 
+                    title={`${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}: ${formatCurrency(v)}`} 
+                  />
+                </div>
+                {/* Label */}
+                <span className="text-xs text-muted-foreground text-center font-medium">{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}</span>
               </div>
             ))}
           </div>
