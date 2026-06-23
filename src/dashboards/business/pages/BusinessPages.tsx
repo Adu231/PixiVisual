@@ -590,6 +590,52 @@ export function BusinessCampaigns() {
   const [statusInput, setStatusInput] = useState('draft');
   const [endDateInput, setEndDateInput] = useState('');
 
+  const [editingCampaign, setEditingCampaign] = useState<typeof campaignsList[0] | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editBudget, setEditBudget] = useState('');
+  const [editSpent, setEditSpent] = useState('');
+  const [editStatus, setEditStatus] = useState('draft');
+  const [editEndDate, setEditEndDate] = useState('');
+
+  const startEditing = (c: typeof campaignsList[0]) => {
+    setEditingCampaign(c);
+    setEditName(c.name);
+    setEditBudget(c.budget.toString());
+    setEditSpent(c.spent.toString());
+    setEditStatus(c.status);
+    setEditEndDate(c.endDate);
+  };
+
+  const handleUpdateCampaign = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editName.trim()) {
+      toast('error', 'Campaign name cannot be empty.');
+      return;
+    }
+    const budget = parseFloat(editBudget) || 0;
+    const spent = parseFloat(editSpent) || 0;
+    
+    let roi = '—';
+    if (spent > 0) {
+      const roiValue = Math.round((budget / (spent || 1)) * 150);
+      roi = `${roiValue}%`;
+    }
+
+    setCampaignsList(prev => prev.map(item => 
+      item.name === editingCampaign?.name ? {
+        name: editName.trim(),
+        status: editStatus,
+        budget: budget,
+        spent: spent,
+        roi: roi,
+        endDate: editEndDate.trim() || 'TBD'
+      } : item
+    ));
+
+    setEditingCampaign(null);
+    toast('success', `Campaign "${editName}" updated successfully!`);
+  };
+
   const handleCreateCampaign = (e: React.FormEvent) => {
     e.preventDefault();
     if (!nameInput.trim()) {
@@ -646,7 +692,7 @@ export function BusinessCampaigns() {
                   <p className="text-xs text-muted-foreground">Budget: {formatCurrency(c.budget)} · ROI: {c.roi} · Ends {c.endDate}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => toast('info', `Opening ${c.name}...`)} className="text-xs text-primary hover:underline">Manage</button>
+                  <button onClick={() => startEditing(c)} className="text-xs text-primary hover:underline">Manage</button>
                   <button 
                     onClick={() => {
                       setCampaignsList(prev => prev.filter(item => item.name !== c.name));
@@ -750,6 +796,109 @@ export function BusinessCampaigns() {
                   className="px-5 py-2 text-xs font-semibold rounded-xl gradient-primary text-white hover:opacity-90 transition-all shadow-glow-purple"
                 >
                   Create Campaign
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Campaign Modal */}
+      {editingCampaign && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground">Manage Campaign: {editingCampaign.name}</h3>
+              <button 
+                onClick={() => { setEditingCampaign(null); }}
+                className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Form */}
+            <form onSubmit={handleUpdateCampaign}>
+              <div className="p-5 space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Campaign Name</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={editName}
+                    onChange={e => setEditName(e.target.value)}
+                    placeholder="e.g., Summer Clearance Sale"
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-all"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Budget ($)</label>
+                    <input 
+                      type="number" 
+                      required
+                      value={editBudget}
+                      onChange={e => setEditBudget(e.target.value)}
+                      placeholder="e.g., 2500"
+                      className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Spent ($)</label>
+                    <input 
+                      type="number" 
+                      required
+                      value={editSpent}
+                      onChange={e => setEditSpent(e.target.value)}
+                      placeholder="e.g., 1000"
+                      className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Campaign Status</label>
+                  <select 
+                    value={editStatus}
+                    onChange={e => setEditStatus(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all appearance-none"
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="active">Active</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">End Date</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={editEndDate}
+                    onChange={e => setEditEndDate(e.target.value)}
+                    placeholder="e.g., Aug 31 or Jul 15"
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-5 border-t border-border flex justify-end gap-3 bg-secondary/20">
+                <button 
+                  type="button"
+                  onClick={() => { setEditingCampaign(null); }}
+                  className="px-4 py-2 text-xs font-semibold rounded-xl border border-border text-foreground hover:bg-accent transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="px-5 py-2 text-xs font-semibold rounded-xl gradient-primary text-white hover:opacity-90 transition-all shadow-glow-purple"
+                >
+                  Save Changes
                 </button>
               </div>
             </form>
