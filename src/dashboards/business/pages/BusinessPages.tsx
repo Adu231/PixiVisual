@@ -578,6 +578,43 @@ export function BusinessMarketing() {
 }
 
 export function BusinessCampaigns() {
+  const [campaignsList, setCampaignsList] = useState([
+    { name: 'Summer Promo', status: 'active', budget: 3000, spent: 1800, roi: '240%', endDate: 'Jul 31' },
+    { name: 'Product Launch', status: 'draft', budget: 5000, spent: 0, roi: '—', endDate: 'Aug 15' },
+    { name: 'Brand Awareness', status: 'completed', budget: 2000, spent: 1960, roi: '180%', endDate: 'Jun 30' },
+  ]);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [nameInput, setNameInput] = useState('');
+  const [budgetInput, setBudgetInput] = useState('');
+  const [statusInput, setStatusInput] = useState('draft');
+  const [endDateInput, setEndDateInput] = useState('');
+
+  const handleCreateCampaign = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nameInput.trim()) {
+      toast('error', 'Please enter a campaign name.');
+      return;
+    }
+    const budget = parseFloat(budgetInput) || 0;
+    const newCampaign = {
+      name: nameInput.trim(),
+      status: statusInput,
+      budget: budget,
+      spent: 0,
+      roi: '—',
+      endDate: endDateInput.trim() || 'TBD'
+    };
+
+    setCampaignsList(prev => [newCampaign, ...prev]);
+    setIsModalOpen(false);
+    setNameInput('');
+    setBudgetInput('');
+    setStatusInput('draft');
+    setEndDateInput('');
+    toast('success', `Campaign "${newCampaign.name}" created successfully!`);
+  };
+
   return (
     <DashboardLayout sidebarItems={businessSidebarItems} title="Campaigns" roleLabel="Business Owner">
       <div className="p-4 lg:p-6 space-y-6">
@@ -586,26 +623,40 @@ export function BusinessCampaigns() {
             <h2 className="text-xl font-display font-bold text-foreground">Campaigns</h2>
             <p className="text-sm text-muted-foreground">Track your marketing campaigns</p>
           </div>
-          <button onClick={() => toast('info', 'Creating new campaign...')} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">
+          <button 
+            onClick={() => setIsModalOpen(true)} 
+            className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
+          >
             <Plus className="w-4 h-4" /> New Campaign
           </button>
         </div>
         <div className="grid gap-4">
-          {[
-            { name: 'Summer Promo', status: 'active', budget: 3000, spent: 1800, roi: '240%', endDate: 'Jul 31' },
-            { name: 'Product Launch', status: 'draft', budget: 5000, spent: 0, roi: '—', endDate: 'Aug 15' },
-            { name: 'Brand Awareness', status: 'completed', budget: 2000, spent: 1960, roi: '180%', endDate: 'Jun 30' },
-          ].map(c => (
-            <div key={c.name} className="bg-card border border-border rounded-2xl p-5 hover:border-primary/20 transition-all">
+          {campaignsList.map(c => (
+            <div key={c.name} className="bg-card border border-border rounded-2xl p-5 hover:border-primary/20 transition-all relative group">
               <div className="flex items-center gap-3 mb-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-0.5">
                     <h3 className="text-sm font-semibold text-foreground">{c.name}</h3>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${c.status === 'active' ? 'bg-green-500/10 text-green-600 dark:text-green-400' : c.status === 'completed' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'bg-gray-500/10 text-gray-500'}`}>{c.status}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${
+                      c.status === 'active' ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 
+                      c.status === 'completed' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 
+                      'bg-gray-500/10 text-gray-500'
+                    }`}>{c.status}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">Budget: {formatCurrency(c.budget)} · ROI: {c.roi} · Ends {c.endDate}</p>
                 </div>
-                <button onClick={() => toast('info', `Opening ${c.name}...`)} className="text-xs text-primary hover:underline">Manage</button>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => toast('info', `Opening ${c.name}...`)} className="text-xs text-primary hover:underline">Manage</button>
+                  <button 
+                    onClick={() => {
+                      setCampaignsList(prev => prev.filter(item => item.name !== c.name));
+                      toast('success', `Deleted campaign: ${c.name}`);
+                    }}
+                    className="text-xs text-muted-foreground hover:text-destructive transition-colors ml-2 font-semibold"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
               {c.budget > 0 && (
                 <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -616,6 +667,95 @@ export function BusinessCampaigns() {
           ))}
         </div>
       </div>
+
+      {/* New Campaign Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card border border-border w-full max-w-md rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-bold text-foreground">Create New Campaign</h3>
+              <button 
+                onClick={() => { setIsModalOpen(false); }}
+                className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            {/* Form */}
+            <form onSubmit={handleCreateCampaign}>
+              <div className="p-5 space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Campaign Name</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={nameInput}
+                    onChange={e => setNameInput(e.target.value)}
+                    placeholder="e.g., Summer Clearance Sale"
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Budget ($)</label>
+                  <input 
+                    type="number" 
+                    required
+                    value={budgetInput}
+                    onChange={e => setBudgetInput(e.target.value)}
+                    placeholder="e.g., 2500"
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Initial Status</label>
+                  <select 
+                    value={statusInput}
+                    onChange={e => setStatusInput(e.target.value)}
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all appearance-none"
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="active">Active</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">End Date</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={endDateInput}
+                    onChange={e => setEndDateInput(e.target.value)}
+                    placeholder="e.g., Aug 31 or Jul 15"
+                    className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-5 border-t border-border flex justify-end gap-3 bg-secondary/20">
+                <button 
+                  type="button"
+                  onClick={() => { setIsModalOpen(false); }}
+                  className="px-4 py-2 text-xs font-semibold rounded-xl border border-border text-foreground hover:bg-accent transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="px-5 py-2 text-xs font-semibold rounded-xl gradient-primary text-white hover:opacity-90 transition-all shadow-glow-purple"
+                >
+                  Create Campaign
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
