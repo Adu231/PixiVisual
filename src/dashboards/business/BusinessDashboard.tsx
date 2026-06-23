@@ -13,22 +13,44 @@ const sidebarItems = [
   { label: 'Billing', href: '/dashboard/business/billing', icon: Layers },
 ];
 
-const campaigns = [
-  { name: 'Summer Sale 2025', status: 'active', budget: 5000, spent: 3200, impressions: 142000, clicks: 8400, conversions: 342 },
-  { name: 'Product Launch Q3', status: 'draft', budget: 8000, spent: 0, impressions: 0, clicks: 0, conversions: 0 },
-  { name: 'Brand Awareness', status: 'active', budget: 3000, spent: 1800, impressions: 89000, clicks: 4200, conversions: 187 },
-  { name: 'Holiday Campaign', status: 'paused', budget: 12000, spent: 2100, impressions: 31000, clicks: 1900, conversions: 56 },
-];
-
 export default function BusinessDashboard() {
   const { user } = useAuth();
+  const [campaignsList, setCampaignsList] = useState([
+    { name: 'Summer Sale 2025', status: 'active', budget: 5000, spent: 3200, impressions: 142000, clicks: 8400, conversions: 342 },
+    { name: 'Product Launch Q3', status: 'draft', budget: 8000, spent: 0, impressions: 0, clicks: 0, conversions: 0 },
+    { name: 'Brand Awareness', status: 'active', budget: 3000, spent: 1800, impressions: 89000, clicks: 4200, conversions: 187 },
+    { name: 'Holiday Campaign', status: 'paused', budget: 12000, spent: 2100, impressions: 31000, clicks: 1900, conversions: 56 },
+  ]);
+
   const [showNewCampaign, setShowNewCampaign] = useState(false);
   const [newCampaignName, setNewCampaignName] = useState('');
+  const [newCampaignBudget, setNewCampaignBudget] = useState('5000');
+  const [newCampaignStatus, setNewCampaignStatus] = useState('draft');
+  const [newCampaignChannel, setNewCampaignChannel] = useState('Social Media');
+  const [newCampaignEndDate, setNewCampaignEndDate] = useState('Aug 31, 2025');
 
-  const handleCreateCampaign = () => {
+  const handleCreateCampaign = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!newCampaignName.trim()) { toast('warning', 'Enter a campaign name'); return; }
+    
+    const budgetVal = parseFloat(newCampaignBudget) || 0;
+    const newCampaignItem = {
+      name: `${newCampaignName.trim()} (${newCampaignChannel})`,
+      status: newCampaignStatus,
+      budget: budgetVal,
+      spent: 0,
+      impressions: 0,
+      clicks: 0,
+      conversions: 0
+    };
+
+    setCampaignsList(prev => [newCampaignItem, ...prev]);
     toast('success', `Campaign "${newCampaignName}" created successfully!`);
     setNewCampaignName('');
+    setNewCampaignBudget('5000');
+    setNewCampaignStatus('draft');
+    setNewCampaignChannel('Social Media');
+    setNewCampaignEndDate('Aug 31, 2025');
     setShowNewCampaign(false);
   };
 
@@ -61,15 +83,86 @@ export default function BusinessDashboard() {
 
         {/* New Campaign Modal */}
         {showNewCampaign && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/50" onClick={() => setShowNewCampaign(false)} />
-            <div className="relative z-10 bg-card border border-border rounded-2xl p-6 w-full max-w-sm animate-scale-in">
-              <h3 className="text-base font-display font-semibold text-foreground mb-4">Create Campaign</h3>
-              <input value={newCampaignName} onChange={e => setNewCampaignName(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleCreateCampaign()} placeholder="Campaign name..." className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 mb-4" />
-              <div className="flex gap-3">
-                <button onClick={() => setShowNewCampaign(false)} className="flex-1 py-2.5 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted transition-all">Cancel</button>
-                <button onClick={handleCreateCampaign} className="flex-1 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all">Create</button>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="absolute inset-0" onClick={() => setShowNewCampaign(false)} />
+            <div className="relative z-10 bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+              <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
+                <h3 className="text-base font-display font-bold text-foreground">Create Campaign</h3>
+                <button onClick={() => setShowNewCampaign(false)} className="text-muted-foreground hover:text-foreground text-sm font-bold">×</button>
               </div>
+              <form onSubmit={handleCreateCampaign} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Campaign Name</label>
+                  <input 
+                    type="text"
+                    required
+                    value={newCampaignName} 
+                    onChange={e => setNewCampaignName(e.target.value)} 
+                    placeholder="e.g. Summer Clearance Sale" 
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Target Channel</label>
+                    <select
+                      value={newCampaignChannel}
+                      onChange={e => setNewCampaignChannel(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 appearance-none"
+                    >
+                      <option value="Social Media">Social Media</option>
+                      <option value="Google Ads">Google Ads</option>
+                      <option value="Email Newsletter">Email Newsletter</option>
+                      <option value="Video Display">Video Display</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Budget ($)</label>
+                    <input 
+                      type="number"
+                      required
+                      value={newCampaignBudget} 
+                      onChange={e => setNewCampaignBudget(e.target.value)} 
+                      placeholder="5000" 
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Status</label>
+                    <select
+                      value={newCampaignStatus}
+                      onChange={e => setNewCampaignStatus(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 appearance-none"
+                    >
+                      <option value="draft">Draft</option>
+                      <option value="active">Active</option>
+                      <option value="paused">Paused</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Target End Date</label>
+                    <input 
+                      type="text"
+                      required
+                      value={newCampaignEndDate} 
+                      onChange={e => setNewCampaignEndDate(e.target.value)} 
+                      placeholder="Aug 31, 2025" 
+                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-3 border-t border-border">
+                  <button type="button" onClick={() => setShowNewCampaign(false)} className="flex-1 py-2.5 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted transition-all">Cancel</button>
+                  <button type="submit" className="flex-1 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">Create</button>
+                </div>
+              </form>
             </div>
           </div>
         )}
@@ -112,7 +205,7 @@ export default function BusinessDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {campaigns.map(c => (
+                {campaignsList.map(c => (
                   <tr key={c.name} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3">
                       <p className="text-sm font-medium text-foreground">{c.name}</p>
@@ -128,7 +221,15 @@ export default function BusinessDashboard() {
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button onClick={() => toast('info', `Editing ${c.name}...`)} className="px-2.5 py-1 rounded-lg border border-border text-xs text-foreground hover:border-primary/30 hover:text-primary transition-all">Edit</button>
-                        <button onClick={() => toast('info', `Viewing ${c.name}...`)} className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-all">View</button>
+                        <button 
+                          onClick={() => {
+                            setCampaignsList(prev => prev.filter(item => item.name !== c.name));
+                            toast('success', `Deleted campaign: ${c.name}`);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-destructive/10 hover:bg-destructive/20 text-destructive text-xs font-semibold transition-all"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </td>
                   </tr>
