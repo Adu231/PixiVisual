@@ -910,13 +910,59 @@ export function BusinessCampaigns() {
 }
 
 export function BusinessAnalytics() {
+  const [activeMetric, setActiveMetric] = useState<'reach' | 'conversions'>('reach');
+
+  const chartData = {
+    reach: [
+      { label: 'Week 1', value: 45000, display: '45K' },
+      { label: 'Week 2', value: 58000, display: '58K' },
+      { label: 'Week 3', value: 52000, display: '52K' },
+      { label: 'Week 4', value: 69000, display: '69K' },
+      { label: 'Week 5', value: 84000, display: '84K' },
+      { label: 'Week 6', value: 92000, display: '92K' },
+    ],
+    conversions: [
+      { label: 'Week 1', value: 180, display: '180' },
+      { label: 'Week 2', value: 240, display: '240' },
+      { label: 'Week 3', value: 210, display: '210' },
+      { label: 'Week 4', value: 310, display: '310' },
+      { label: 'Week 5', value: 380, display: '380' },
+      { label: 'Week 6', value: 420, display: '420' },
+    ]
+  };
+
+  const currentData = chartData[activeMetric];
+  const maxValue = Math.max(...currentData.map(d => d.value));
+
   return (
     <DashboardLayout sidebarItems={businessSidebarItems} title="Analytics" roleLabel="Business Owner">
       <div className="p-4 lg:p-6 space-y-6">
-        <div>
-          <h2 className="text-xl font-display font-bold text-foreground">Business Analytics</h2>
-          <p className="text-sm text-muted-foreground">Performance insights across campaigns</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-display font-bold text-foreground">Business Analytics</h2>
+            <p className="text-sm text-muted-foreground">Performance insights across campaigns</p>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setActiveMetric('reach')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                activeMetric === 'reach' ? 'gradient-primary text-white shadow-sm' : 'border border-border text-muted-foreground hover:border-primary/30 bg-secondary/35'
+              }`}
+            >
+              Reach
+            </button>
+            <button 
+              onClick={() => setActiveMetric('conversions')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                activeMetric === 'conversions' ? 'gradient-primary text-white shadow-sm' : 'border border-border text-muted-foreground hover:border-primary/30 bg-secondary/35'
+              }`}
+            >
+              Conversions
+            </button>
+          </div>
         </div>
+
+        {/* Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             { label: 'Total Reach', value: '284K', delta: '+34%' },
@@ -924,12 +970,44 @@ export function BusinessAnalytics() {
             { label: 'Revenue Generated', value: formatCurrency(28400), delta: '+22%' },
             { label: 'Avg CTR', value: '3.8%', delta: '+0.5%' },
           ].map(s => (
-            <div key={s.label} className="bg-card border border-border rounded-2xl p-4 text-center">
+            <div key={s.label} className="bg-card border border-border rounded-2xl p-4 text-center hover:border-primary/20 transition-all">
               <div className="text-xl font-display font-bold gradient-primary-text">{s.value}</div>
               <div className="text-xs text-muted-foreground mt-0.5">{s.label}</div>
               <div className="text-xs text-green-500 font-medium mt-1">{s.delta}</div>
             </div>
           ))}
+        </div>
+
+        {/* Graphical Performance Chart */}
+        <div className="bg-card border border-border rounded-2xl p-5 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-display font-semibold text-foreground">Campaign Performance Trend</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Showing {activeMetric === 'reach' ? 'Impressions / Reach' : 'Conversion Sales'} over the last 6 weeks</p>
+            </div>
+            <TrendingUp className="w-4 h-4 text-primary" />
+          </div>
+
+          <div className="flex items-end gap-3 sm:gap-6 h-48 pt-6">
+            {currentData.map(d => (
+              <div key={d.label} className="flex-1 flex flex-col items-center gap-2 group h-full justify-end">
+                {/* Value tooltip on hover */}
+                <span className="text-2xs text-primary font-bold opacity-0 group-hover:opacity-100 transition-opacity bg-secondary border border-border px-2 py-0.5 rounded-md mb-1 shadow-sm">
+                  {d.display}
+                </span>
+                
+                {/* Bar */}
+                <div 
+                  className="w-full rounded-t-xl gradient-primary opacity-80 hover:opacity-100 transition-all duration-300 cursor-pointer shadow-glow-purple/10"
+                  style={{ height: `${(d.value / maxValue) * 75}%` }}
+                  title={`${d.label}: ${d.display}`}
+                />
+                
+                {/* Label */}
+                <span className="text-xs text-muted-foreground font-medium mt-1">{d.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </DashboardLayout>
