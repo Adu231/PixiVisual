@@ -1,23 +1,25 @@
+import { useState } from 'react';
 import { BarChart2, TrendingUp, Users, Palette, Eye, Download, ArrowUp, ArrowDown } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { teamSidebarItems } from '../TeamDashboard';
 import { toast } from '@/components/ui/Toast';
 
-const metrics = [
+// Datasets for 30D (Default)
+const metrics30D = [
   { label: 'Total Assets Created', value: '1,172', delta: '+89', up: true, icon: Palette },
   { label: 'Team Productivity', value: '94%', delta: '+3%', up: true, icon: TrendingUp },
   { label: 'Asset Downloads', value: '8,420', delta: '+12%', up: true, icon: Download },
   { label: 'Active Contributors', value: '36', delta: '-2', up: false, icon: Users },
 ];
 
-const workspacePerf = [
+const workspacePerf30D = [
   { name: 'Global HQ', assets: 620, downloads: 3840, consistency: 95 },
   { name: 'EMEA Region', assets: 285, downloads: 2210, consistency: 91 },
   { name: 'APAC Region', assets: 193, downloads: 1640, consistency: 88 },
   { name: 'Product Launch', assets: 74, downloads: 730, consistency: 82 },
 ];
 
-const monthlyData = [
+const monthlyData30D = [
   { month: 'Jan', assets: 78, downloads: 640 },
   { month: 'Feb', assets: 95, downloads: 820 },
   { month: 'Mar', assets: 112, downloads: 910 },
@@ -26,9 +28,66 @@ const monthlyData = [
   { month: 'Jun', assets: 89, downloads: 760 },
 ];
 
-const maxAssets = Math.max(...monthlyData.map(d => d.assets));
+// Datasets for 7D
+const metrics7D = [
+  { label: 'Total Assets Created', value: '243', delta: '+14', up: true, icon: Palette },
+  { label: 'Team Productivity', value: '96%', delta: '+1%', up: true, icon: TrendingUp },
+  { label: 'Asset Downloads', value: '1,420', delta: '+4%', up: true, icon: Download },
+  { label: 'Active Contributors', value: '28', delta: '+3', up: true, icon: Users },
+];
+
+const workspacePerf7D = [
+  { name: 'Global HQ', assets: 98, downloads: 540, consistency: 96 },
+  { name: 'EMEA Region', assets: 64, downloads: 380, consistency: 92 },
+  { name: 'APAC Region', assets: 48, downloads: 290, consistency: 89 },
+  { name: 'Product Launch', assets: 33, downloads: 210, consistency: 85 },
+];
+
+const monthlyData7D = [
+  { month: 'Mon', assets: 12, downloads: 90 },
+  { month: 'Tue', assets: 18, downloads: 140 },
+  { month: 'Wed', assets: 25, downloads: 180 },
+  { month: 'Thu', assets: 32, downloads: 220 },
+  { month: 'Fri', assets: 28, downloads: 200 },
+  { month: 'Sat', assets: 8, downloads: 70 },
+  { month: 'Sun', assets: 14, downloads: 95 },
+];
+
+// Datasets for 90D
+const metrics90D = [
+  { label: 'Total Assets Created', value: '3,842', delta: '+284', up: true, icon: Palette },
+  { label: 'Team Productivity', value: '92%', delta: '-1%', up: false, icon: TrendingUp },
+  { label: 'Asset Downloads', value: '24,820', delta: '+18%', up: true, icon: Download },
+  { label: 'Active Contributors', value: '42', delta: '+8', up: true, icon: Users },
+];
+
+const workspacePerf90D = [
+  { name: 'Global HQ', assets: 1890, downloads: 11240, consistency: 94 },
+  { name: 'EMEA Region', assets: 980, downloads: 6840, consistency: 90 },
+  { name: 'APAC Region', assets: 680, downloads: 4910, consistency: 87 },
+  { name: 'Product Launch', assets: 292, downloads: 1830, consistency: 80 },
+];
+
+const monthlyData90D = [
+  { month: 'Apr', assets: 340, downloads: 2840 },
+  { month: 'May', assets: 410, downloads: 3210 },
+  { month: 'Jun', assets: 480, downloads: 3910 },
+];
 
 export default function TeamAnalytics() {
+  const [period, setPeriod] = useState<'7D' | '30D' | '90D'>('30D');
+
+  const activeMetrics = period === '7D' ? metrics7D : period === '90D' ? metrics90D : metrics30D;
+  const activeWorkspacePerf = period === '7D' ? workspacePerf7D : period === '90D' ? workspacePerf90D : workspacePerf30D;
+  const activeMonthlyData = period === '7D' ? monthlyData7D : period === '90D' ? monthlyData90D : monthlyData30D;
+
+  const maxAssets = Math.max(...activeMonthlyData.map(d => d.assets));
+
+  const handlePeriodChange = (p: '7D' | '30D' | '90D') => {
+    setPeriod(p);
+    toast('success', `Analytics data updated for ${p} range.`);
+  };
+
   return (
     <DashboardLayout sidebarItems={teamSidebarItems} title="Analytics" roleLabel="Enterprise Team">
       <div className="p-4 lg:p-6 space-y-6">
@@ -38,9 +97,11 @@ export default function TeamAnalytics() {
             <p className="text-sm text-muted-foreground">Brand performance across all workspaces</p>
           </div>
           <div className="flex gap-2">
-            {['7D', '30D', '90D'].map(p => (
-              <button key={p} onClick={() => toast('info', `Switching to ${p} view...`)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${p === '30D' ? 'gradient-primary text-white' : 'border border-border text-muted-foreground hover:border-primary/30'}`}>
+            {(['7D', '30D', '90D'] as const).map(p => (
+              <button key={p} onClick={() => handlePeriodChange(p)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  period === p ? 'gradient-primary text-white' : 'border border-border text-muted-foreground hover:border-primary/30'
+                }`}>
                 {p}
               </button>
             ))}
@@ -49,7 +110,7 @@ export default function TeamAnalytics() {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {metrics.map(m => (
+          {activeMetrics.map(m => (
             <div key={m.label} className="bg-card border border-border rounded-2xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
@@ -70,21 +131,26 @@ export default function TeamAnalytics() {
         <div className="bg-card border border-border rounded-2xl p-5">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="text-sm font-display font-semibold text-foreground">Assets Created per Month</h3>
+              <h3 className="text-sm font-display font-semibold text-foreground">
+                {period === '7D' ? 'Assets Created per Day' : 'Assets Created per Month'}
+              </h3>
               <p className="text-xs text-muted-foreground mt-0.5">All workspaces combined</p>
             </div>
             <BarChart2 className="w-4 h-4 text-muted-foreground" />
           </div>
-          <div className="flex items-end gap-3 h-40">
-            {monthlyData.map(d => (
-              <div key={d.month} className="flex-1 flex flex-col items-center gap-2">
-                <span className="text-xs text-primary font-medium">{d.assets}</span>
-                <div
-                  className="w-full rounded-t-lg gradient-primary hover:opacity-90 transition-opacity cursor-pointer"
-                  style={{ height: `${(d.assets / maxAssets) * 100}%` }}
-                  title={`${d.month}: ${d.assets} assets`}
-                />
-                <span className="text-xs text-muted-foreground">{d.month}</span>
+          <div className="flex items-end gap-3 h-48 pt-4 pb-2 px-2">
+            {activeMonthlyData.map(d => (
+              <div key={d.month} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+                <span className="text-[10px] text-primary font-bold">{d.assets}</span>
+                {/* Fixed height container for percentage scaling of the bar */}
+                <div className="w-full h-32 flex items-end">
+                  <div
+                    className="w-full rounded-t-lg gradient-primary hover:opacity-90 transition-all cursor-pointer shadow-sm shadow-purple-500/20"
+                    style={{ height: `${(d.assets / maxAssets) * 100}%` }}
+                    title={`${d.month}: ${d.assets} assets`}
+                  />
+                </div>
+                <span className="text-xs text-muted-foreground font-medium">{d.month}</span>
               </div>
             ))}
           </div>
@@ -105,7 +171,7 @@ export default function TeamAnalytics() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {workspacePerf.map(ws => (
+              {activeWorkspacePerf.map(ws => (
                 <tr key={ws.name} className="hover:bg-muted/30 transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">

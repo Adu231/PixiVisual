@@ -33,13 +33,64 @@ const severityColors: Record<string, string> = {
 
 export default function TeamConsistency() {
   const [running, setRunning] = useState(false);
-  const overallScore = Math.round(checks.reduce((sum, c) => sum + c.score, 0) / checks.length);
+  const [checksList, setChecksList] = useState(checks);
+  const [violationsList, setViolationsList] = useState(violations);
+  const [selectedViolation, setSelectedViolation] = useState<typeof violations[0] | null>(null);
+  const [selectedViolationIndex, setSelectedViolationIndex] = useState<number | null>(null);
+
+  const overallScore = Math.round(checksList.reduce((sum, c) => sum + c.score, 0) / checksList.length);
 
   const runCheck = async () => {
     setRunning(true);
     await new Promise(r => setTimeout(r, 2000));
     setRunning(false);
+    // If some violations were fixed, running check could restore a simulation or just re-validate
     toast('success', 'Brand consistency check complete!');
+  };
+
+  const handleFixViolation = (index: number) => {
+    setSelectedViolation(violationsList[index]);
+    setSelectedViolationIndex(index);
+  };
+
+  const resolveViolation = (autoFix: boolean) => {
+    if (selectedViolationIndex === null || !selectedViolation) return;
+
+    const violation = selectedViolation;
+    
+    // Map violation type to check ID
+    // Types: 'Color', 'Typography', 'Logo', 'Tone'
+    // check ids: '1' (Color), '2' (Logo), '3' (Typography), '6' (Brand voice & tone)
+    let checkId = '';
+    if (violation.type === 'Color') checkId = '1';
+    else if (violation.type === 'Logo') checkId = '2';
+    else if (violation.type === 'Typography') checkId = '3';
+    else if (violation.type === 'Tone') checkId = '6';
+
+    // Update checks score and issues count
+    if (checkId) {
+      setChecksList(prev => prev.map(c => {
+        if (c.id === checkId) {
+          const newScore = Math.min(100, c.score + 4);
+          const newIssues = Math.max(0, c.issues - 1);
+          return {
+            ...c,
+            score: newScore,
+            issues: newIssues,
+            status: newScore >= 90 ? 'excellent' : newScore >= 75 ? 'good' : 'warning',
+            trend: 'up'
+          };
+        }
+        return c;
+      }));
+    }
+
+    // Remove violation
+    setViolationsList(prev => prev.filter((_, idx) => idx !== selectedViolationIndex));
+    
+    toast('success', autoFix ? `Successfully auto-resolved brand violation!` : `Violation approved as exception.`);
+    setSelectedViolation(null);
+    setSelectedViolationIndex(null);
   };
 
   return (
@@ -78,7 +129,11 @@ export default function TeamConsistency() {
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-display font-bold text-foreground mb-1">Overall Brand Score</h3>
-              <p className="text-sm text-muted-foreground mb-3">Your brand consistency is <strong className="text-foreground">Good</strong>. Focus on typography and brand voice to reach Excellent.</p>
+              <p className="text-sm text-muted-foreground mb-3">
+                Your brand consistency is <strong className="text-foreground">
+                  {overallScore >= 90 ? 'Excellent' : overallScore >= 75 ? 'Good' : 'Needs Work'}
+                </strong>. Focus on typography and brand voice to reach Excellent.
+              </p>
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center gap-1.5 text-sm">
                   <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
@@ -103,7 +158,7 @@ export default function TeamConsistency() {
             <h3 className="text-sm font-display font-semibold text-foreground">Check Results by Category</h3>
           </div>
           <div className="divide-y divide-border">
-            {checks.map(check => (
+            {checksList.map(check => (
               <div key={check.id} className="p-4 flex items-center gap-4">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                   check.status === 'excellent' ? 'bg-green-500/10' : check.status === 'good' ? 'bg-blue-500/10' : 'bg-yellow-500/10'
@@ -140,30 +195,110 @@ export default function TeamConsistency() {
         <div className="bg-card border border-border rounded-2xl overflow-hidden">
           <div className="p-4 border-b border-border flex items-center justify-between">
             <h3 className="text-sm font-display font-semibold text-foreground">Recent Violations</h3>
-            <span className="text-xs text-destructive font-medium">{violations.length} active</span>
+            <span className="text-xs text-destructive font-medium">{violationsList.length} active</span>
           </div>
           <div className="divide-y divide-border">
-            {violations.map((v, i) => (
-              <div key={i} className="p-4 flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <X className="w-4 h-4 text-destructive" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                    <span className="text-xs font-semibold text-muted-foreground uppercase">{v.type}</span>
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${severityColors[v.severity]}`}>{v.severity}</span>
-                  </div>
-                  <p className="text-sm text-foreground">{v.desc}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{v.workspace} · {v.time}</p>
-                </div>
-                <button onClick={() => toast('info', 'Opening violation details...')} className="text-xs text-primary hover:underline flex items-center gap-0.5 flex-shrink-0">
-                  Fix <ArrowRight className="w-3 h-3" />
-                </button>
+            {violationsList.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground text-sm">
+                No active violations found. Your brand guidelines compliance is pristine!
               </div>
-            ))}
+            ) : (
+              violationsList.map((v, i) => (
+                <div key={i} className="p-4 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <X className="w-4 h-4 text-destructive" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase">{v.type}</span>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${severityColors[v.severity]}`}>{v.severity}</span>
+                    </div>
+                    <p className="text-sm text-foreground">{v.desc}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{v.workspace} · {v.time}</p>
+                  </div>
+                  <button onClick={() => handleFixViolation(i)} className="text-xs text-primary hover:underline flex items-center gap-0.5 flex-shrink-0">
+                    Fix <ArrowRight className="w-3 h-3" />
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
+
+      {/* Violation Fix Modal */}
+      {selectedViolation && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-md p-6 relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <button 
+              onClick={() => { setSelectedViolation(null); setSelectedViolationIndex(null); }}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h3 className="text-lg font-display font-bold text-foreground mb-2 flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              Resolve Brand Violation
+            </h3>
+            
+            <div className="space-y-4 my-4">
+              <div className="p-3.5 bg-muted/50 border border-border rounded-xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    {selectedViolation.type} Violation
+                  </span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${severityColors[selectedViolation.severity]}`}>
+                    {selectedViolation.severity} Severity
+                  </span>
+                </div>
+                <p className="text-sm text-foreground font-medium">{selectedViolation.desc}</p>
+                <p className="text-xs text-muted-foreground">Location: {selectedViolation.workspace} · Detected: {selectedViolation.time}</p>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase">Resolution Actions</h4>
+                
+                <button
+                  onClick={() => resolveViolation(true)}
+                  className="w-full flex items-center justify-between p-3 border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary rounded-xl text-sm font-medium transition-colors text-left"
+                >
+                  <div>
+                    <span className="block font-bold">
+                      {selectedViolation.type === 'Color' && 'Auto-replace with primary brand color'}
+                      {selectedViolation.type === 'Typography' && 'Correct to official brand font (Inter)'}
+                      {selectedViolation.type === 'Logo' && 'Replace with high-contrast logo asset'}
+                      {selectedViolation.type === 'Tone' && 'Rewrite using Brand Voice AI'}
+                    </span>
+                    <span className="text-xs text-muted-foreground font-normal">Apply standard Brand Guidelines rules instantly</span>
+                  </div>
+                  <Check className="w-4 h-4" />
+                </button>
+
+                <button
+                  onClick={() => resolveViolation(false)}
+                  className="w-full flex items-center justify-between p-3 border border-border hover:bg-muted/50 text-foreground rounded-xl text-sm font-medium transition-colors text-left"
+                >
+                  <div>
+                    <span className="block font-semibold">Approve Exception (Ignore)</span>
+                    <span className="text-xs text-muted-foreground font-normal">Allow this usage and flag as an authorized campaign exception</span>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
+              <button
+                onClick={() => { setSelectedViolation(null); setSelectedViolationIndex(null); }}
+                className="px-4 py-2 border border-border hover:bg-muted text-foreground rounded-xl text-sm font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
