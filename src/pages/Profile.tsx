@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Camera, Save, User as UserIcon, Mail, Building, Globe, MapPin, FileText } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -8,6 +8,8 @@ import { getInitials } from '@/lib/utils';
 
 export default function Profile() {
   const { user, updateProfile } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [form, setForm] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -15,11 +17,20 @@ export default function Profile() {
     website: user?.website || '',
     location: user?.location || '',
     bio: user?.bio || '',
+    avatar: user?.avatar || '',
   });
+  
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [avatarError, setAvatarError] = useState(false);
 
-  useEffect(() => { window.scrollTo(0, 0); }, []);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [form.avatar]);
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -28,6 +39,23 @@ export default function Profile() {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid email';
     setErrors(e);
     return Object.keys(e).length === 0;
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast('error', 'File size exceeds 2MB limit.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = event.target?.result as string;
+        setForm(prev => ({ ...prev, avatar: base64 }));
+        toast('success', 'Profile image selected. Click Save Changes to update.');
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSave = async () => {
@@ -56,16 +84,34 @@ export default function Profile() {
             <div className="space-y-5">
               <div className="p-6 rounded-2xl border border-border bg-card text-center">
                 <div className="relative inline-block mb-4">
-                  {user.avatar ? (
-                    <img src={user.avatar} alt={user.name} className="w-20 h-20 rounded-2xl object-cover" />
+                  {form.avatar ? (
+                    <img 
+                      src={form.avatar} 
+                      alt={user.name} 
+                      className="w-20 h-20 rounded-2xl object-cover" 
+                      onError={(e) => {
+                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=7c3aed&color=fff`;
+                      }}
+                    />
                   ) : (
                     <div className="w-20 h-20 rounded-2xl gradient-primary flex items-center justify-center text-white text-2xl font-bold">
                       {getInitials(user.name)}
                     </div>
                   )}
-                  <button className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full gradient-primary flex items-center justify-center border-2 border-background">
+                  <button 
+                    type="button" 
+                    onClick={() => fileInputRef.current?.click()} 
+                    className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full gradient-primary flex items-center justify-center border-2 border-background cursor-pointer hover:scale-105 transition-transform"
+                  >
                     <Camera className="w-3 h-3 text-white" />
                   </button>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    onChange={handleFileChange} 
+                    accept="image/*" 
+                    className="hidden" 
+                  />
                 </div>
                 <h3 className="text-base font-semibold text-foreground">{user.name}</h3>
                 <p className="text-xs text-muted-foreground mt-0.5 capitalize">{user.role.replace('-', ' ')}</p>
