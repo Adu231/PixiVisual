@@ -46,27 +46,85 @@ const statusColors: Record<string, string> = {
 };
 
 export function AgencyClients() {
+  const [clientsList, setClientsList] = useState(clients);
+  const [showAddClient, setShowAddClient] = useState(false);
+  const [newClientName, setNewClientName] = useState('');
+  const [newClientIndustry, setNewClientIndustry] = useState('');
+  const [newClientRevenue, setNewClientRevenue] = useState('');
+  const [newClientStatus, setNewClientStatus] = useState('active');
+  const [newClientContact, setNewClientContact] = useState('');
+
+  const [selectedClient, setSelectedClient] = useState<any | null>(null);
+  const [messagingClient, setMessagingClient] = useState<any | null>(null);
+  const [messageText, setMessageText] = useState('');
+
+  const handleCreateClient = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newClientName.trim()) {
+      toast('warning', 'Please enter client name');
+      return;
+    }
+
+    const revenueVal = parseFloat(newClientRevenue) || 0;
+    const newClient = {
+      id: (clientsList.length + 1).toString(),
+      name: newClientName.trim(),
+      logo: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=48&h=48&fit=crop',
+      industry: newClientIndustry.trim() || 'General Business',
+      status: newClientStatus,
+      projects: 0,
+      revenue: revenueVal,
+      contact: newClientContact.trim() || 'No Contact Person',
+    };
+
+    setClientsList(prev => [...prev, newClient]);
+    setShowAddClient(false);
+    setNewClientName('');
+    setNewClientIndustry('');
+    setNewClientRevenue('');
+    setNewClientStatus('active');
+    setNewClientContact('');
+    toast('success', `Client "${newClient.name}" added successfully!`);
+  };
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!messageText.trim()) {
+      toast('warning', 'Please enter a message');
+      return;
+    }
+    toast('success', `Message sent successfully to ${messagingClient.contact}!`);
+    setMessagingClient(null);
+    setMessageText('');
+  };
+
+  // Get associated projects for selected client
+  const clientProjects = selectedClient 
+    ? projects.filter(p => p.client.toLowerCase() === selectedClient.name.toLowerCase())
+    : [];
+
   return (
     <DashboardLayout sidebarItems={agencySidebarItems} title="Clients" roleLabel="Marketing Agency">
       <div className="p-4 lg:p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-display font-bold text-foreground">Client Management</h2>
-            <p className="text-sm text-muted-foreground">{clients.filter(c => c.status === 'active').length} active clients</p>
+            <p className="text-sm text-muted-foreground">{clientsList.filter(c => c.status === 'active').length} active clients</p>
           </div>
-          <button onClick={() => toast('info', 'Adding new client...')} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">
+          <button onClick={() => setShowAddClient(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">
             <Plus className="w-4 h-4" /> Add Client
           </button>
         </div>
+
         <div className="grid gap-4">
-          {clients.map(client => (
+          {clientsList.map(client => (
             <div key={client.id} className="bg-card border border-border rounded-2xl p-5 hover:border-primary/20 transition-all">
               <div className="flex items-start gap-4">
                 <img src={client.logo} alt={client.name} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
                     <h3 className="text-base font-semibold text-foreground">{client.name}</h3>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${statusColors[client.status]}`}>{client.status}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${statusColors[client.status] || 'bg-muted text-muted-foreground'}`}>{client.status}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">{client.industry} · Contact: {client.contact}</p>
                   <div className="flex gap-6 mt-2 text-xs text-muted-foreground">
@@ -75,8 +133,8 @@ export function AgencyClients() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => toast('info', `Opening ${client.name} details...`)} className="px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-foreground hover:border-primary/30 transition-all">View</button>
-                  <button onClick={() => toast('info', `Messaging ${client.contact}...`)} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:border-primary/30 hover:text-primary transition-all">
+                  <button onClick={() => setSelectedClient(client)} className="px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-foreground hover:border-primary/30 transition-all">View</button>
+                  <button onClick={() => { setMessagingClient(client); setMessageText(''); }} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:border-primary/30 hover:text-primary transition-all">
                     <MessageSquare className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -85,6 +143,196 @@ export function AgencyClients() {
           ))}
         </div>
       </div>
+
+      {/* Add Client Modal */}
+      {showAddClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setShowAddClient(false)} />
+          <div className="relative z-10 bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
+              <h3 className="text-base font-display font-bold text-foreground">Add New Client</h3>
+              <button onClick={() => setShowAddClient(false)} className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleCreateClient} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Company Name</label>
+                <input 
+                  type="text"
+                  required
+                  value={newClientName} 
+                  onChange={e => setNewClientName(e.target.value)} 
+                  placeholder="e.g. TechFlow Inc." 
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Contact Person</label>
+                <input 
+                  type="text"
+                  required
+                  value={newClientContact} 
+                  onChange={e => setNewClientContact(e.target.value)} 
+                  placeholder="e.g. Sarah Chen" 
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Industry</label>
+                <input 
+                  type="text"
+                  required
+                  value={newClientIndustry} 
+                  onChange={e => setNewClientIndustry(e.target.value)} 
+                  placeholder="e.g. SaaS, E-commerce, Food & Bev" 
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Monthly Contract ($)</label>
+                  <input 
+                    type="number"
+                    required
+                    value={newClientRevenue} 
+                    onChange={e => setNewClientRevenue(e.target.value)} 
+                    placeholder="e.g. 5000" 
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Status</label>
+                  <select
+                    value={newClientStatus}
+                    onChange={e => setNewClientStatus(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 appearance-none font-medium"
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-3 border-t border-border">
+                <button type="button" onClick={() => setShowAddClient(false)} className="flex-1 py-2.5 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted transition-all">Cancel</button>
+                <button type="submit" className="flex-1 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">Add Client</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Client Details Modal */}
+      {selectedClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setSelectedClient(null)} />
+          <div className="relative z-10 bg-card border border-border rounded-2xl p-6 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
+              <h3 className="text-base font-display font-bold text-foreground">Client Details</h3>
+              <button onClick={() => setSelectedClient(null)} className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <img src={selectedClient.logo} alt={selectedClient.name} className="w-16 h-16 rounded-2xl object-cover border border-border" />
+                <div>
+                  <h4 className="text-lg font-bold text-foreground">{selectedClient.name}</h4>
+                  <p className="text-sm text-muted-foreground">{selectedClient.industry}</p>
+                  <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium capitalize mt-1.5 ${statusColors[selectedClient.status] || 'bg-muted text-muted-foreground'}`}>{selectedClient.status}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 bg-muted/20 p-4 rounded-xl border border-border/50">
+                <div>
+                  <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Primary Contact</p>
+                  <p className="text-sm font-bold text-foreground mt-0.5">{selectedClient.contact}</p>
+                </div>
+                <div>
+                  <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Monthly Value</p>
+                  <p className="text-sm font-bold text-green-600 dark:text-green-400 mt-0.5">{formatCurrency(selectedClient.revenue)}</p>
+                </div>
+              </div>
+
+              <div>
+                <h5 className="text-xs font-semibold text-muted-foreground mb-2.5 uppercase tracking-wider">Associated Projects ({clientProjects.length})</h5>
+                {clientProjects.length > 0 ? (
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    {clientProjects.map(proj => (
+                      <div key={proj.id} className="p-3 bg-background border border-border rounded-xl flex items-center justify-between gap-4">
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-foreground truncate">{proj.name}</p>
+                          <p className="text-3xs text-muted-foreground mt-0.5">Due: {proj.dueDate} · Designer: {proj.designer}</p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className={`text-3xs font-medium px-2 py-0.5 rounded-full capitalize ${statusColors[proj.status] || 'bg-muted'}`}>
+                            {proj.status.replace('-', ' ')}
+                          </span>
+                          <span className="text-2xs font-bold text-foreground">{proj.progress}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 border border-dashed border-border rounded-xl">
+                    <p className="text-xs text-muted-foreground">No projects found for this client</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4 border-t border-border mt-6">
+              <button onClick={() => setSelectedClient(null)} className="px-4 py-2 rounded-xl border border-border text-foreground text-xs font-medium hover:bg-muted transition-all">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Message Client Modal */}
+      {messagingClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setMessagingClient(null)} />
+          <div className="relative z-10 bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
+              <h3 className="text-base font-display font-bold text-foreground">Send Message</h3>
+              <button onClick={() => setMessagingClient(null)} className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleSendMessage} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1">To</label>
+                <div className="px-3 py-2 bg-muted/40 border border-border rounded-xl text-xs font-medium text-foreground">
+                  {messagingClient.contact} ({messagingClient.name})
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Message</label>
+                <textarea 
+                  required
+                  rows={4}
+                  value={messageText} 
+                  onChange={e => setMessageText(e.target.value)} 
+                  placeholder={`Write your message to ${messagingClient.contact}...`} 
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none" 
+                />
+              </div>
+
+              <div className="flex gap-3 pt-3 border-t border-border">
+                <button type="button" onClick={() => setMessagingClient(null)} className="flex-1 py-2.5 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted transition-all">Cancel</button>
+                <button type="submit" className="flex-1 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">Send Message</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
