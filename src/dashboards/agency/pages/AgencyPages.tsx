@@ -226,7 +226,14 @@ export function AgencyTeam() {
         <div className="grid gap-4">
           {team.map(m => (
             <div key={m.name} className="bg-card border border-border rounded-2xl p-5 flex items-center gap-4 hover:border-primary/20 transition-all">
-              <img src={m.avatar} alt={m.name} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+              <img 
+                src={m.avatar} 
+                alt={m.name} 
+                className="w-12 h-12 rounded-full object-cover flex-shrink-0" 
+                onError={(e) => {
+                  e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}&background=7c3aed&color=fff`;
+                }}
+              />
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-semibold text-foreground">{m.name}</h3>
                 <p className="text-xs text-muted-foreground">{m.role} · {m.projects} active projects</p>

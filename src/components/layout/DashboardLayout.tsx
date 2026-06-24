@@ -63,9 +63,11 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
   }, []);
 
   const isCreatorPath = location.pathname.includes('/creator');
+  const isDesignerPath = location.pathname.includes('/designer');
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationsList, setNotificationsList] = useState(() => {
     const pathIsCreator = window.location.pathname.includes('/creator');
+    const pathIsDesigner = window.location.pathname.includes('/designer');
     if (pathIsCreator) {
       const stored = localStorage.getItem('pixivisual_creator_notifications_list');
       if (stored !== null) {
@@ -83,6 +85,22 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
       ];
       localStorage.setItem('pixivisual_creator_notifications_list', JSON.stringify(initialCreatorList));
       return initialCreatorList;
+    } else if (pathIsDesigner) {
+      const stored = localStorage.getItem('pixivisual_designer_notifications_list');
+      if (stored !== null) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          // ignore error
+        }
+      }
+      const initialDesignerList = [
+        { id: 1, title: 'New System Submission', message: 'Modern Business Card Set has been submitted for review.', time: '2h ago', read: false },
+        { id: 2, title: 'Security Alert', message: 'New login detected from dynamic IP address.', time: '5h ago', read: false },
+        { id: 3, title: 'Billing Generated', message: 'Monthly platform transaction invoice generated.', time: '1d ago', read: false }
+      ];
+      localStorage.setItem('pixivisual_designer_notifications_list', JSON.stringify(initialDesignerList));
+      return initialDesignerList;
     } else {
       return [
         { id: 1, title: 'New System Submission', message: 'Modern Business Card Set has been submitted for review.', time: '2h ago', read: false },
@@ -94,6 +112,7 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
 
   const [notifications, setNotifications] = useState(() => {
     const pathIsCreator = window.location.pathname.includes('/creator');
+    const pathIsDesigner = window.location.pathname.includes('/designer');
     if (pathIsCreator) {
       const stored = localStorage.getItem('pixivisual_creator_notifications_count');
       if (stored !== null) {
@@ -102,6 +121,14 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
       }
       localStorage.setItem('pixivisual_creator_notifications_count', '4');
       return 4;
+    } else if (pathIsDesigner) {
+      const stored = localStorage.getItem('pixivisual_designer_notifications_count');
+      if (stored !== null) {
+        const parsed = parseInt(stored, 10);
+        if (!isNaN(parsed)) return parsed;
+      }
+      localStorage.setItem('pixivisual_designer_notifications_count', '3');
+      return 3;
     } else {
       return 3;
     }
@@ -110,14 +137,18 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
   useEffect(() => {
     if (isCreatorPath) {
       localStorage.setItem('pixivisual_creator_notifications_list', JSON.stringify(notificationsList));
+    } else if (isDesignerPath) {
+      localStorage.setItem('pixivisual_designer_notifications_list', JSON.stringify(notificationsList));
     }
-  }, [notificationsList, isCreatorPath]);
+  }, [notificationsList, isCreatorPath, isDesignerPath]);
 
   useEffect(() => {
     if (isCreatorPath) {
       localStorage.setItem('pixivisual_creator_notifications_count', notifications.toString());
+    } else if (isDesignerPath) {
+      localStorage.setItem('pixivisual_designer_notifications_count', notifications.toString());
     }
-  }, [notifications, isCreatorPath]);
+  }, [notifications, isCreatorPath, isDesignerPath]);
 
   useEffect(() => {
     if (isCreatorPath) {
@@ -139,6 +170,25 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
           setNotifications(parsed);
         }
       }
+    } else if (isDesignerPath) {
+      const storedList = localStorage.getItem('pixivisual_designer_notifications_list');
+      if (storedList !== null) {
+        try {
+          const parsed = JSON.parse(storedList);
+          if (JSON.stringify(parsed) !== JSON.stringify(notificationsList)) {
+            setNotificationsList(parsed);
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+      const storedCount = localStorage.getItem('pixivisual_designer_notifications_count');
+      if (storedCount !== null) {
+        const parsed = parseInt(storedCount, 10);
+        if (!isNaN(parsed) && parsed !== notifications) {
+          setNotifications(parsed);
+        }
+      }
     } else {
       setNotificationsList([
         { id: 1, title: 'New System Submission', message: 'Modern Business Card Set has been submitted for review.', time: '2h ago', read: false },
@@ -147,7 +197,7 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
       ]);
       setNotifications(3);
     }
-  }, [location.pathname, isCreatorPath]);
+  }, [location.pathname, isCreatorPath, isDesignerPath]);
 
   const handleLogout = () => {
     logout();
@@ -171,7 +221,14 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
         <div className="p-4 border-b border-border">
           <div className="flex items-center gap-3">
             {user.avatar ? (
-              <img src={user.avatar} alt={user.name} className="w-9 h-9 rounded-full object-cover" />
+              <img 
+                src={user.avatar} 
+                alt={user.name} 
+                className="w-9 h-9 rounded-full object-cover" 
+                onError={(e) => {
+                  e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=7c3aed&color=fff`;
+                }}
+              />
             ) : (
               <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                 {getInitials(user.name)}
@@ -187,7 +244,14 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
       {collapsed && user && (
         <div className="p-4 border-b border-border flex justify-center">
           {user.avatar ? (
-            <img src={user.avatar} alt={user.name} className="w-9 h-9 rounded-full object-cover" />
+            <img 
+              src={user.avatar} 
+              alt={user.name} 
+              className="w-9 h-9 rounded-full object-cover" 
+              onError={(e) => {
+                e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=7c3aed&color=fff`;
+              }}
+            />
           ) : (
             <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center text-white text-sm font-bold">
               {getInitials(user.name)}
@@ -318,7 +382,13 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-2 bg-muted rounded-xl px-3 py-1.5 max-w-xs">
+            <div 
+              onClick={(e) => {
+                const input = e.currentTarget.querySelector('input');
+                if (input) input.focus();
+              }}
+              className="hidden sm:flex items-center gap-2 bg-muted rounded-xl px-3 py-1.5 max-w-xs cursor-text"
+            >
               <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               <input
                 type="text"

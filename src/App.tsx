@@ -66,6 +66,7 @@ import {
   DesignerClients,
   DesignerEarnings,
   DesignerAnalytics,
+  DesignerHistory,
 } from '@/dashboards/designer/pages/DesignerPages';
 
 // ── Marketing Agency Sub-pages ─────────────────────────────────────
@@ -166,6 +167,7 @@ function AppRoutes() {
         <Route path="/dashboard/designer/clients" element={<ProtectedRoute><DesignerClients /></ProtectedRoute>} />
         <Route path="/dashboard/designer/earnings" element={<ProtectedRoute><DesignerEarnings /></ProtectedRoute>} />
         <Route path="/dashboard/designer/analytics" element={<ProtectedRoute><DesignerAnalytics /></ProtectedRoute>} />
+        <Route path="/dashboard/designer/history" element={<ProtectedRoute><DesignerHistory /></ProtectedRoute>} />
 
         {/* ── Marketing Agency ──────────────────────── */}
         <Route path="/dashboard/agency" element={<ProtectedRoute><AgencyDashboard /></ProtectedRoute>} />
