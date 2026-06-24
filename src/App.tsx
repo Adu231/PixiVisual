@@ -86,6 +86,7 @@ import {
   FreelancerProposals,
   FreelancerEarnings,
   FreelancerAnalytics,
+  FreelancerHistory,
 } from '@/dashboards/freelancer/pages/FreelancerPages';
 
 // ── Enterprise Team Sub-pages ──────────────────────────────────────
@@ -185,6 +186,7 @@ function AppRoutes() {
         <Route path="/dashboard/freelancer/proposals" element={<ProtectedRoute><FreelancerProposals /></ProtectedRoute>} />
         <Route path="/dashboard/freelancer/earnings" element={<ProtectedRoute><FreelancerEarnings /></ProtectedRoute>} />
         <Route path="/dashboard/freelancer/analytics" element={<ProtectedRoute><FreelancerAnalytics /></ProtectedRoute>} />
+        <Route path="/dashboard/freelancer/history" element={<ProtectedRoute><FreelancerHistory /></ProtectedRoute>} />
 
         {/* ── Enterprise Team ───────────────────────── */}
         <Route path="/dashboard/team" element={<ProtectedRoute><TeamDashboard /></ProtectedRoute>} />

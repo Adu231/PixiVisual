@@ -64,10 +64,12 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
 
   const isCreatorPath = location.pathname.includes('/creator');
   const isDesignerPath = location.pathname.includes('/designer');
+  const isFreelancerPath = location.pathname.includes('/freelancer');
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationsList, setNotificationsList] = useState(() => {
     const pathIsCreator = window.location.pathname.includes('/creator');
     const pathIsDesigner = window.location.pathname.includes('/designer');
+    const pathIsFreelancer = window.location.pathname.includes('/freelancer');
     if (pathIsCreator) {
       const stored = localStorage.getItem('pixivisual_creator_notifications_list');
       if (stored !== null) {
@@ -101,6 +103,22 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
       ];
       localStorage.setItem('pixivisual_designer_notifications_list', JSON.stringify(initialDesignerList));
       return initialDesignerList;
+    } else if (pathIsFreelancer) {
+      const stored = localStorage.getItem('pixivisual_freelancer_notifications_list');
+      if (stored !== null) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          // ignore
+        }
+      }
+      const initialFreelancerList = [
+        { id: 1, title: 'New Project Proposal Accepted', message: 'Your proposal for "App Icon Set" has been accepted by MobileStart.', time: '1h ago', read: false },
+        { id: 2, title: 'Invoice Paid', message: 'StartupX has paid your invoice for "Brand Identity Package" ($1,200).', time: '1d ago', read: false },
+        { id: 3, title: 'New Job Invite', message: 'DesignAgency invited you to apply for "Social Media Visuals".', time: '3d ago', read: false }
+      ];
+      localStorage.setItem('pixivisual_freelancer_notifications_list', JSON.stringify(initialFreelancerList));
+      return initialFreelancerList;
     } else {
       return [
         { id: 1, title: 'New System Submission', message: 'Modern Business Card Set has been submitted for review.', time: '2h ago', read: false },
@@ -113,6 +131,7 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
   const [notifications, setNotifications] = useState(() => {
     const pathIsCreator = window.location.pathname.includes('/creator');
     const pathIsDesigner = window.location.pathname.includes('/designer');
+    const pathIsFreelancer = window.location.pathname.includes('/freelancer');
     if (pathIsCreator) {
       const stored = localStorage.getItem('pixivisual_creator_notifications_count');
       if (stored !== null) {
@@ -129,6 +148,14 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
       }
       localStorage.setItem('pixivisual_designer_notifications_count', '3');
       return 3;
+    } else if (pathIsFreelancer) {
+      const stored = localStorage.getItem('pixivisual_freelancer_notifications_count');
+      if (stored !== null) {
+        const parsed = parseInt(stored, 10);
+        if (!isNaN(parsed)) return parsed;
+      }
+      localStorage.setItem('pixivisual_freelancer_notifications_count', '3');
+      return 3;
     } else {
       return 3;
     }
@@ -139,16 +166,20 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
       localStorage.setItem('pixivisual_creator_notifications_list', JSON.stringify(notificationsList));
     } else if (isDesignerPath) {
       localStorage.setItem('pixivisual_designer_notifications_list', JSON.stringify(notificationsList));
+    } else if (isFreelancerPath) {
+      localStorage.setItem('pixivisual_freelancer_notifications_list', JSON.stringify(notificationsList));
     }
-  }, [notificationsList, isCreatorPath, isDesignerPath]);
+  }, [notificationsList, isCreatorPath, isDesignerPath, isFreelancerPath]);
 
   useEffect(() => {
     if (isCreatorPath) {
       localStorage.setItem('pixivisual_creator_notifications_count', notifications.toString());
     } else if (isDesignerPath) {
       localStorage.setItem('pixivisual_designer_notifications_count', notifications.toString());
+    } else if (isFreelancerPath) {
+      localStorage.setItem('pixivisual_freelancer_notifications_count', notifications.toString());
     }
-  }, [notifications, isCreatorPath, isDesignerPath]);
+  }, [notifications, isCreatorPath, isDesignerPath, isFreelancerPath]);
 
   useEffect(() => {
     if (isCreatorPath) {
@@ -189,6 +220,25 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
           setNotifications(parsed);
         }
       }
+    } else if (isFreelancerPath) {
+      const storedList = localStorage.getItem('pixivisual_freelancer_notifications_list');
+      if (storedList !== null) {
+        try {
+          const parsed = JSON.parse(storedList);
+          if (JSON.stringify(parsed) !== JSON.stringify(notificationsList)) {
+            setNotificationsList(parsed);
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+      const storedCount = localStorage.getItem('pixivisual_freelancer_notifications_count');
+      if (storedCount !== null) {
+        const parsed = parseInt(storedCount, 10);
+        if (!isNaN(parsed) && parsed !== notifications) {
+          setNotifications(parsed);
+        }
+      }
     } else {
       setNotificationsList([
         { id: 1, title: 'New System Submission', message: 'Modern Business Card Set has been submitted for review.', time: '2h ago', read: false },
@@ -197,7 +247,7 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
       ]);
       setNotifications(3);
     }
-  }, [location.pathname, isCreatorPath, isDesignerPath]);
+  }, [location.pathname, isCreatorPath, isDesignerPath, isFreelancerPath]);
 
   const handleLogout = () => {
     logout();
