@@ -85,8 +85,6 @@ export default function TeamIntegrations() {
       : ''
   );
 
-  setSyncFreq('Real-time');
-};
 
 
   setSyncFreq('Real-time');
