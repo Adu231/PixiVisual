@@ -63,21 +63,91 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
   }, []);
 
   const isCreatorPath = location.pathname.includes('/creator');
-  const [notifications, setNotifications] = useState(isCreatorPath ? 4 : 3);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationsList, setNotificationsList] = useState(() => {
     const pathIsCreator = window.location.pathname.includes('/creator');
-    return pathIsCreator ? [
-      { id: 1, title: 'AI Video Render Complete', message: 'Your video "Summer Promo 2026" has finished generating.', time: '10m ago', read: false },
-      { id: 2, title: 'Trending Alert', message: 'Your YouTube Thumbnail template is trending under #creator-hub.', time: '2h ago', read: false },
-      { id: 3, title: 'New System Notification', message: 'System updates scheduled for Sunday at 02:00 AM UTC.', time: '4h ago', read: false },
-      { id: 4, title: 'Social Integration Connected', message: 'Instagram and Twitter accounts synced successfully.', time: '1d ago', read: false }
-    ] : [
-      { id: 1, title: 'New System Submission', message: 'Modern Business Card Set has been submitted for review.', time: '2h ago', read: false },
-      { id: 2, title: 'Security Alert', message: 'New login detected from dynamic IP address.', time: '5h ago', read: false },
-      { id: 3, title: 'Billing Generated', message: 'Monthly platform transaction invoice generated.', time: '1d ago', read: false }
-    ];
+    if (pathIsCreator) {
+      const stored = localStorage.getItem('pixivisual_creator_notifications_list');
+      if (stored !== null) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          // ignore error
+        }
+      }
+      const initialCreatorList = [
+        { id: 1, title: 'AI Video Render Complete', message: 'Your video "Summer Promo 2026" has finished generating.', time: '10m ago', read: false },
+        { id: 2, title: 'Trending Alert', message: 'Your YouTube Thumbnail template is trending under #creator-hub.', time: '2h ago', read: false },
+        { id: 3, title: 'New System Notification', message: 'System updates scheduled for Sunday at 02:00 AM UTC.', time: '4h ago', read: false },
+        { id: 4, title: 'Social Integration Connected', message: 'Instagram and Twitter accounts synced successfully.', time: '1d ago', read: false }
+      ];
+      localStorage.setItem('pixivisual_creator_notifications_list', JSON.stringify(initialCreatorList));
+      return initialCreatorList;
+    } else {
+      return [
+        { id: 1, title: 'New System Submission', message: 'Modern Business Card Set has been submitted for review.', time: '2h ago', read: false },
+        { id: 2, title: 'Security Alert', message: 'New login detected from dynamic IP address.', time: '5h ago', read: false },
+        { id: 3, title: 'Billing Generated', message: 'Monthly platform transaction invoice generated.', time: '1d ago', read: false }
+      ];
+    }
   });
+
+  const [notifications, setNotifications] = useState(() => {
+    const pathIsCreator = window.location.pathname.includes('/creator');
+    if (pathIsCreator) {
+      const stored = localStorage.getItem('pixivisual_creator_notifications_count');
+      if (stored !== null) {
+        const parsed = parseInt(stored, 10);
+        if (!isNaN(parsed)) return parsed;
+      }
+      localStorage.setItem('pixivisual_creator_notifications_count', '4');
+      return 4;
+    } else {
+      return 3;
+    }
+  });
+
+  useEffect(() => {
+    if (isCreatorPath) {
+      localStorage.setItem('pixivisual_creator_notifications_list', JSON.stringify(notificationsList));
+    }
+  }, [notificationsList, isCreatorPath]);
+
+  useEffect(() => {
+    if (isCreatorPath) {
+      localStorage.setItem('pixivisual_creator_notifications_count', notifications.toString());
+    }
+  }, [notifications, isCreatorPath]);
+
+  useEffect(() => {
+    if (isCreatorPath) {
+      const storedList = localStorage.getItem('pixivisual_creator_notifications_list');
+      if (storedList !== null) {
+        try {
+          const parsed = JSON.parse(storedList);
+          if (JSON.stringify(parsed) !== JSON.stringify(notificationsList)) {
+            setNotificationsList(parsed);
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+      const storedCount = localStorage.getItem('pixivisual_creator_notifications_count');
+      if (storedCount !== null) {
+        const parsed = parseInt(storedCount, 10);
+        if (!isNaN(parsed) && parsed !== notifications) {
+          setNotifications(parsed);
+        }
+      }
+    } else {
+      setNotificationsList([
+        { id: 1, title: 'New System Submission', message: 'Modern Business Card Set has been submitted for review.', time: '2h ago', read: false },
+        { id: 2, title: 'Security Alert', message: 'New login detected from dynamic IP address.', time: '5h ago', read: false },
+        { id: 3, title: 'Billing Generated', message: 'Monthly platform transaction invoice generated.', time: '1d ago', read: false }
+      ]);
+      setNotifications(3);
+    }
+  }, [location.pathname, isCreatorPath]);
 
   const handleLogout = () => {
     logout();
