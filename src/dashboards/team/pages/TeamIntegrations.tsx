@@ -77,11 +77,17 @@ export default function TeamIntegrations() {
   const handleOpenSettings = (intg: typeof integrations[0]) => {
   setSettingsIntg(intg);
 
+
+
   setWebhookInput(
     intg.name === 'Slack'
-      ? 'Enter Slack Webhook URL'
+      ? '[Enter Slack Webhook URL]'
       : ''
   );
+
+  setSyncFreq('Real-time');
+};
+
 
   setSyncFreq('Real-time');
 };
