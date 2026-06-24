@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Plus, MessageSquare, Check, Clock, Search, Mail, Shield, Edit } from 'lucide-react';
+import { Users, Plus, MessageSquare, Check, Clock, Search, Mail, Shield, Edit, X } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { teamSidebarItems } from '../TeamDashboard';
 import { toast } from '@/components/ui/Toast';
@@ -26,21 +26,86 @@ const pendingInvites = [
 ];
 
 export default function TeamCollaborate() {
+  const [membersList, setMembersList] = useState(members);
+  const [invitesList, setInvitesList] = useState(pendingInvites);
   const [search, setSearch] = useState('');
+  
+  // Modals state
   const [showInvite, setShowInvite] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState('');
+  const [messagingMember, setMessagingMember] = useState<any | null>(null);
+  const [editingMember, setEditingMember] = useState<any | null>(null);
 
-  const filtered = members.filter(m =>
+  // Invite states
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('Editor');
+
+  // Message states
+  const [messageText, setMessageText] = useState('');
+
+  // Edit states
+  const [editRole, setEditRole] = useState('');
+  const [editDept, setEditDept] = useState('');
+  const [editAccess, setEditAccess] = useState('Editor');
+
+  const filtered = membersList.filter(m =>
     m.name.toLowerCase().includes(search.toLowerCase()) ||
     m.role.toLowerCase().includes(search.toLowerCase()) ||
     m.dept.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleInvite = () => {
+  const handleInvite = (e: React.FormEvent) => {
+    e.preventDefault();
     if (!inviteEmail.trim()) { toast('warning', 'Please enter an email'); return; }
-    toast('success', `Invitation sent to ${inviteEmail}`);
+    
+    // Add to pending invites state
+    const newInvite = {
+      email: inviteEmail.trim(),
+      role: inviteRole,
+      sent: 'Just now'
+    };
+    setInvitesList(prev => [...prev, newInvite]);
     setInviteEmail('');
     setShowInvite(false);
+    toast('success', `Invitation sent to ${newInvite.email}`);
+  };
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!messageText.trim()) {
+      toast('warning', 'Please enter message');
+      return;
+    }
+    toast('success', `Message sent successfully to ${messagingMember.name}!`);
+    setMessagingMember(null);
+    setMessageText('');
+  };
+
+  const handleStartEdit = (m: any) => {
+    setEditingMember(m);
+    setEditRole(m.role);
+    setEditDept(m.dept);
+    setEditAccess(m.access);
+  };
+
+  const handleUpdateMember = (e: React.FormEvent) => {
+    e.preventDefault();
+    setMembersList(prev => prev.map(m => m.id === editingMember.id ? {
+      ...m,
+      role: editRole,
+      dept: editDept,
+      access: editAccess
+    } : m));
+    setEditingMember(null);
+    toast('success', `Role updated for ${editingMember.name}!`);
+  };
+
+  const handleResend = (email: string) => {
+    toast('success', `Invitation resent to ${email}!`);
+  };
+
+  const handleRevoke = (email: string) => {
+    setInvitesList(prev => prev.filter(inv => inv.email !== email));
+    toast('info', `Invitation for ${email} revoked.`);
   };
 
   return (
@@ -49,35 +114,19 @@ export default function TeamCollaborate() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-display font-bold text-foreground">Team Collaboration</h2>
-            <p className="text-sm text-muted-foreground">{members.length} members · {members.filter(m => m.status === 'online').length} online now</p>
+            <p className="text-sm text-muted-foreground">{membersList.length} members · {membersList.filter(m => m.status === 'online').length} online now</p>
           </div>
-          <button onClick={() => setShowInvite(!showInvite)} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white font-semibold text-sm hover:opacity-90 transition-all shadow-glow-purple">
+          <button onClick={() => setShowInvite(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white font-semibold text-sm hover:opacity-90 transition-all shadow-glow-purple">
             <Plus className="w-4 h-4" /> Invite Member
           </button>
         </div>
 
-        {showInvite && (
-          <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5">
-            <h3 className="text-sm font-semibold text-foreground mb-3">Invite Team Member</h3>
-            <div className="flex gap-3">
-              <input value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} placeholder="colleague@company.com"
-                className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all" />
-              <select className="px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none">
-                <option>Editor</option><option>Viewer</option><option>Admin</option>
-              </select>
-              <button onClick={handleInvite} className="px-4 py-2.5 rounded-xl gradient-primary text-white text-sm font-medium hover:opacity-90 transition-all">
-                Send Invite
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Stats Row */}
         <div className="grid grid-cols-3 gap-4">
           {[
-            { label: 'Total Members', value: members.length, icon: Users },
-            { label: 'Online Now', value: members.filter(m => m.status === 'online').length, icon: Check },
-            { label: 'Pending Invites', value: pendingInvites.length, icon: Mail },
+            { label: 'Total Members', value: membersList.length, icon: Users },
+            { label: 'Online Now', value: membersList.filter(m => m.status === 'online').length, icon: Check },
+            { label: 'Pending Invites', value: invitesList.length, icon: Mail },
           ].map(s => (
             <div key={s.label} className="bg-card border border-border rounded-2xl p-4 text-center">
               <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center mx-auto mb-2">
@@ -135,10 +184,10 @@ export default function TeamCollaborate() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => toast('info', `Messaging ${m.name}...`)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:border-primary/30 hover:text-primary transition-all">
+                      <button onClick={() => { setMessagingMember(m); setMessageText(''); }} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:border-primary/30 hover:text-primary transition-all">
                         <MessageSquare className="w-3 h-3" />
                       </button>
-                      <button onClick={() => toast('info', `Editing ${m.name}'s role...`)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:border-primary/30 hover:text-primary transition-all">
+                      <button onClick={() => handleStartEdit(m)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:border-primary/30 hover:text-primary transition-all">
                         <Edit className="w-3 h-3" />
                       </button>
                     </div>
@@ -149,13 +198,13 @@ export default function TeamCollaborate() {
           </table>
         </div>
 
-        {pendingInvites.length > 0 && (
+        {invitesList.length > 0 && (
           <div className="bg-card border border-border rounded-2xl overflow-hidden">
             <div className="p-4 border-b border-border">
               <h3 className="text-sm font-semibold text-foreground">Pending Invitations</h3>
             </div>
             <div className="divide-y divide-border">
-              {pendingInvites.map((inv, i) => (
+              {invitesList.map((inv, i) => (
                 <div key={i} className="p-4 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                     <Mail className="w-4 h-4 text-muted-foreground" />
@@ -164,14 +213,163 @@ export default function TeamCollaborate() {
                     <p className="text-sm font-medium text-foreground">{inv.email}</p>
                     <p className="text-xs text-muted-foreground">{inv.role} · Sent {inv.sent}</p>
                   </div>
-                  <button onClick={() => toast('info', `Resending invite to ${inv.email}...`)} className="text-xs text-primary hover:underline">Resend</button>
-                  <button onClick={() => toast('info', `Revoking invite...`)} className="text-xs text-destructive hover:underline">Revoke</button>
+                  <button onClick={() => handleResend(inv.email)} className="text-xs text-primary hover:underline font-medium">Resend</button>
+                  <button onClick={() => handleRevoke(inv.email)} className="text-xs text-destructive hover:underline font-medium">Revoke</button>
                 </div>
               ))}
             </div>
           </div>
         )}
       </div>
+
+      {/* Invite Member Popup Modal */}
+      {showInvite && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setShowInvite(false)} />
+          <div className="relative z-10 bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
+              <h3 className="text-base font-display font-bold text-foreground">Invite Team Member</h3>
+              <button onClick={() => setShowInvite(false)} className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleInvite} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Email Address</label>
+                <input 
+                  type="email"
+                  required
+                  value={inviteEmail} 
+                  onChange={e => setInviteEmail(e.target.value)} 
+                  placeholder="colleague@company.com" 
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Access Level</label>
+                <select
+                  value={inviteRole}
+                  onChange={e => setInviteRole(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 appearance-none font-medium"
+                >
+                  <option value="Editor">Editor</option>
+                  <option value="Viewer">Viewer</option>
+                  <option value="Admin">Admin</option>
+                </select>
+              </div>
+
+              <div className="flex gap-3 pt-3 border-t border-border">
+                <button type="button" onClick={() => setShowInvite(false)} className="flex-1 py-2.5 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted transition-all">Cancel</button>
+                <button type="submit" className="flex-1 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">Send Invite</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Message Modal */}
+      {messagingMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setMessagingMember(null)} />
+          <div className="relative z-10 bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
+              <h3 className="text-base font-display font-bold text-foreground">Send Message</h3>
+              <button onClick={() => setMessagingMember(null)} className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleSendMessage} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1">To</label>
+                <div className="px-3 py-2 bg-muted/40 border border-border rounded-xl text-xs font-medium text-foreground">
+                  {messagingMember.name} ({messagingMember.role})
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Message</label>
+                <textarea 
+                  required
+                  rows={4}
+                  value={messageText} 
+                  onChange={e => setMessageText(e.target.value)} 
+                  placeholder={`Write your message to ${messagingMember.name}...`} 
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none" 
+                />
+              </div>
+
+              <div className="flex gap-3 pt-3 border-t border-border">
+                <button type="button" onClick={() => setMessagingMember(null)} className="flex-1 py-2.5 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted transition-all">Cancel</button>
+                <button type="submit" className="flex-1 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">Send Message</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Role Modal */}
+      {editingMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setEditingMember(null)} />
+          <div className="relative z-10 bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
+              <h3 className="text-base font-display font-bold text-foreground">Edit Member Role</h3>
+              <button onClick={() => setEditingMember(null)} className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleUpdateMember} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Name</label>
+                <div className="px-4 py-2 bg-muted/40 border border-border rounded-xl text-xs font-semibold text-foreground">
+                  {editingMember.name}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Role / Job Title</label>
+                <input 
+                  type="text"
+                  required
+                  value={editRole} 
+                  onChange={e => setEditRole(e.target.value)} 
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Department</label>
+                <input 
+                  type="text"
+                  required
+                  value={editDept} 
+                  onChange={e => setEditDept(e.target.value)} 
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Access Level</label>
+                <select
+                  value={editAccess}
+                  onChange={e => setEditAccess(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 appearance-none font-medium"
+                >
+                  <option value="Editor">Editor</option>
+                  <option value="Viewer">Viewer</option>
+                  <option value="Admin">Admin</option>
+                </select>
+              </div>
+
+              <div className="flex gap-3 pt-3 border-t border-border">
+                <button type="button" onClick={() => setEditingMember(null)} className="flex-1 py-2.5 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted transition-all">Cancel</button>
+                <button type="submit" className="flex-1 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
