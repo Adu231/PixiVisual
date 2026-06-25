@@ -8,17 +8,7 @@ import { getInitials } from '@/lib/utils';
 import { APP_NAME } from '@/constants';
 
 const navLinks = [
-  {
-    label: 'Features',
-    href: '/features',
-    children: [
-      { label: 'AI Design Studio', href: '/features#ai-studio', icon: Sparkles, desc: 'Generate visuals with AI' },
-      { label: 'Design Editor', href: '/features#editor', icon: Layout, desc: 'Professional drag-and-drop editor' },
-      { label: 'Team Collaboration', href: '/features#collaboration', icon: Users, desc: 'Work together seamlessly' },
-      { label: 'Analytics', href: '/features#analytics', icon: BarChart, desc: 'Track creative performance' },
-      { label: 'Marketplace', href: '/features#marketplace', icon: Store, desc: 'Templates & assets' },
-    ],
-  },
+  { label: 'Features', href: '/features' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'Blog', href: '/blog' },
   { label: 'About', href: '/about' },
