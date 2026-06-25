@@ -14,18 +14,18 @@ const footerLinks = {
   Company: [
     { label: 'About Us', href: '/about' },
     { label: 'Blog', href: '/blog' },
-    { label: 'Careers', href: '/about#careers' },
-    { label: 'Press', href: '/about#press' },
+    { label: 'Careers', href: '/careers' },
+    { label: 'Press', href: '/press' },
     { label: 'Contact', href: '/contact' },
-    { label: 'Partners', href: '/about#partners' },
+    { label: 'Partners', href: '/partners' },
   ],
   Resources: [
-    { label: 'Documentation', href: '/blog' },
-    { label: 'Tutorials', href: '/blog' },
-    { label: 'Community', href: '/about#community' },
+    { label: 'Documentation', href: '/docs' },
+    { label: 'Tutorials', href: '/tutorials' },
+    { label: 'Community', href: '/community' },
     { label: 'Help Center', href: '/faq' },
-    { label: 'Status', href: '/contact' },
-    { label: 'Changelog', href: '/blog' },
+    { label: 'Status', href: '/status' },
+    { label: 'Changelog', href: '/changelog' },
   ],
   Legal: [
     { label: 'Privacy Policy', href: '/privacy' },
@@ -33,7 +33,7 @@ const footerLinks = {
     { label: 'Cookie Policy', href: '/privacy#cookies' },
     { label: 'GDPR', href: '/privacy#gdpr' },
     { label: 'Security', href: '/privacy#security' },
-    { label: 'Accessibility', href: '/about#accessibility' },
+    { label: 'Accessibility', href: '/accessibility' },
   ],
 };
 

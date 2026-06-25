@@ -21,6 +21,15 @@ import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
 import NotFound from '@/pages/NotFound';
 import Payment from '@/pages/Payment';
+import Careers from '@/pages/Careers';
+import Press from '@/pages/Press';
+import Partners from '@/pages/Partners';
+import Docs from '@/pages/Docs';
+import Tutorials from '@/pages/Tutorials';
+import Community from '@/pages/Community';
+import Status from '@/pages/Status';
+import Changelog from '@/pages/Changelog';
+import Accessibility from '@/pages/Accessibility';
 
 // Auth Pages
 import Login from '@/pages/auth/Login';
@@ -134,6 +143,15 @@ function AppRoutes() {
         <Route path="/faq" element={<FAQ />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/careers" element={<Careers />} />
+        <Route path="/press" element={<Press />} />
+        <Route path="/partners" element={<Partners />} />
+        <Route path="/docs" element={<Docs />} />
+        <Route path="/tutorials" element={<Tutorials />} />
+        <Route path="/community" element={<Community />} />
+        <Route path="/status" element={<Status />} />
+        <Route path="/changelog" element={<Changelog />} />
+        <Route path="/accessibility" element={<Accessibility />} />
 
         {/* ── Auth ─────────────────────────────────── */}
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
