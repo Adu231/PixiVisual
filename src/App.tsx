@@ -20,6 +20,7 @@ import FAQ from '@/pages/FAQ';
 import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
 import NotFound from '@/pages/NotFound';
+import Payment from '@/pages/Payment';
 
 // Auth Pages
 import Login from '@/pages/auth/Login';
@@ -142,6 +143,7 @@ function AppRoutes() {
         {/* ── Protected Pages ───────────────────────── */}
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
 
         {/* ── Content Creator ───────────────────────── */}
         <Route path="/dashboard/creator" element={<ProtectedRoute><CreatorDashboard /></ProtectedRoute>} />

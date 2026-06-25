@@ -9,6 +9,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { TESTIMONIALS, PRICING_PLANS, FAQ_ITEMS, STATS } from '@/constants';
 import { useInView, useCountUp } from '@/hooks/useScrollReveal';
+import { useAuth } from '@/context/AuthContext';
 const heroDashboard = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&h=675&fit=crop';
 
 // Rotating text component
@@ -81,6 +82,7 @@ function FAQAccordion({ question, answer, isOpen, onToggle }: {
 }
 
 export default function Landing() {
+  const { isAuthenticated } = useAuth();
   const [openFAQ, setOpenFAQ] = useState<string | null>(null);
   const [billingYearly, setBillingYearly] = useState(false);
   const [email, setEmail] = useState('');
@@ -621,7 +623,7 @@ export default function Landing() {
                 </div>
 
                 <Link
-                  to="/register"
+                  to={isAuthenticated && plan.price.monthly > 0 ? `/payment?plan=${plan.id}&yearly=${billingYearly}` : '/register'}
                   className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 mb-5 ${
                     plan.highlighted
                       ? 'gradient-primary text-white hover:opacity-90 shadow-glow-purple'
