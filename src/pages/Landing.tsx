@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import {
   Sparkles, ArrowRight, Play, Star, Check, ChevronDown, ChevronUp,
   Zap, Palette, Users, BarChart, Layout, Store, Image, Video, Brain,
-  Globe, Shield, Infinity
+  Globe, Shield, Infinity, X
 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { TESTIMONIALS, PRICING_PLANS, FAQ_ITEMS, STATS } from '@/constants';
 import { useInView, useCountUp } from '@/hooks/useScrollReveal';
+import { useAuth } from '@/context/AuthContext';
 const heroDashboard = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&h=675&fit=crop';
 
 // Rotating text component
@@ -81,10 +82,13 @@ function FAQAccordion({ question, answer, isOpen, onToggle }: {
 }
 
 export default function Landing() {
+  const { isAuthenticated } = useAuth();
   const [openFAQ, setOpenFAQ] = useState<string | null>(null);
   const [billingYearly, setBillingYearly] = useState(false);
   const [email, setEmail] = useState('');
   const [newsletterSubmitted, setNewsletterSubmitted] = useState(false);
+  const [showDemoVideo, setShowDemoVideo] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState<any | null>(null);
   const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -186,13 +190,13 @@ export default function Landing() {
                 Start Creating Free
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link
-                to="/features"
+              <button
+                onClick={() => setShowDemoVideo(true)}
                 className="group flex items-center gap-2 px-7 py-3.5 rounded-2xl border border-border bg-card text-foreground font-semibold text-base hover:border-primary/30 hover:bg-primary/5 transition-all duration-300"
               >
                 <Play className="w-4 h-4" />
                 Watch Demo
-              </Link>
+              </button>
             </div>
 
             {/* Social Proof */}
@@ -289,6 +293,7 @@ export default function Landing() {
             {features.map((f, i) => (
               <div
                 key={f.title}
+                onClick={() => setSelectedFeature(f)}
                 className={`group relative p-6 rounded-2xl border border-border bg-card hover:border-primary/30 hover:shadow-glow-purple transition-all duration-300 cursor-pointer reveal-up`}
                 style={{ transitionDelay: `${i * 0.1}s` }}
               >
@@ -297,9 +302,9 @@ export default function Landing() {
                 </div>
                 <h3 className="text-base font-display font-semibold text-foreground mb-2">{f.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
-                <div className="mt-4 flex items-center gap-1 text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                <button className="mt-4 flex items-center gap-1 text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity focus:outline-none hover:underline">
                   Learn more <ArrowRight className="w-3 h-3" />
-                </div>
+                </button>
               </div>
             ))}
           </div>
@@ -618,7 +623,7 @@ export default function Landing() {
                 </div>
 
                 <Link
-                  to="/register"
+                  to={isAuthenticated && plan.price.monthly > 0 ? `/payment?plan=${plan.id}&yearly=${billingYearly}` : '/register'}
                   className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 mb-5 ${
                     plan.highlighted
                       ? 'gradient-primary text-white hover:opacity-90 shadow-glow-purple'
@@ -748,6 +753,145 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Demo Video Modal */}
+      {showDemoVideo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setShowDemoVideo(false)} />
+          <div className="relative z-10 w-full max-w-4xl bg-card border border-border rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <button 
+              onClick={() => setShowDemoVideo(false)} 
+              className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/40 hover:bg-black/60 text-white border border-white/10 transition-all"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="relative aspect-video w-full bg-black">
+              <video 
+                src="https://assets.mixkit.co/videos/preview/mixkit-web-design-project-on-screen-41710-large.mp4" 
+                controls 
+                autoPlay 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Feature Detail Modal */}
+      {selectedFeature && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setSelectedFeature(null)} />
+          <div className="relative z-10 w-full max-w-lg bg-card border border-border rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <button 
+              onClick={() => setSelectedFeature(null)} 
+              className="absolute top-4 right-4 p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <div className="flex items-center gap-3.5 mb-4">
+              <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-white">
+                <selectedFeature.icon className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-display font-bold text-foreground">{selectedFeature.title}</h3>
+                <span className="text-xs text-primary font-semibold">PixiVisual Core Tool</span>
+              </div>
+            </div>
+            
+            <div className="space-y-4 my-4">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {selectedFeature.desc} Our advanced suite provides professional-grade tools simplified for high-growth visual marketing teams.
+              </p>
+              
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">Key Capabilities Included:</h4>
+                <div className="grid grid-cols-1 gap-2">
+                  {selectedFeature.title === 'AI Design Studio' && [
+                    'Text-to-image visual generator',
+                    'Automatic brand style alignment',
+                    'Smart color palettes and layouts',
+                    'Text prompts parsed by custom LLMs'
+                  ].map(cap => (
+                    <div key={cap} className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Check className="w-3.5 h-3.5 text-green-500 flex-shrink-0" /> {cap}
+                    </div>
+                  ))}
+
+                  {selectedFeature.title === 'Professional Editor' && [
+                    '100,000+ templates and graphic components',
+                    'Seamless drag-and-drop layering canvas',
+                    'Built-in royalty-free media library (stock photos/videos)',
+                    'Smart alignment snapping and guidelines'
+                  ].map(cap => (
+                    <div key={cap} className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Check className="w-3.5 h-3.5 text-green-500 flex-shrink-0" /> {cap}
+                    </div>
+                  ))}
+
+                  {selectedFeature.title === 'Brand Kit Builder' && [
+                    'Centralized color hex palette compliance',
+                    'Upload custom font weights and OTF/WOFF files',
+                    'Version-controlled vector logo management',
+                    'One-click brand formatting across all active designs'
+                  ].map(cap => (
+                    <div key={cap} className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Check className="w-3.5 h-3.5 text-green-500 flex-shrink-0" /> {cap}
+                    </div>
+                  ))}
+
+                  {selectedFeature.title === 'Team Collaboration' && [
+                    'Real-time live multi-cursor co-editing',
+                    'Contextual comment threads and design reviews',
+                    'Role-based workspace folders and permissions',
+                    'Auto-notifying approval loops'
+                  ].map(cap => (
+                    <div key={cap} className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Check className="w-3.5 h-3.5 text-green-500 flex-shrink-0" /> {cap}
+                    </div>
+                  ))}
+
+                  {selectedFeature.title === 'Performance Analytics' && [
+                    'Asset impressions and download counters',
+                    'Brand compliance scoring reports',
+                    'Social media API performance monitoring',
+                    'Conversion performance correlation analytics'
+                  ].map(cap => (
+                    <div key={cap} className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Check className="w-3.5 h-3.5 text-green-500 flex-shrink-0" /> {cap}
+                    </div>
+                  ))}
+
+                  {selectedFeature.title === 'Template Marketplace' && [
+                    'Browse community-designed premium templates',
+                    'Sell your visual formats to creators globally',
+                    'High creator royalty payout tiers',
+                    'Verified seller certification program'
+                  ].map(cap => (
+                    <div key={cap} className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Check className="w-3.5 h-3.5 text-green-500 flex-shrink-0" /> {cap}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex gap-3 mt-6 pt-4 border-t border-border">
+              <button 
+                onClick={() => setSelectedFeature(null)}
+                className="flex-1 py-2.5 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted transition-all"
+              >
+                Close
+              </button>
+              <Link 
+                to="/register"
+                className="flex-1 py-2.5 rounded-xl gradient-primary text-white text-sm font-bold text-center hover:opacity-90 transition-all shadow-glow-purple"
+              >
+                Try this feature
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ========== FOOTER SECTION ========== */}
       <Footer />

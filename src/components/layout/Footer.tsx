@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Zap, Twitter, Linkedin, Instagram, Youtube, Github, Mail, MapPin } from 'lucide-react';
 import { APP_NAME } from '@/constants';
 
@@ -14,18 +14,18 @@ const footerLinks = {
   Company: [
     { label: 'About Us', href: '/about' },
     { label: 'Blog', href: '/blog' },
-    { label: 'Careers', href: '/about#careers' },
-    { label: 'Press', href: '/about#press' },
+    { label: 'Careers', href: '/careers' },
+    { label: 'Press', href: '/press' },
     { label: 'Contact', href: '/contact' },
-    { label: 'Partners', href: '/about#partners' },
+    { label: 'Partners', href: '/partners' },
   ],
   Resources: [
-    { label: 'Documentation', href: '/blog' },
-    { label: 'Tutorials', href: '/blog' },
-    { label: 'Community', href: '/about#community' },
+    { label: 'Documentation', href: '/docs' },
+    { label: 'Tutorials', href: '/tutorials' },
+    { label: 'Community', href: '/community' },
     { label: 'Help Center', href: '/faq' },
-    { label: 'Status', href: '/contact' },
-    { label: 'Changelog', href: '/blog' },
+    { label: 'Status', href: '/status' },
+    { label: 'Changelog', href: '/changelog' },
   ],
   Legal: [
     { label: 'Privacy Policy', href: '/privacy' },
@@ -33,11 +33,27 @@ const footerLinks = {
     { label: 'Cookie Policy', href: '/privacy#cookies' },
     { label: 'GDPR', href: '/privacy#gdpr' },
     { label: 'Security', href: '/privacy#security' },
-    { label: 'Accessibility', href: '/about#accessibility' },
+    { label: 'Accessibility', href: '/accessibility' },
   ],
 };
 
 export default function Footer() {
+  const location = useLocation();
+
+  const handleLinkClick = (href: string) => {
+    const [path, hash] = href.split('#');
+    if (location.pathname === path) {
+      if (hash) {
+        const element = document.getElementById(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  };
+
   return (
     <footer className="bg-card border-t border-border">
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -45,7 +61,7 @@ export default function Footer() {
         <div className="py-16 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
           {/* Brand */}
           <div className="col-span-2">
-            <Link to="/" className="flex items-center gap-2 mb-4">
+            <Link to="/" onClick={() => handleLinkClick('/')} className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
                 <Zap className="w-4 h-4 text-white" />
               </div>
@@ -92,6 +108,7 @@ export default function Footer() {
                   <li key={link.href}>
                     <Link
                       to={link.href}
+                      onClick={() => handleLinkClick(link.href)}
                       className="text-sm text-muted-foreground hover:text-primary transition-colors duration-200"
                     >
                       {link.label}
@@ -109,9 +126,9 @@ export default function Footer() {
             © 2025 {APP_NAME}, Inc. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
-            <Link to="/privacy" className="text-xs text-muted-foreground hover:text-primary transition-colors">Privacy</Link>
-            <Link to="/terms" className="text-xs text-muted-foreground hover:text-primary transition-colors">Terms</Link>
-            <Link to="/contact" className="text-xs text-muted-foreground hover:text-primary transition-colors">Contact</Link>
+            <Link to="/privacy" onClick={() => handleLinkClick('/privacy')} className="text-xs text-muted-foreground hover:text-primary transition-colors">Privacy</Link>
+            <Link to="/terms" onClick={() => handleLinkClick('/terms')} className="text-xs text-muted-foreground hover:text-primary transition-colors">Terms</Link>
+            <Link to="/contact" onClick={() => handleLinkClick('/contact')} className="text-xs text-muted-foreground hover:text-primary transition-colors">Contact</Link>
           </div>
         </div>
       </div>
