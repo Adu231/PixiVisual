@@ -1,15 +1,63 @@
 import { useEffect, useState } from 'react';
-import { Play, PlayCircle, Search, Clock, ArrowRight, Video } from 'lucide-react';
+import { Play, PlayCircle, Search, Clock, ArrowRight, Video, X } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 
 const tutorials = [
-  { id: '1', title: 'PixiVisual Editor Essentials', category: 'Basics', duration: '4:20', thumb: 'https://images.unsplash.com/photo-1542744094-3a31f103e35f?w=400&fit=crop', desc: 'Master the core layout grid, drag-and-drop actions, and element alignment tools.' },
-  { id: '2', title: 'Setting Up Your Brand Kit', category: 'Brand Kits', duration: '6:45', thumb: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&fit=crop', desc: 'Add brand color guidelines, configure custom fonts, and lock assets for teammates.' },
-  { id: '3', title: 'Generative AI Prompts Mastery', category: 'AI Studio', duration: '8:15', thumb: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&fit=crop', desc: 'Tips and tricks to write high-converting AI prompts and use style variations.' },
-  { id: '4', title: 'Collaborating in Shared Spaces', category: 'Collaboration', duration: '5:30', thumb: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&fit=crop', desc: 'Set up real-time co-authoring, handle comments, and run approval loops.' },
-  { id: '5', title: 'Designing Social Post Templates', category: 'Basics', duration: '7:10', thumb: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&fit=crop', desc: 'Step-by-step tutorial to assemble high-fidelity templates for Instagram and LinkedIn.' },
-  { id: '6', title: 'Advanced Image Background Removal', category: 'AI Studio', duration: '3:50', thumb: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&fit=crop', desc: 'Leverage our one-click AI background cutout tools for high-res product models.' }
+  { 
+    id: '1', 
+    title: 'PixiVisual Editor Essentials', 
+    category: 'Basics', 
+    duration: '4:20', 
+    thumb: 'https://images.unsplash.com/photo-1542744094-3a31f103e35f?w=400&fit=crop', 
+    desc: 'Master the core layout grid, drag-and-drop actions, and element alignment tools.',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-web-design-project-on-screen-41710-large.mp4'
+  },
+  { 
+    id: '2', 
+    title: 'Setting Up Your Brand Kit', 
+    category: 'Brand Kits', 
+    duration: '6:45', 
+    thumb: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&fit=crop', 
+    desc: 'Add brand color guidelines, configure custom fonts, and lock assets for teammates.',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-creative-designer-working-on-a-digital-tablet-40742-large.mp4'
+  },
+  { 
+    id: '3', 
+    title: 'Generative AI Prompts Mastery', 
+    category: 'AI Studio', 
+    duration: '8:15', 
+    thumb: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&fit=crop', 
+    desc: 'Tips and tricks to write high-converting AI prompts and use style variations.',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-designer-working-on-a-sketchbook-40741-large.mp4'
+  },
+  { 
+    id: '4', 
+    title: 'Collaborating in Shared Spaces', 
+    category: 'Collaboration', 
+    duration: '5:30', 
+    thumb: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&fit=crop', 
+    desc: 'Set up real-time co-authoring, handle comments, and run approval loops.',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-hands-of-a-designer-drawing-on-a-tablet-40743-large.mp4'
+  },
+  { 
+    id: '5', 
+    title: 'Designing Social Post Templates', 
+    category: 'Basics', 
+    duration: '7:10', 
+    thumb: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&fit=crop', 
+    desc: 'Step-by-step tutorial to assemble high-fidelity templates for Instagram and LinkedIn.',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-web-designer-working-on-his-computer-at-night-41714-large.mp4'
+  },
+  { 
+    id: '6', 
+    title: 'Advanced Image Background Removal', 
+    category: 'AI Studio', 
+    duration: '3:50', 
+    thumb: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&fit=crop', 
+    desc: 'Leverage our one-click AI background cutout tools for high-res product models.',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-person-working-on-a-website-wireframe-41715-large.mp4'
+  }
 ];
 
 const categories = ['All', 'Basics', 'AI Studio', 'Brand Kits', 'Collaboration'];
@@ -17,6 +65,7 @@ const categories = ['All', 'Basics', 'AI Studio', 'Brand Kits', 'Collaboration']
 export default function Tutorials() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [search, setSearch] = useState('');
+  const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -85,7 +134,12 @@ export default function Tutorials() {
             {/* Grid */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map((tut, i) => (
-                <div key={tut.id} className="border border-border rounded-2xl overflow-hidden bg-card hover:border-primary/20 hover:shadow-card-hover transition-all reveal-up group" style={{ transitionDelay: `${i * 0.05}s` }}>
+                <div 
+                  key={tut.id} 
+                  onClick={() => setActiveVideo(tut.videoUrl)}
+                  className="border border-border rounded-2xl overflow-hidden bg-card hover:border-primary/20 hover:shadow-card-hover transition-all reveal-up group cursor-pointer" 
+                  style={{ transitionDelay: `${i * 0.05}s` }}
+                >
                   {/* Thumbnail */}
                   <div className="relative h-48 overflow-hidden bg-muted">
                     <img src={tut.thumb} alt={tut.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -99,7 +153,7 @@ export default function Tutorials() {
                   {/* Info */}
                   <div className="p-5 space-y-2">
                     <span className="text-[10px] font-bold text-primary uppercase">{tut.category}</span>
-                    <h3 className="font-semibold text-foreground leading-tight hover:text-primary transition-colors cursor-pointer">{tut.title}</h3>
+                    <h3 className="font-semibold text-foreground leading-tight hover:text-primary transition-colors">{tut.title}</h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">{tut.desc}</p>
                   </div>
                 </div>
@@ -129,6 +183,30 @@ export default function Tutorials() {
         </section>
       </div>
       <Footer />
+
+      {/* Video Playback Modal */}
+      {activeVideo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setActiveVideo(null)} />
+          <div className="relative z-10 w-full max-w-4xl bg-card border border-border rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <button 
+              onClick={() => setActiveVideo(null)} 
+              className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/40 hover:bg-black/60 text-white border border-white/10 transition-all"
+              aria-label="Close video player"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="relative aspect-video w-full bg-black">
+              <video 
+                src={activeVideo} 
+                controls 
+                autoPlay 
+                className="w-full h-full object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

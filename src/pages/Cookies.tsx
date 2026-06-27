@@ -1,85 +1,75 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Search, ArrowRight, BookOpen, AlertCircle, Mail, Clock } from 'lucide-react';
+import { Cookie, Search, ArrowRight, BookOpen, AlertCircle, Mail, Clock } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 
-const privacySections = [
+const cookieSections = [
   {
-    id: 'overview',
-    title: '1. Introduction & Scope',
-    content: 'PixiVisual ("we", "us", or "our") values the trust you place in us. This Privacy Policy governs the collection, usage, and safeguarding of personal data collected through your interactions with the PixiVisual web app, asset studios, REST API integrations, and developer channels. By accessing our services, you consent to these practices.',
+    id: 'definition',
+    title: '1. What are Cookies',
+    content: 'Cookies are small text file fragments downloaded to your computer or mobile hardware when you load web-based apps. PixiVisual utilizes cookies, secure pixel nodes, local storage tokens, and index trackers to authenticate workspace members, secure sessions, and compile performance statistics.',
     bullets: [
-      'Applies to all registered accounts and anonymous portal visitors.',
-      'Governs data processed in cloud canvas editors and model training blocks.',
-      'Revised continuously to stay compliant with international privacy frameworks.'
+      'First-party cookies: Set directly by pixivisual.com to preserve workspace theme presets and states.',
+      'Third-party cookies: Dispatched by integrated services (e.g. Stripe, Google Analytics) to process tokens and metrics.',
+      'Session cookies expire when you close the browser; persistent cookies remain until cleared.'
     ]
   },
   {
-    id: 'collection',
-    title: '2. Information We Collect',
-    content: 'We gather data to build stable, personalized workspace layouts. This includes information you submit directly (such as name, email, credentials, billing accounts, corporate brand kits, and graphics uploads) and system metrics recorded automatically (IP addresses, cookie identifiers, system preferences, device specs, and usage counts).',
+    id: 'essential',
+    title: '2. Essential Platform Cookies',
+    content: 'These cookies are mandatory for platform operation. They sustain secure login sessions, protect Stripe checkout routing sequences, store brand workspace configurations, and enable layers restoration. Without them, PixiVisual cannot operate.',
     bullets: [
-      'Account Data: Names, secure passwords, custom profiles, and payment tokens.',
-      'Assets Data: Hex color kit gradients, fonts uploads, and prompt text inputs.',
-      'Log Data: Click histories, browser user-agent descriptors, and network latency logs.'
+      'Session Authentication: Links your browser session to secure workspace credentials.',
+      'Cross-Site Request Forgery (CSRF): Blocks malicious sites from copying editor actions.',
+      'Shopping Cart & Billing: Prevents payment interruptions during Stripe checkout operations.'
     ]
   },
   {
-    id: 'usage',
-    title: '3. How We Use Information',
-    content: 'Your data helps us power real-time design editors, optimize AI Stable Diffusion pipeline rendering speeds, distribute template marketplace payouts, authenticate workspace team roles, and enforce security policies. We do not sell your personal data under any circumstances.',
+    id: 'analytics',
+    title: '3. Analytics & Usage Tracking',
+    content: 'We use analytics tracking to analyze creator behaviors, measure rendering duration speeds, identify UI bugs, and catalog layout preferences. This is done to continuously scale and optimize our cloud design engines.',
     bullets: [
-      'Provides visual workspace storage and real-time co-authoring syncing.',
-      'Tones and compiles prompt generations to match custom brand kit configurations.',
-      'Dispatches security notifications, billing invoices, and service updates.'
+      'Aggregates canvas load times and prompt generation latency statistics.',
+      'Logs feature usage ratios (e.g. background removal vs logo generation counts).',
+      'Provides crash summaries to help engineering patches reach systems quicker.'
     ]
   },
   {
-    id: 'sharing',
-    title: '4. Information Sharing',
-    content: 'We restrict account data sharing to verified service providers helping operate our secure platform. These include Stripe for subscription payments, AWS for layout storage, and cloud host nodes. All partners are bound by confidentiality clauses.',
+    id: 'advertising',
+    title: '4. Advertising & Pixel Partners',
+    content: 'PixiVisual does not sell custom design assets or text prompts to advertising brokers. However, we occasionally use pixel nodes (like Google Ads or Meta Pixels) on public marketing pages to measure promotional campaign conversion rates.',
     bullets: [
-      'Stripe processing protects credit card credentials under PCI-DSS standards.',
-      'No user brand graphics or vector uploads are shared with external advertising agents.',
-      'Disclosed only when legally required by state authorities or valid court orders.'
+      'Measures sign-up ratios of external referral links.',
+      'Custom graphics, user uploads, and brand kit colors are NEVER shared with pixels.',
+      'Pixel data is fully anonymized before compilation by marketing servers.'
     ]
   },
   {
-    id: 'rights',
-    title: '5. GDPR & International Rights',
-    content: 'If you reside in the European Economic Area (EEA) or California (CCPA), you are granted rights to access, copy, modify, restrict, or purge your personal data files. You can delete your workspace and credentials anytime inside the Account settings.',
+    id: 'controls',
+    title: '5. Browser Controls & Revoking Consent',
+    content: 'You can block cookies by adjusting browser preferences. However, disabling essential cookies will immediately break account authentication and prevent canvas files saving. You can also revoke optional tracking consent below or in the Settings panel.',
     bullets: [
-      'Right to erase all compiled brand kits, draft canvas layers, and logs.',
-      'Right to download all designs in vector SVG or high-def PNG formats.',
-      'Request data portability or query data practices by contacting our officer.'
+      'Chrome/Safari: Manage settings in the Privacy & Security options menu.',
+      'Privacy-focused browsers (Brave, DuckDuckGo) automatically shield pixel scripts.',
+      'Clicking "Revoke Analytics Consent" in workspace settings toggles off usage trackers.'
     ]
   },
   {
-    id: 'security',
-    title: '6. Data Protection Systems',
-    content: 'PixiVisual implements advanced data protections. All system assets are encrypted in transit via TLS 1.3 protocols and at rest using AES-256 standard encryption keys. We operate regular threat audits and maintain SOC 2 compliance certificates.',
+    id: 'contact',
+    title: '6. Data Auditing & DPO Contacts',
+    content: 'We audit cookie usage audits regularly to verify tracking nodes compliance. For question logs, pixel records, or general data auditing inquiries, write to our data protection officer at privacy@pixivisual.com.',
     bullets: [
-      'Continuous security scanning on backend design nodes.',
-      'Secure environment variable injections to shield developer API keys.',
-      'Team permission hierarchies block unauthorized external workspace accesses.'
-    ]
-  },
-  {
-    id: 'contact-officer',
-    title: '7. Officer Contacts & Updates',
-    content: 'We update this policy as cloud capabilities evolve. Major changes trigger dashboard announcements. For data queries, write to our DPO at privacy@pixivisual.com or send mail to: PixiVisual Legal, 548 Market St, San Francisco, CA 94104.',
-    bullets: [
-      'DPO email monitored daily: privacy@pixivisual.com',
-      'Physical location: San Francisco Headquarters, California, USA.',
-      'Responses to CCPA/GDPR data requests delivered within 30 days.'
+      'Auditing records updated semi-annually for CCPA compliance.',
+      'DPO email: privacy@pixivisual.com',
+      'Detailed cookie lists and domains index provided on DPO request.'
     ]
   }
 ];
 
-export default function Privacy() {
+export default function Cookies() {
   const [search, setSearch] = useState('');
-  const [activeSection, setActiveSection] = useState('overview');
+  const [activeSection, setActiveSection] = useState('definition');
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
@@ -90,7 +80,7 @@ export default function Privacy() {
   useEffect(() => {
     const handleScrollspy = () => {
       const scrollPosition = window.scrollY + 160;
-      for (const section of privacySections) {
+      for (const section of cookieSections) {
         const el = sectionRefs.current[section.id];
         if (el) {
           const top = el.offsetTop;
@@ -106,7 +96,7 @@ export default function Privacy() {
     return () => window.removeEventListener('scroll', handleScrollspy);
   }, []);
 
-  const filteredSections = privacySections.filter(s =>
+  const filteredSections = cookieSections.filter(s =>
     s.title.toLowerCase().includes(search.toLowerCase()) ||
     s.content.toLowerCase().includes(search.toLowerCase()) ||
     s.bullets.some(b => b.toLowerCase().includes(search.toLowerCase()))
@@ -131,9 +121,9 @@ export default function Privacy() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-3">
-                <Shield className="w-3.5 h-3.5 text-primary" /> Security & Trust Center
+                <Cookie className="w-3.5 h-3.5 text-primary" /> Cookie & Tracking Center
               </div>
-              <h1 className="text-3xl lg:text-4xl font-display font-bold text-foreground mb-2">Privacy Policy</h1>
+              <h1 className="text-3xl lg:text-4xl font-display font-bold text-foreground mb-2">Cookies Policy</h1>
               <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5" /> Last updated: June 27, 2026 · Effective Immediately
               </p>
@@ -145,7 +135,7 @@ export default function Privacy() {
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Search privacy guidelines..."
+                placeholder="Search cookie sections..."
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-card text-foreground text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all shadow-sm"
               />
             </div>
@@ -161,8 +151,8 @@ export default function Privacy() {
             {/* Dynamic Scrollspy Sidebar */}
             <aside className="hidden lg:block">
               <div className="sticky top-24 space-y-1 bg-card/50 p-4 rounded-2xl border border-border/60">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">Policy Chapters</p>
-                {privacySections.map(s => {
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">Cookie Chapters</p>
+                {cookieSections.map(s => {
                   const isActive = activeSection === s.id;
                   return (
                     <button
@@ -182,18 +172,18 @@ export default function Privacy() {
               </div>
             </aside>
 
-            {/* Privacy Document Content */}
+            {/* Cookies Document Content */}
             <div className="lg:col-span-3 space-y-10">
               
               {/* Takeaways Alert Card */}
               <div className="p-5 rounded-2xl border border-primary/20 bg-primary/5 space-y-2">
                 <h3 className="font-semibold text-foreground text-xs flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-primary" /> Privacy Takeaways Summary
+                  <AlertCircle className="w-4 h-4 text-primary" /> Key Cookie Highlights
                 </h3>
                 <ul className="list-disc list-inside space-y-1 text-2xs text-muted-foreground pl-1 leading-relaxed">
-                  <li>We collect data strictly to operate our editors and maintain brand configurations.</li>
-                  <li>We never sell personal credentials or custom brand graphics to third-party ad brokers.</li>
-                  <li>All payment operations are handled securely through Stripe's certified pipelines.</li>
+                  <li>We use essential cookies to maintain secure sessions and process Stripe operations.</li>
+                  <li>No uploaded design assets or prompt files are processed by tracking pixels.</li>
+                  <li>You can block non-essential analytics tracking in your browser or Account panel.</li>
                 </ul>
               </div>
 
@@ -231,19 +221,19 @@ export default function Privacy() {
 
               {filteredSections.length === 0 && (
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground text-xs">No matching policy clauses found. Try another search query.</p>
+                  <p className="text-muted-foreground text-xs">No matching cookie clauses found. Try another search query.</p>
                 </div>
               )}
 
               {/* Bottom Support links */}
               <div className="pt-8 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-2xs text-muted-foreground">
-                <p>Have questions about this Privacy Policy? Our Data Officer is here to help.</p>
+                <p>Have questions about cookie usage? Our compliance team is here to support you.</p>
                 <div className="flex gap-3">
                   <Link to="/contact" className="text-primary hover:underline flex items-center gap-1 font-semibold">
                     <Mail className="w-3 h-3" /> Contact Support
                   </Link>
-                  <Link to="/terms" className="text-primary hover:underline font-semibold">
-                    Terms of Service
+                  <Link to="/privacy" className="text-primary hover:underline font-semibold">
+                    Privacy Policy
                   </Link>
                 </div>
               </div>

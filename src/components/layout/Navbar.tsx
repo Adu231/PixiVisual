@@ -220,6 +220,9 @@ export default function Navbar() {
                 )}
               </div>
             ))}
+
+
+
             <div className="pt-4 border-t border-border space-y-2">
               {isAuthenticated && user ? (
                 <>
