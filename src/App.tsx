@@ -29,7 +29,8 @@ import Tutorials from '@/pages/Tutorials';
 import Community from '@/pages/Community';
 import Status from '@/pages/Status';
 import Changelog from '@/pages/Changelog';
-import Accessibility from '@/pages/Accessibility';
+import Cookies from '@/pages/Cookies';
+import Help from '@/pages/Help';
 
 // Auth Pages
 import Login from '@/pages/auth/Login';
@@ -122,8 +123,20 @@ import {
 function ScrollRestoration() {
   const location = useLocation();
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }, [location.pathname]);
+    if (location.hash) {
+      const id = location.hash.slice(1);
+      // Brief timeout to ensure DOM content is fully loaded
+      const timer = setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [location.pathname, location.hash]);
   return null;
 }
 
@@ -151,7 +164,8 @@ function AppRoutes() {
         <Route path="/community" element={<Community />} />
         <Route path="/status" element={<Status />} />
         <Route path="/changelog" element={<Changelog />} />
-        <Route path="/accessibility" element={<Accessibility />} />
+        <Route path="/cookies" element={<Cookies />} />
+        <Route path="/help" element={<Help />} />
 
         {/* ── Auth ─────────────────────────────────── */}
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />

@@ -10,7 +10,7 @@ import Footer from '@/components/layout/Footer';
 import { TESTIMONIALS, PRICING_PLANS, FAQ_ITEMS, STATS } from '@/constants';
 import { useInView, useCountUp } from '@/hooks/useScrollReveal';
 import { useAuth } from '@/context/AuthContext';
-const heroDashboard = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&h=675&fit=crop';
+const heroDashboard = 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=1200&h=675&fit=crop';
 
 // Rotating text component
 function RotatingText({ words }: { words: string[] }) {

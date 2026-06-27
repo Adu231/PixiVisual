@@ -21,19 +21,16 @@ const footerLinks = {
   ],
   Resources: [
     { label: 'Documentation', href: '/docs' },
-    { label: 'Tutorials', href: '/tutorials' },
+      { label: 'Tutorials', href: '/tutorials' },
     { label: 'Community', href: '/community' },
-    { label: 'Help Center', href: '/faq' },
+    { label: 'Help Center', href: '/help' },
     { label: 'Status', href: '/status' },
     { label: 'Changelog', href: '/changelog' },
   ],
   Legal: [
     { label: 'Privacy Policy', href: '/privacy' },
     { label: 'Terms of Service', href: '/terms' },
-    { label: 'Cookie Policy', href: '/privacy#cookies' },
-    { label: 'GDPR', href: '/privacy#gdpr' },
-    { label: 'Security', href: '/privacy#security' },
-    { label: 'Accessibility', href: '/accessibility' },
+    { label: 'Cookie Policy', href: '/cookies' },
   ],
 };
 
