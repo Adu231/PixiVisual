@@ -35,7 +35,7 @@ const styles = ['Minimalist', 'Neon', 'Photorealistic', 'Illustration', '3D Rend
 
 export const IMAGE_PRESETS = [
   { name: 'Branding Guide', url: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=400&h=300&fit=crop' },
-  { name: 'Mobile App UI', url: 'https://images.unsplash.com/photo-1581291518655-9523c932dede?w=400&h=300&fit=crop' },
+  { name: 'Mobile App UI', url: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=400&h=300&fit=crop' },
   { name: 'Pitch Deck Slides', url: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=300&fit=crop' },
   { name: 'Social Media Kit', url: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=400&h=300&fit=crop' },
   { name: 'Creative Stationery', url: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=400&h=300&fit=crop' },
@@ -170,7 +170,7 @@ export function DesignerDesigns() {
               >
                 <div className="relative overflow-hidden aspect-video">
                   <img src={d.thumb} alt={d.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  
+
                   {/* Hover Actions */}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex items-center justify-center gap-1.5">
                     <div className="opacity-0 group-hover:opacity-100 flex gap-1.5 transition-opacity duration-300">
@@ -191,9 +191,8 @@ export function DesignerDesigns() {
                     </div>
                   </div>
 
-                  <span className={`absolute top-2 right-2 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider backdrop-blur-md shadow-md ${
-                    d.status === 'published' ? 'bg-green-500/80 text-white' : 'bg-yellow-500/80 text-white'
-                  }`}>{d.status}</span>
+                  <span className={`absolute top-2 right-2 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider backdrop-blur-md shadow-md ${d.status === 'published' ? 'bg-green-500/80 text-white' : 'bg-yellow-500/80 text-white'
+                    }`}>{d.status}</span>
                 </div>
                 <div className="p-3">
                   <p className="text-xs font-semibold text-foreground truncate">{d.title}</p>
@@ -264,9 +263,8 @@ export function DesignerDesigns() {
                       key={preset.name}
                       type="button"
                       onClick={() => setNewThumb(preset.url)}
-                      className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
-                        newThumb === preset.url ? 'border-primary scale-[1.03] shadow-md' : 'border-transparent opacity-60 hover:opacity-100'
-                      }`}
+                      className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${newThumb === preset.url ? 'border-primary scale-[1.03] shadow-md' : 'border-transparent opacity-60 hover:opacity-100'
+                        }`}
                       title={preset.name}
                     >
                       <img src={preset.url} alt={preset.name} className="w-full h-full object-cover" />
@@ -345,9 +343,8 @@ export function DesignerDesigns() {
                       key={preset.name}
                       type="button"
                       onClick={() => setEditThumb(preset.url)}
-                      className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
-                        editThumb === preset.url ? 'border-primary scale-[1.03] shadow-md' : 'border-transparent opacity-60 hover:opacity-100'
-                      }`}
+                      className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${editThumb === preset.url ? 'border-primary scale-[1.03] shadow-md' : 'border-transparent opacity-60 hover:opacity-100'
+                        }`}
                       title={preset.name}
                     >
                       <img src={preset.url} alt={preset.name} className="w-full h-full object-cover" />
@@ -487,8 +484,8 @@ export function DesignerPortfolio() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {portfolioItems.map(p => (
-            <div 
-              key={p.title} 
+            <div
+              key={p.title}
               onClick={() => { setSelectedItem(p); setIsDetailOpen(true); }}
               className="group bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/20 hover:shadow-card-hover transition-all cursor-pointer"
             >
@@ -722,7 +719,7 @@ export function DesignerMarketplace() {
 
         {/* Search & Category Filter Controls */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <div 
+          <div
             onClick={(e) => { e.currentTarget.querySelector('input')?.focus(); }}
             className="flex-1 bg-card border border-border rounded-xl px-3 py-2 flex items-center gap-2 cursor-text"
           >
@@ -740,9 +737,8 @@ export function DesignerMarketplace() {
               <button
                 key={c}
                 onClick={() => setActiveCategory(c)}
-                className={`px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                  activeCategory === c ? 'gradient-primary text-white' : 'border border-border bg-card text-muted-foreground hover:border-primary/20'
-                }`}
+                className={`px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${activeCategory === c ? 'gradient-primary text-white' : 'border border-border bg-card text-muted-foreground hover:border-primary/20'
+                  }`}
               >
                 {c}
               </button>
@@ -757,11 +753,11 @@ export function DesignerMarketplace() {
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map(t => (
-              <div 
-                key={t.id} 
+              <div
+                key={t.id}
                 className="group bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/20 hover:shadow-card-hover transition-all flex flex-col justify-between"
               >
-                <div 
+                <div
                   className="cursor-pointer"
                   onClick={(e) => openPreview(t, e)}
                 >
@@ -852,9 +848,8 @@ export function DesignerMarketplace() {
                       key={preset.name}
                       type="button"
                       onClick={() => setUpThumb(preset.url)}
-                      className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
-                        upThumb === preset.url ? 'border-primary scale-[1.03] shadow-md' : 'border-transparent opacity-60 hover:opacity-100'
-                      }`}
+                      className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${upThumb === preset.url ? 'border-primary scale-[1.03] shadow-md' : 'border-transparent opacity-60 hover:opacity-100'
+                        }`}
                       title={preset.name}
                     >
                       <img src={preset.url} alt={preset.name} className="w-full h-full object-cover" />
@@ -944,9 +939,8 @@ export function DesignerMarketplace() {
                       key={preset.name}
                       type="button"
                       onClick={() => setEditThumb(preset.url)}
-                      className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
-                        editThumb === preset.url ? 'border-primary scale-[1.03] shadow-md' : 'border-transparent opacity-60 hover:opacity-100'
-                      }`}
+                      className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${editThumb === preset.url ? 'border-primary scale-[1.03] shadow-md' : 'border-transparent opacity-60 hover:opacity-100'
+                        }`}
                       title={preset.name}
                     >
                       <img src={preset.url} alt={preset.name} className="w-full h-full object-cover" />
@@ -1016,7 +1010,7 @@ export function DesignerMarketplace() {
                 <h3 className="text-lg font-display font-bold text-foreground mt-0.5 leading-snug">{selectedDesign.title}</h3>
                 <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Updated {selectedDesign.updated}</p>
               </div>
-              
+
               <div className="border-t border-border pt-4 grid grid-cols-3 gap-2 text-xs">
                 <div>
                   <span className="text-muted-foreground block text-[10px]">Price</span>
@@ -1123,7 +1117,7 @@ export function DesignerClients() {
 
     const projectId = selectedProject.id;
     const userMsg = typedMessage.trim();
-    
+
     // Add user message
     setChatMessages(prev => ({
       ...prev,
@@ -1132,7 +1126,7 @@ export function DesignerClients() {
         { sender: 'designer', text: userMsg, time: 'Just now' }
       ]
     }));
-    
+
     setTypedMessage('');
     setIsTyping(true);
 
@@ -1168,11 +1162,11 @@ export function DesignerClients() {
 
         <div className="grid gap-4">
           {projects.map(p => (
-            <div 
-              key={p.id} 
+            <div
+              key={p.id}
               className="bg-card border border-border rounded-2xl p-5 hover:border-primary/20 hover:shadow-card-hover transition-all flex flex-col justify-between"
             >
-              <div 
+              <div
                 className="cursor-pointer"
                 onClick={() => { setSelectedProject(p); setIsWorkspaceOpen(true); }}
               >
@@ -1180,9 +1174,8 @@ export function DesignerClients() {
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-semibold text-foreground hover:text-primary transition-colors">{p.project}</h3>
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                        p.status === 'Completed' ? 'bg-green-500/10 text-green-500' : 'bg-primary/10 text-primary'
-                      }`}>{p.status}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${p.status === 'Completed' ? 'bg-green-500/10 text-green-500' : 'bg-primary/10 text-primary'
+                        }`}>{p.status}</span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">{p.client} · Due {p.due}</p>
                   </div>
@@ -1224,15 +1217,14 @@ export function DesignerClients() {
             <button onClick={() => { setIsWorkspaceOpen(false); setIsChatActive(false); }} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/75 transition-colors z-20">
               <X className="w-4 h-4" />
             </button>
-            
+
             {!isChatActive ? (
               <div className="p-6 space-y-5">
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-display font-bold text-foreground leading-snug">{selectedProject.project}</h3>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold ${
-                      selectedProject.status === 'Completed' ? 'bg-green-500/10 text-green-500' : 'bg-primary/10 text-primary'
-                    }`}>{selectedProject.status}</span>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold ${selectedProject.status === 'Completed' ? 'bg-green-500/10 text-green-500' : 'bg-primary/10 text-primary'
+                      }`}>{selectedProject.status}</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">{selectedProject.client} · Budget {formatCurrency(selectedProject.budget)}</p>
                 </div>
@@ -1253,11 +1245,10 @@ export function DesignerClients() {
                   <div className="space-y-1.5 pt-1">
                     {selectedProject.deliverables.map((d, index) => (
                       <div key={index} className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          selectedProject.progress === 100 || (selectedProject.progress === 90 && index < 2) || (selectedProject.progress === 60 && index < 1)
-                            ? 'bg-green-500/10 text-green-500'
-                            : 'bg-muted text-muted-foreground'
-                        }`}>
+                        <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 ${selectedProject.progress === 100 || (selectedProject.progress === 90 && index < 2) || (selectedProject.progress === 60 && index < 1)
+                          ? 'bg-green-500/10 text-green-500'
+                          : 'bg-muted text-muted-foreground'
+                          }`}>
                           <Check className="w-2.5 h-2.5" />
                         </div>
                         <span className={
@@ -1292,8 +1283,8 @@ export function DesignerClients() {
                 {/* Chat Header */}
                 <div className="p-4 border-b border-border flex items-center justify-between bg-primary/5">
                   <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => setIsChatActive(false)} 
+                    <button
+                      onClick={() => setIsChatActive(false)}
                       className="px-2.5 py-1 rounded-xl border border-border bg-card text-foreground hover:bg-muted text-2xs font-semibold flex items-center gap-1"
                     >
                       &larr; Specs
@@ -1309,17 +1300,15 @@ export function DesignerClients() {
                 {/* Chat Message List */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-secondary/5">
                   {(chatMessages[selectedProject.id] || []).map((msg, index) => (
-                    <div 
-                      key={index} 
-                      className={`flex flex-col max-w-[75%] ${
-                        msg.sender === 'designer' ? 'ml-auto items-end' : 'mr-auto items-start'
-                      }`}
+                    <div
+                      key={index}
+                      className={`flex flex-col max-w-[75%] ${msg.sender === 'designer' ? 'ml-auto items-end' : 'mr-auto items-start'
+                        }`}
                     >
-                      <div className={`p-3 rounded-2xl text-xs leading-normal ${
-                        msg.sender === 'designer' 
-                          ? 'gradient-primary text-white rounded-tr-none' 
-                          : 'bg-card border border-border text-foreground rounded-tl-none'
-                      }`}>
+                      <div className={`p-3 rounded-2xl text-xs leading-normal ${msg.sender === 'designer'
+                        ? 'gradient-primary text-white rounded-tr-none'
+                        : 'bg-card border border-border text-foreground rounded-tl-none'
+                        }`}>
                         {msg.text}
                       </div>
                       <span className="text-[9px] text-muted-foreground mt-1 font-mono">{msg.time}</span>
@@ -1343,8 +1332,8 @@ export function DesignerClients() {
                     className="flex-1 px-4 py-2 rounded-xl border border-border bg-background text-foreground text-xs outline-none focus:border-primary transition-all"
                     required
                   />
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="px-4 py-2 rounded-xl gradient-primary text-white hover:opacity-90 transition-all flex items-center justify-center flex-shrink-0 shadow-glow-purple"
                   >
                     <Send className="w-3.5 h-3.5" />
@@ -1406,7 +1395,7 @@ export function DesignerEarnings() {
           ))}
         </div>
 
-        <div 
+        <div
           onClick={() => { setTempPayout(payoutMethod); setIsPayoutModalOpen(true); }}
           className="bg-card border border-border rounded-2xl p-5 hover:border-primary/20 transition-all cursor-pointer"
         >
@@ -1471,7 +1460,7 @@ export function DesignerAnalytics() {
 
   const totalTemplateSales = designs.reduce((acc, d) => acc + (d.sales ?? 0), 0);
   const totalTemplateViews = designs.reduce((acc, d) => acc + (d.views ?? 0), 0);
-  
+
   const designsWithRating = designs.filter(d => (d.rating ?? 0) > 0);
   const avgRating = designsWithRating.length > 0
     ? (designsWithRating.reduce((acc, d) => acc + (d.rating ?? 0), 0) / designsWithRating.length).toFixed(1)
