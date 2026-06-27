@@ -17,7 +17,7 @@ export const teamSidebarItems = [
 ];
 
 const teamMembers = [
-  { name: 'Sara Kim', role: 'Brand Designer', dept: 'Design', status: 'online', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b5e5?w=40&h=40&fit=crop&crop=face' },
+  { name: 'Sara Kim', role: 'Brand Designer', dept: 'Design', status: 'online', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face' },
   { name: 'David Park', role: 'Content Lead', dept: 'Marketing', status: 'online', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face' },
   { name: 'Aisha Patel', role: 'UX Designer', dept: 'Product', status: 'away', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face' },
   { name: 'Tom Walsh', role: 'Campaign Manager', dept: 'Marketing', status: 'offline', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face' },
