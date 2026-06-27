@@ -5,7 +5,7 @@ import { teamSidebarItems } from '../TeamDashboard';
 import { toast } from '@/components/ui/Toast';
 
 const members = [
-  { id: '1', name: 'Sara Kim', role: 'Brand Designer', dept: 'Design', email: 'sara@globalbrand.com', status: 'online', access: 'Editor', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b5e5?w=48&h=48&fit=crop&crop=face', projects: 14, joined: 'Jan 2024' },
+  { id: '1', name: 'Sara Kim', role: 'Brand Designer', dept: 'Design', email: 'sara@globalbrand.com', status: 'online', access: 'Editor', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face', projects: 14, joined: 'Jan 2024' },
   { id: '2', name: 'David Park', role: 'Content Lead', dept: 'Marketing', email: 'david@globalbrand.com', status: 'online', access: 'Editor', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=48&h=48&fit=crop&crop=face', projects: 22, joined: 'Feb 2024' },
   { id: '3', name: 'Aisha Patel', role: 'UX Designer', dept: 'Product', email: 'aisha@globalbrand.com', status: 'away', access: 'Viewer', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=48&h=48&fit=crop&crop=face', projects: 8, joined: 'Mar 2024' },
   { id: '4', name: 'Tom Walsh', role: 'Campaign Manager', dept: 'Marketing', email: 'tom@globalbrand.com', status: 'offline', access: 'Editor', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=48&h=48&fit=crop&crop=face', projects: 18, joined: 'Jan 2024' },
