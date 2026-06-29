@@ -4,6 +4,9 @@ import { Users, BarChart2, Briefcase, MessageSquare, Settings, Plus, TrendingUp,
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { toast } from '@/components/ui/Toast';
 import { formatCurrency } from '@/lib/utils';
+import {
+  AreaChart, Area, BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend
+} from 'recharts';
 
 export const agencySidebarItems = [
   { label: 'Clients', href: '/dashboard/agency/clients', icon: Users },
@@ -99,7 +102,7 @@ export function AgencyClients() {
   };
 
   // Get associated projects for selected client
-  const clientProjects = selectedClient 
+  const clientProjects = selectedClient
     ? projects.filter(p => p.client.toLowerCase() === selectedClient.name.toLowerCase())
     : [];
 
@@ -158,50 +161,50 @@ export function AgencyClients() {
             <form onSubmit={handleCreateClient} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Company Name</label>
-                <input 
+                <input
                   type="text"
                   required
-                  value={newClientName} 
-                  onChange={e => setNewClientName(e.target.value)} 
-                  placeholder="e.g. TechFlow Inc." 
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                  value={newClientName}
+                  onChange={e => setNewClientName(e.target.value)}
+                  placeholder="e.g. TechFlow Inc."
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Contact Person</label>
-                <input 
+                <input
                   type="text"
                   required
-                  value={newClientContact} 
-                  onChange={e => setNewClientContact(e.target.value)} 
-                  placeholder="e.g. Sarah Chen" 
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                  value={newClientContact}
+                  onChange={e => setNewClientContact(e.target.value)}
+                  placeholder="e.g. Sarah Chen"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Industry</label>
-                <input 
+                <input
                   type="text"
                   required
-                  value={newClientIndustry} 
-                  onChange={e => setNewClientIndustry(e.target.value)} 
-                  placeholder="e.g. SaaS, E-commerce, Food & Bev" 
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                  value={newClientIndustry}
+                  onChange={e => setNewClientIndustry(e.target.value)}
+                  placeholder="e.g. SaaS, E-commerce, Food & Bev"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Monthly Contract ($)</label>
-                  <input 
+                  <input
                     type="number"
                     required
-                    value={newClientRevenue} 
-                    onChange={e => setNewClientRevenue(e.target.value)} 
-                    placeholder="e.g. 5000" 
-                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                    value={newClientRevenue}
+                    onChange={e => setNewClientRevenue(e.target.value)}
+                    placeholder="e.g. 5000"
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
@@ -238,7 +241,7 @@ export function AgencyClients() {
                 <X className="w-4 h-4" />
               </button>
             </div>
-            
+
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <img src={selectedClient.logo} alt={selectedClient.name} className="w-16 h-16 rounded-2xl object-cover border border-border" />
@@ -315,13 +318,13 @@ export function AgencyClients() {
 
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Message</label>
-                <textarea 
+                <textarea
                   required
                   rows={4}
-                  value={messageText} 
-                  onChange={e => setMessageText(e.target.value)} 
-                  placeholder={`Write your message to ${messagingClient.contact}...`} 
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none" 
+                  value={messageText}
+                  onChange={e => setMessageText(e.target.value)}
+                  placeholder={`Write your message to ${messagingClient.contact}...`}
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none"
                 />
               </div>
 
@@ -485,49 +488,49 @@ export function AgencyCampaigns() {
             <form onSubmit={handleCreateCampaign} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Campaign Name</label>
-                <input 
+                <input
                   type="text"
                   required
-                  value={newName} 
-                  onChange={e => setNewName(e.target.value)} 
-                  placeholder="e.g. Summer Sale 2025" 
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                  value={newName}
+                  onChange={e => setNewName(e.target.value)}
+                  placeholder="e.g. Summer Sale 2025"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Client Name</label>
-                <input 
+                <input
                   type="text"
                   required
-                  value={newClient} 
-                  onChange={e => setNewClient(e.target.value)} 
-                  placeholder="e.g. TechFlow Inc." 
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                  value={newClient}
+                  onChange={e => setNewClient(e.target.value)}
+                  placeholder="e.g. TechFlow Inc."
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Budget ($)</label>
-                  <input 
+                  <input
                     type="number"
                     required
-                    value={newBudget} 
-                    onChange={e => setNewBudget(e.target.value)} 
-                    placeholder="e.g. 5000" 
-                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                    value={newBudget}
+                    onChange={e => setNewBudget(e.target.value)}
+                    placeholder="e.g. 5000"
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Spent ($)</label>
-                  <input 
+                  <input
                     type="number"
                     required
-                    value={newSpent} 
-                    onChange={e => setNewSpent(e.target.value)} 
-                    placeholder="e.g. 1000" 
-                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                    value={newSpent}
+                    onChange={e => setNewSpent(e.target.value)}
+                    placeholder="e.g. 1000"
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
               </div>
@@ -535,13 +538,13 @@ export function AgencyCampaigns() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground mb-1.5">End Date</label>
-                  <input 
+                  <input
                     type="text"
                     required
-                    value={newEndDate} 
-                    onChange={e => setNewEndDate(e.target.value)} 
-                    placeholder="e.g. Jul 31" 
-                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                    value={newEndDate}
+                    onChange={e => setNewEndDate(e.target.value)}
+                    placeholder="e.g. Jul 31"
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div>
@@ -581,45 +584,45 @@ export function AgencyCampaigns() {
             <form onSubmit={handleUpdateCampaign} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Campaign Name</label>
-                <input 
+                <input
                   type="text"
                   required
-                  value={editName} 
-                  onChange={e => setEditName(e.target.value)} 
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                  value={editName}
+                  onChange={e => setEditName(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Client Name</label>
-                <input 
+                <input
                   type="text"
                   required
-                  value={editClient} 
-                  onChange={e => setEditClient(e.target.value)} 
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                  value={editClient}
+                  onChange={e => setEditClient(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Budget ($)</label>
-                  <input 
+                  <input
                     type="number"
                     required
-                    value={editBudget} 
-                    onChange={e => setEditBudget(e.target.value)} 
-                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                    value={editBudget}
+                    onChange={e => setEditBudget(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Spent ($)</label>
-                  <input 
+                  <input
                     type="number"
                     required
-                    value={editSpent} 
-                    onChange={e => setEditSpent(e.target.value)} 
-                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                    value={editSpent}
+                    onChange={e => setEditSpent(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
               </div>
@@ -627,12 +630,12 @@ export function AgencyCampaigns() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground mb-1.5">End Date</label>
-                  <input 
+                  <input
                     type="text"
                     required
-                    value={editEndDate} 
-                    onChange={e => setEditEndDate(e.target.value)} 
-                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                    value={editEndDate}
+                    onChange={e => setEditEndDate(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div>
@@ -774,62 +777,62 @@ export function AgencyProjects() {
             <form onSubmit={handleCreateProject} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Project Name</label>
-                <input 
+                <input
                   type="text"
                   required
-                  value={newName} 
-                  onChange={e => setNewName(e.target.value)} 
-                  placeholder="e.g. Rebrand Identity" 
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                  value={newName}
+                  onChange={e => setNewName(e.target.value)}
+                  placeholder="e.g. Rebrand Identity"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Client Name</label>
-                <input 
+                <input
                   type="text"
                   required
-                  value={newClient} 
-                  onChange={e => setNewClient(e.target.value)} 
-                  placeholder="e.g. TechFlow Inc." 
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                  value={newClient}
+                  onChange={e => setNewClient(e.target.value)}
+                  placeholder="e.g. TechFlow Inc."
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Assigned Designer</label>
-                <input 
+                <input
                   type="text"
                   required
-                  value={newDesigner} 
-                  onChange={e => setNewDesigner(e.target.value)} 
-                  placeholder="e.g. Maya Chen" 
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                  value={newDesigner}
+                  onChange={e => setNewDesigner(e.target.value)}
+                  placeholder="e.g. Maya Chen"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Due Date</label>
-                  <input 
+                  <input
                     type="text"
                     required
-                    value={newDueDate} 
-                    onChange={e => setNewDueDate(e.target.value)} 
-                    placeholder="e.g. Jul 15" 
-                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                    value={newDueDate}
+                    onChange={e => setNewDueDate(e.target.value)}
+                    placeholder="e.g. Jul 15"
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Progress (%)</label>
-                  <input 
+                  <input
                     type="number"
                     required
                     min="0"
                     max="100"
-                    value={newProgress} 
-                    onChange={e => setNewProgress(e.target.value)} 
-                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                    value={newProgress}
+                    onChange={e => setNewProgress(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
               </div>
@@ -867,7 +870,7 @@ export function AgencyProjects() {
                 <X className="w-4 h-4" />
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <p className="text-3xs font-semibold text-muted-foreground uppercase tracking-wider">Project Name</p>
@@ -917,7 +920,7 @@ export function AgencyProjects() {
 
 export function AgencyTeam() {
   const [teamList, setTeamList] = useState([
-    { name: 'Maya Chen', role: 'Senior Designer', projects: 8, rating: 4.9, avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b5e5?w=48&h=48&fit=crop&crop=face', status: 'online' },
+    { name: 'Maya Chen', role: 'Senior Designer', projects: 8, rating: 4.9, avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=48&h=48&fit=crop&crop=face', status: 'online' },
     { name: 'Alex Rivera', role: 'Content Creator', projects: 5, rating: 4.7, avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=48&h=48&fit=crop&crop=face', status: 'online' },
     { name: 'Sam Torres', role: 'UI/UX Designer', projects: 6, rating: 4.8, avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=48&h=48&fit=crop&crop=face', status: 'away' },
   ]);
@@ -979,10 +982,10 @@ export function AgencyTeam() {
         <div className="grid gap-4">
           {teamList.map(m => (
             <div key={m.name} className="bg-card border border-border rounded-2xl p-5 flex items-center gap-4 hover:border-primary/20 transition-all">
-              <img 
-                src={m.avatar} 
-                alt={m.name} 
-                className="w-12 h-12 rounded-full object-cover flex-shrink-0" 
+              <img
+                src={m.avatar}
+                alt={m.name}
+                className="w-12 h-12 rounded-full object-cover flex-shrink-0"
                 onError={(e) => {
                   e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}&background=7c3aed&color=fff`;
                 }}
@@ -1015,37 +1018,37 @@ export function AgencyTeam() {
             <form onSubmit={handleInvite} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Name</label>
-                <input 
+                <input
                   type="text"
                   required
-                  value={inviteName} 
-                  onChange={e => setInviteName(e.target.value)} 
-                  placeholder="e.g. Maya Chen" 
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                  value={inviteName}
+                  onChange={e => setInviteName(e.target.value)}
+                  placeholder="e.g. Maya Chen"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Role</label>
-                <input 
+                <input
                   type="text"
                   required
-                  value={inviteRole} 
-                  onChange={e => setInviteRole(e.target.value)} 
-                  placeholder="e.g. Senior Designer" 
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                  value={inviteRole}
+                  onChange={e => setInviteRole(e.target.value)}
+                  placeholder="e.g. Senior Designer"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Email</label>
-                <input 
+                <input
                   type="email"
                   required
-                  value={inviteEmail} 
-                  onChange={e => setInviteEmail(e.target.value)} 
-                  placeholder="e.g. designer@agency.com" 
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                  value={inviteEmail}
+                  onChange={e => setInviteEmail(e.target.value)}
+                  placeholder="e.g. designer@agency.com"
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
@@ -1106,6 +1109,25 @@ export function AgencyTeam() {
   );
 }
 
+const campaignPerformanceData = [
+  { name: 'Mon', impressions: 68000, clicks: 3200, conversions: 240 },
+  { name: 'Tue', impressions: 82000, clicks: 4100, conversions: 310 },
+  { name: 'Wed', impressions: 56000, clicks: 2800, conversions: 190 },
+  { name: 'Thu', impressions: 94000, clicks: 4800, conversions: 380 },
+  { name: 'Fri', impressions: 78000, clicks: 3900, conversions: 290 },
+  { name: 'Sat', impressions: 112000, clicks: 5900, conversions: 450 },
+  { name: 'Sun', impressions: 89000, clicks: 4400, conversions: 330 },
+];
+
+const revenueTrendData = [
+  { name: 'Jan', revenue: 18000, campaigns: 3 },
+  { name: 'Feb', revenue: 24000, campaigns: 4 },
+  { name: 'Mar', revenue: 22000, campaigns: 5 },
+  { name: 'Apr', revenue: 31000, campaigns: 6 },
+  { name: 'May', revenue: 41300, campaigns: 8 },
+  { name: 'Jun', revenue: 38000, campaigns: 9 },
+];
+
 export function AgencyAnalytics() {
   return (
     <DashboardLayout sidebarItems={agencySidebarItems} title="Analytics" roleLabel="Marketing Agency">
@@ -1129,65 +1151,42 @@ export function AgencyAnalytics() {
           ))}
         </div>
         <div className="grid lg:grid-cols-2 gap-6">
-          <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-2xl p-5 flex flex-col justify-between h-[300px]">
             <h3 className="text-sm font-semibold text-foreground mb-4">Campaign Performance</h3>
-            <div className="flex items-end gap-3 h-32">
-              {[680, 820, 560, 940, 780, 1120, 890].map((h, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1.5 h-full">
-                  <div className="flex-1 w-full flex items-end bg-muted/20 rounded-t-lg overflow-hidden">
-                    <div className="w-full gradient-primary rounded-t-lg" style={{ height: `${(h / 1120) * 100}%` }} />
-                  </div>
-                  <span className="text-2xs text-muted-foreground">{['M','T','W','T','F','S','S'][i]}</span>
-                </div>
-              ))}
+            <div className="w-full flex-1 min-h-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={campaignPerformanceData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.3} />
+                  <XAxis dataKey="name" stroke="#9ca3af" fontSize={10} tickLine={false} />
+                  <YAxis stroke="#9ca3af" fontSize={10} tickLine={false} />
+                  <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px', fontSize: '12px', color: 'hsl(var(--foreground))' }} />
+                  <Legend wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
+                  <Bar dataKey="impressions" name="Impressions" fill="#7c3aed" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="clicks" name="Clicks" fill="#ec4899" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-2xl p-5 flex flex-col justify-between h-[300px]">
             <h3 className="text-sm font-semibold text-foreground mb-4">Revenue & Performance Trend</h3>
-            <div className="relative h-32 w-full mt-2">
-              <svg className="w-full h-full" viewBox="0 0 600 200" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="rgb(168, 85, 247)" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="rgb(168, 85, 247)" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                {/* Grid lines */}
-                <line x1="0" y1="50" x2="600" y2="50" stroke="rgba(255,255,255,0.05)" strokeWidth="1" strokeDasharray="4 4" />
-                <line x1="0" y1="100" x2="600" y2="100" stroke="rgba(255,255,255,0.05)" strokeWidth="1" strokeDasharray="4 4" />
-                <line x1="0" y1="150" x2="600" y2="150" stroke="rgba(255,255,255,0.05)" strokeWidth="1" strokeDasharray="4 4" />
-                
-                {/* Path area */}
-                <path 
-                  d="M 0 160 Q 100 120 200 140 T 400 80 T 600 50 L 600 200 L 0 200 Z" 
-                  fill="url(#chart-grad)"
-                />
-                
-                {/* Path line */}
-                <path 
-                  d="M 0 160 Q 100 120 200 140 T 400 80 T 600 50" 
-                  fill="none" 
-                  stroke="rgb(168, 85, 247)" 
-                  strokeWidth="3" 
-                />
-                
-                {/* Dot Points */}
-                <circle cx="200" cy="140" r="5" fill="rgb(236, 72, 153)" stroke="white" strokeWidth="2" />
-                <circle cx="400" cy="80" r="5" fill="rgb(236, 72, 153)" stroke="white" strokeWidth="2" />
-                <circle cx="600" cy="50" r="5" fill="rgb(236, 72, 153)" stroke="white" strokeWidth="2" />
-              </svg>
-              <div className="absolute top-2 left-2 bg-black/40 backdrop-blur-sm border border-border/50 text-[10px] text-muted-foreground p-1 rounded-md">
-                <span className="text-white font-bold">Peak Revenue:</span> $41.3K
-              </div>
-            </div>
-            <div className="flex justify-between text-[10px] text-muted-foreground mt-2 px-1">
-              <span>Jan</span>
-              <span>Feb</span>
-              <span>Mar</span>
-              <span>Apr</span>
-              <span>May</span>
-              <span>Jun</span>
+            <div className="w-full flex-1 min-h-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={revenueTrendData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="revenue-grad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.3} />
+                  <XAxis dataKey="name" stroke="#9ca3af" fontSize={10} tickLine={false} />
+                  <YAxis stroke="#9ca3af" fontSize={10} tickLine={false} />
+                  <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px', fontSize: '12px', color: 'hsl(var(--foreground))' }} />
+                  <Legend wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
+                  <Area type="monotone" dataKey="revenue" name="Revenue ($)" stroke="#7c3aed" strokeWidth={2} fillOpacity={1} fill="url(#revenue-grad)" />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </div>
@@ -1216,7 +1215,7 @@ Total Due                 | ${formatCurrency(inv.amount)}
 Thank you for your business!
 PixiVisual Marketing Agency Panel.
 `;
-    
+
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -1265,11 +1264,10 @@ PixiVisual Marketing Agency Panel.
                   <p className="text-xs text-muted-foreground">Due {inv.date}</p>
                 </div>
                 <span className="text-sm font-bold text-foreground">{formatCurrency(inv.amount)}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${
-                  inv.status === 'paid' ? 'bg-green-500/10 text-green-600 dark:text-green-400' :
-                  inv.status === 'pending' ? 'bg-yellow-500/10 text-yellow-600' :
-                  'bg-red-500/10 text-red-600'
-                }`}>{inv.status}</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${inv.status === 'paid' ? 'bg-green-500/10 text-green-600 dark:text-green-400' :
+                    inv.status === 'pending' ? 'bg-yellow-500/10 text-yellow-600' :
+                      'bg-red-500/10 text-red-600'
+                  }`}>{inv.status}</span>
                 <button onClick={() => handleDownloadInvoice(inv)} className="text-xs text-primary hover:underline font-medium">View</button>
               </div>
             ))}

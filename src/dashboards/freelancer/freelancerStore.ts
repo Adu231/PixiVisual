@@ -67,6 +67,7 @@ const DEFAULT_PROJECTS: FreelancerProject[] = [
   { id: '1', title: 'Website Redesign', client: 'StartupX', due: 'Jul 15', budget: 2400, progress: 65, status: 'in-progress', desc: 'Revamping the front-end layout system, design editor grid, and optimizing overall page speed.', deliverables: ['Landing Page Wireframes', 'Tailwind Component Library', 'SEO Headings Structure Audit', 'Responsive Mobile Testing'] },
   { id: '2', title: 'Brand Refresh', client: 'LocalBiz', due: 'Jul 22', budget: 1800, progress: 30, status: 'in-progress', desc: 'Creating a new logo, color guidelines system, and typography presets for style guides.', deliverables: ['Primary & Secondary Color Tokens', 'Figma Icon Kit Hand-off', 'Modern Logo Variants'] },
   { id: '3', title: 'Poster Design', client: 'EventCo', due: 'Jul 8', budget: 600, progress: 90, status: 'review', desc: 'Designing eye-catching vector posters for print marketing campaign in dynamic gradients.', deliverables: ['Concept Art Options', 'High-res Vector Source PDF'] },
+  { id: '4', title: 'Logo Design Pack', client: 'RetailCorp', due: 'Jun 28', budget: 1200, progress: 100, status: 'completed', desc: 'Designed a vector logo set and brand visual guidelines.', deliverables: ['Vector Logo SVG Files', 'Primary & Secondary Color Tokens Guidelines', 'Final Asset Guidelines PDF'] },
 ];
 
 const DEFAULT_PROPOSALS: FreelancerProposal[] = [

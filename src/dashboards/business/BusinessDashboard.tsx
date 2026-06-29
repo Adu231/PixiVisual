@@ -283,7 +283,7 @@ export default function BusinessDashboard() {
         <div className="bg-card border border-border rounded-2xl overflow-hidden">
           <div className="p-4 flex items-center justify-between border-b border-border">
             <h3 className="text-sm font-display font-semibold text-foreground">Active Campaigns</h3>
-            <button onClick={() => toast('info', 'Opening campaigns page...')} className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+            <button onClick={() => navigate('/dashboard/business/campaigns')} className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
               View all <ArrowRight className="w-3 h-3" />
             </button>
           </div>

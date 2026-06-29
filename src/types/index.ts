@@ -10,6 +10,7 @@ export interface User {
   company?: string;
   website?: string;
   location?: string;
+  status?: 'active' | 'suspended' | string;
 }
 
 export type UserRole = 'content-creator' | 'business-owner' | 'designer' | 'marketing-agency' | 'freelancer' | 'enterprise-team' | 'admin';

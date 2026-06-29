@@ -33,7 +33,7 @@ export const MOCK_USERS: Record<string, User> = {
     id: 'user_3',
     name: 'Maya Chen',
     email: 'designer@pixivisual.com',
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b5e5?w=80&h=80&fit=crop&crop=face',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face',
     role: 'designer',
     plan: 'pro',
     createdAt: '2024-03-10',

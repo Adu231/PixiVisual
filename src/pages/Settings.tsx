@@ -36,6 +36,27 @@ export default function Settings() {
     { id: 'INV-2025-003', date: 'April 21, 2025', amount: '$29.00', status: 'Paid' },
   ]);
 
+  // Integrations State
+  const [integrationsList, setIntegrationsList] = useState([
+    { name: 'Slack', desc: 'Get design notifications in Slack', icon: '💬', connected: true },
+    { name: 'Google Drive', desc: 'Sync designs to Google Drive', icon: '📁', connected: false },
+    { name: 'Dropbox', desc: 'Export directly to Dropbox', icon: '📦', connected: false },
+    { name: 'HubSpot', desc: 'Use designs in HubSpot campaigns', icon: '🔶', connected: false },
+    { name: 'Mailchimp', desc: 'Add visuals to email campaigns', icon: '📧', connected: false },
+    { name: 'Shopify', desc: 'Create product images for Shopify', icon: '🛍️', connected: false },
+  ]);
+
+  const handleToggleIntegration = (name: string) => {
+    setIntegrationsList(prev => prev.map(integration => {
+      if (integration.name === name) {
+        const nextConnected = !integration.connected;
+        toast('success', `${integration.name} ${nextConnected ? 'connected' : 'disconnected'} successfully!`);
+        return { ...integration, connected: nextConnected };
+      }
+      return integration;
+    }));
+  };
+
   const handleAddCard = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newCard.number.replace(/\s+/g, '').length < 16) {
@@ -478,14 +499,7 @@ export default function Settings() {
                   <h2 className="text-base font-display font-semibold text-foreground mb-1">Integrations</h2>
                   <p className="text-sm text-muted-foreground mb-6">Connect PixiVisual with your favorite tools.</p>
                   <div className="space-y-3">
-                    {[
-                      { name: 'Slack', desc: 'Get design notifications in Slack', icon: '💬', connected: true },
-                      { name: 'Google Drive', desc: 'Sync designs to Google Drive', icon: '📁', connected: false },
-                      { name: 'Dropbox', desc: 'Export directly to Dropbox', icon: '📦', connected: false },
-                      { name: 'HubSpot', desc: 'Use designs in HubSpot campaigns', icon: '🔶', connected: false },
-                      { name: 'Mailchimp', desc: 'Add visuals to email campaigns', icon: '📧', connected: false },
-                      { name: 'Shopify', desc: 'Create product images for Shopify', icon: '🛍️', connected: false },
-                    ].map(integration => (
+                    {integrationsList.map(integration => (
                       <div key={integration.name} className="flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/20 transition-all">
                         <span className="text-2xl">{integration.icon}</span>
                         <div className="flex-1">
@@ -493,7 +507,7 @@ export default function Settings() {
                           <p className="text-xs text-muted-foreground">{integration.desc}</p>
                         </div>
                         <button
-                          onClick={() => toast('info', `${integration.name} integration coming soon!`)}
+                          onClick={() => handleToggleIntegration(integration.name)}
                           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${integration.connected ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'border border-border hover:border-primary/30 text-foreground'}`}
                         >
                           {integration.connected ? '✓ Connected' : 'Connect'}
