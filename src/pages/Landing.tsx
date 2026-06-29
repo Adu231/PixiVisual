@@ -176,7 +176,7 @@ export default function Landing() {
             </h1>
 
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-10 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-              Design social media posts, logos, ads, presentations, and brand assets with AI. 
+              Design social media posts, logos, ads, presentations, and brand assets with AI.
               Used by <strong className="text-foreground">2M+ creators, businesses, and agencies</strong> worldwide.
             </p>
 
@@ -202,7 +202,7 @@ export default function Landing() {
             {/* Social Proof */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-16 animate-fade-in" style={{ animationDelay: '0.4s' }}>
               <div className="flex -space-x-2">
-                {['photo-1494790108755-2616b612b5e5', 'photo-1507003211169-0a1dd7228f2d', 'photo-1438761681033-6461ffad8d80', 'photo-1472099645785-5658abf4ff4e', 'photo-1535713875002-d1d0cf377fde'].map((id, i) => (
+                {['photo-1507003211169-0a1dd7228f2d', 'photo-1507003211169-0a1dd7228f2d', 'photo-1438761681033-6461ffad8d80', 'photo-1472099645785-5658abf4ff4e', 'photo-1535713875002-d1d0cf377fde'].map((id, i) => (
                   <img
                     key={i}
                     src={`https://images.unsplash.com/${id}?w=36&h=36&fit=crop&crop=face`}
@@ -213,7 +213,7 @@ export default function Landing() {
               </div>
               <div className="text-left">
                 <div className="flex items-center gap-1 mb-0.5">
-                  {[1,2,3,4,5].map(i => <Star key={i} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />)}
+                  {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />)}
                   <span className="text-sm font-semibold text-foreground ml-1">4.9/5</span>
                 </div>
                 <p className="text-xs text-muted-foreground">Trusted by 2M+ users across 150 countries</p>
@@ -284,7 +284,7 @@ export default function Landing() {
               <span className="gradient-primary-text">create stunning visuals</span>
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed reveal-up stagger-2">
-              From AI-powered generation to professional editing and team collaboration — 
+              From AI-powered generation to professional editing and team collaboration —
               PixiVisual is the all-in-one creative platform for modern teams.
             </p>
           </div>
@@ -369,7 +369,7 @@ export default function Landing() {
                 <span className="gradient-primary-text">who demand more</span>
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed mb-8 reveal-left stagger-2">
-                We built PixiVisual because we knew great design shouldn't require a design degree, 
+                We built PixiVisual because we knew great design shouldn't require a design degree,
                 a massive budget, or a team of 10. Just a great idea and the right tools.
               </p>
               <div className="space-y-4 reveal-left stagger-3">
@@ -423,7 +423,7 @@ export default function Landing() {
               <span className="gradient-primary-text">center</span>
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed reveal-up stagger-2">
-              Monitor your creative output, track brand performance, and manage your entire 
+              Monitor your creative output, track brand performance, and manage your entire
               visual workflow from a single intelligent dashboard.
             </p>
           </div>
@@ -467,7 +467,7 @@ export default function Landing() {
                       {['Summer Campaign', 'Product Launch', 'Social Media Kit', 'Brand Refresh'].map((proj, i) => (
                         <div key={proj} className="flex items-center gap-2">
                           <div className={`w-8 h-8 rounded-lg flex-shrink-0`}
-                            style={{ background: `hsl(${260 + i*30}, 70%, ${55 + i*5}%)` }}
+                            style={{ background: `hsl(${260 + i * 30}, 70%, ${55 + i * 5}%)` }}
                           />
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-medium text-foreground truncate">{proj}</p>
@@ -591,17 +591,15 @@ export default function Landing() {
             {PRICING_PLANS.map((plan, i) => (
               <div
                 key={plan.id}
-                className={`relative p-6 rounded-2xl border transition-all duration-300 reveal-up ${
-                  plan.highlighted
+                className={`relative p-6 rounded-2xl border transition-all duration-300 reveal-up ${plan.highlighted
                     ? 'border-primary bg-primary/5 shadow-glow-purple'
                     : 'border-border bg-card hover:border-primary/20 hover:shadow-card'
-                }`}
+                  }`}
                 style={{ transitionDelay: `${i * 0.1}s` }}
               >
                 {plan.badge && (
-                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold ${
-                    plan.highlighted ? 'gradient-primary text-white' : 'bg-card border border-border text-foreground'
-                  }`}>
+                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold ${plan.highlighted ? 'gradient-primary text-white' : 'bg-card border border-border text-foreground'
+                    }`}>
                     {plan.badge}
                   </div>
                 )}
@@ -624,11 +622,10 @@ export default function Landing() {
 
                 <Link
                   to={isAuthenticated && plan.price.monthly > 0 ? `/payment?plan=${plan.id}&yearly=${billingYearly}` : '/register'}
-                  className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 mb-5 ${
-                    plan.highlighted
+                  className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 mb-5 ${plan.highlighted
                       ? 'gradient-primary text-white hover:opacity-90 shadow-glow-purple'
                       : 'border border-border bg-background text-foreground hover:border-primary/30 hover:bg-primary/5'
-                  }`}
+                    }`}
                 >
                   {plan.price.monthly === 0 ? 'Get Started Free' : 'Start Free Trial'}
                 </Link>
@@ -759,17 +756,17 @@ export default function Landing() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="absolute inset-0" onClick={() => setShowDemoVideo(false)} />
           <div className="relative z-10 w-full max-w-4xl bg-card border border-border rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
-            <button 
-              onClick={() => setShowDemoVideo(false)} 
+            <button
+              onClick={() => setShowDemoVideo(false)}
               className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/40 hover:bg-black/60 text-white border border-white/10 transition-all"
             >
               <X className="w-5 h-5" />
             </button>
             <div className="relative aspect-video w-full bg-black">
-              <video 
-                src="https://assets.mixkit.co/videos/preview/mixkit-web-design-project-on-screen-41710-large.mp4" 
-                controls 
-                autoPlay 
+              <video
+                src="https://assets.mixkit.co/videos/preview/mixkit-web-design-project-on-screen-41710-large.mp4"
+                controls
+                autoPlay
                 className="w-full h-full object-cover"
               />
             </div>
@@ -782,8 +779,8 @@ export default function Landing() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="absolute inset-0" onClick={() => setSelectedFeature(null)} />
           <div className="relative z-10 w-full max-w-lg bg-card border border-border rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
-            <button 
-              onClick={() => setSelectedFeature(null)} 
+            <button
+              onClick={() => setSelectedFeature(null)}
               className="absolute top-4 right-4 p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all"
             >
               <X className="w-4 h-4" />
@@ -797,12 +794,12 @@ export default function Landing() {
                 <span className="text-xs text-primary font-semibold">PixiVisual Core Tool</span>
               </div>
             </div>
-            
+
             <div className="space-y-4 my-4">
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {selectedFeature.desc} Our advanced suite provides professional-grade tools simplified for high-growth visual marketing teams.
               </p>
-              
+
               <div className="space-y-2">
                 <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">Key Capabilities Included:</h4>
                 <div className="grid grid-cols-1 gap-2">
@@ -874,15 +871,15 @@ export default function Landing() {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex gap-3 mt-6 pt-4 border-t border-border">
-              <button 
+              <button
                 onClick={() => setSelectedFeature(null)}
                 className="flex-1 py-2.5 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted transition-all"
               >
                 Close
               </button>
-              <Link 
+              <Link
                 to="/register"
                 className="flex-1 py-2.5 rounded-xl gradient-primary text-white text-sm font-bold text-center hover:opacity-90 transition-all shadow-glow-purple"
               >

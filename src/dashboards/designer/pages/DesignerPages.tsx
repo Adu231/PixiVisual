@@ -1547,7 +1547,7 @@ export function DesignerAnalytics() {
                   <XAxis dataKey="name" stroke="#9ca3af" fontSize={10} tickLine={false} />
                   <YAxis stroke="#9ca3af" fontSize={10} tickLine={false} />
                   <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px', fontSize: '12px', color: 'hsl(var(--foreground))' }} />
-                  <Legend wrapperStyle={{ fontSize: '10px', pt: 10 }} />
+                  <Legend wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                   <Bar dataKey="downloads" name="Downloads" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="sales" name="Sales" fill="#ec4899" radius={[4, 4, 0, 0]} />
                 </BarChart>

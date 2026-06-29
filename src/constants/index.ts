@@ -82,7 +82,7 @@ export const TESTIMONIALS: Testimonial[] = [
     name: 'Sarah Chen',
     role: 'Head of Marketing',
     company: 'TechFlow Inc.',
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b5e5?w=80&h=80&fit=crop&crop=face',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face',
     content: 'PixiVisual has completely transformed how we create marketing content. Our team produces 10x more designs in half the time. The AI generation is incredibly accurate.',
     rating: 5,
   },

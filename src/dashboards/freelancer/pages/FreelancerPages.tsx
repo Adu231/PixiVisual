@@ -413,7 +413,9 @@ export function FreelancerProjects() {
       <div className="p-4 lg:p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-display font-bold text-foreground">Active Projects</h2>
+            <h2 className="text-xl font-display font-bold text-foreground">
+              {statusTab === 'All' ? 'All Projects' : statusTab === 'Active' ? 'Active Projects' : 'Completed Projects'}
+            </h2>
             <p className="text-sm text-muted-foreground">{projects.filter(p => p.status !== 'completed').length} active contracts, {projects.filter(p => p.status === 'completed').length} completed</p>
           </div>
           <button
@@ -429,6 +431,7 @@ export function FreelancerProjects() {
           <div className="flex bg-muted p-1 rounded-xl w-fit">
             {['All', 'Active', 'Completed'].map(tab => (
               <button
+                type="button"
                 key={tab}
                 onClick={() => setStatusTab(tab)}
                 className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
