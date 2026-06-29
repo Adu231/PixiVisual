@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Bell, Shield, CreditCard, Palette, Globe, Save, Check, ChevronRight, X, Lock, Download, AlertTriangle, MessageSquare, Folder, Package, Target, Mail, ShoppingBag } from 'lucide-react';
-import DashboardLayout, { getSidebarItemsForRole, getRoleLabel } from '@/components/layout/DashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import { getSidebarItemsForRole, getRoleLabel } from '@/components/layout/sidebarHelpers';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { toast } from '@/components/ui/Toast';

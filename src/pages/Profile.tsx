@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Camera, Save, User as UserIcon, Mail, Building, Globe, MapPin, FileText, Lock } from 'lucide-react';
-import DashboardLayout, { getSidebarItemsForRole, getRoleLabel } from '@/components/layout/DashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import { getSidebarItemsForRole, getRoleLabel } from '@/components/layout/sidebarHelpers';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/Toast';
 import { getInitials } from '@/lib/utils';
