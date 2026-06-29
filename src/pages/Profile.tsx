@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Camera, Save, User as UserIcon, Mail, Building, Globe, MapPin, FileText, Lock } from 'lucide-react';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
+import DashboardLayout, { getSidebarItemsForRole, getRoleLabel } from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/Toast';
 import { getInitials } from '@/lib/utils';
@@ -111,14 +110,16 @@ export default function Profile() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="pt-16">
-        <div className="container max-w-4xl mx-auto px-4 py-12">
-          <div className="mb-8">
-            <h1 className="text-2xl font-display font-bold text-foreground mb-1">Your Profile</h1>
-            <p className="text-muted-foreground text-sm">Manage your personal information and public profile.</p>
-          </div>
+    <DashboardLayout
+      sidebarItems={getSidebarItemsForRole(user.role)}
+      title="Profile"
+      roleLabel={getRoleLabel(user.role)}
+    >
+      <div className="p-4 lg:p-6 max-w-4xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-xl font-display font-bold text-foreground mb-1">Your Profile</h1>
+          <p className="text-muted-foreground text-sm">Manage your personal information and public profile.</p>
+        </div>
 
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Avatar + Quick Info */}
@@ -308,8 +309,6 @@ export default function Profile() {
             </div>
           </div>
         </div>
-      </div>
-      <Footer />
-    </div>
+      </DashboardLayout>
   );
 }

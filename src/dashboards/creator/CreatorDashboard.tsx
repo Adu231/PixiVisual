@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Sparkles, Image, Video, Share2, TrendingUp, Plus, Play,
-  BarChart2, Clock, Star, ArrowRight, Zap, Layers, Trash2, Edit, X, Download
+  BarChart2, Clock, Star, ArrowRight, Zap, Layers, Trash2, Edit, X, Download,
+  Instagram, Youtube, Twitter, Linkedin, Smartphone, BookOpen
 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/context/AuthContext';
@@ -353,12 +354,17 @@ export default function CreatorDashboard() {
           <h3 className="text-base font-display font-semibold text-foreground mb-4">Quick Actions</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {[
-              { label: 'Instagram Post', icon: '📸' }, { label: 'YouTube Thumb', icon: '▶️' },
-              { label: 'Twitter Card', icon: '🐦' }, { label: 'LinkedIn Post', icon: '💼' },
-              { label: 'Story', icon: '📱' }, { label: 'Blog Cover', icon: '✍️' },
+              { label: 'Instagram Post', icon: Instagram, color: 'text-pink-500 bg-pink-500/10' },
+              { label: 'YouTube Thumb', icon: Youtube, color: 'text-red-500 bg-red-500/10' },
+              { label: 'Twitter Card', icon: Twitter, color: 'text-blue-400 bg-blue-400/10' },
+              { label: 'LinkedIn Post', icon: Linkedin, color: 'text-blue-700 bg-blue-700/10' },
+              { label: 'Story', icon: Smartphone, color: 'text-purple-500 bg-purple-500/10' },
+              { label: 'Blog Cover', icon: BookOpen, color: 'text-emerald-500 bg-emerald-500/10' },
             ].map(action => (
-              <button key={action.label} onClick={() => openQuickActionCreate(action.label)} className="flex flex-col items-center gap-2 p-4 rounded-2xl border border-border bg-card hover:border-primary/20 hover:bg-primary/5 transition-all text-center">
-                <span className="text-2xl">{action.icon}</span>
+              <button key={action.label} onClick={() => openQuickActionCreate(action.label)} className="flex flex-col items-center gap-2.5 p-4 rounded-2xl border border-border bg-card hover:border-primary/20 hover:bg-primary/5 transition-all text-center group">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${action.color} group-hover:scale-110 transition-transform`}>
+                  <action.icon className="w-5 h-5" />
+                </div>
                 <span className="text-xs font-medium text-foreground">{action.label}</span>
               </button>
             ))}

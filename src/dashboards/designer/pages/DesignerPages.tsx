@@ -136,7 +136,7 @@ export function DesignerDesigns() {
   return (
     <DashboardLayout sidebarItems={designerSidebarItems} title="My Designs" roleLabel="Designer">
       <div className="p-4 lg:p-6 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-display font-bold text-foreground">My Designs</h2>
             <p className="text-sm text-muted-foreground">{designs.length} designs in your library</p>
@@ -469,7 +469,7 @@ export function DesignerPortfolio() {
   return (
     <DashboardLayout sidebarItems={designerSidebarItems} title="Portfolio" roleLabel="Designer">
       <div className="p-4 lg:p-6 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-display font-bold text-foreground">Portfolio</h2>
             <p className="text-sm text-muted-foreground">Manage your public showcase projects</p>
@@ -1642,7 +1642,7 @@ export function DesignerHistory() {
   return (
     <DashboardLayout sidebarItems={designerSidebarItems} title="History" roleLabel="Designer">
       <div className="p-4 lg:p-6 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-display font-bold text-foreground">Deleted History</h2>
             <p className="text-sm text-muted-foreground">Manage and restore recently deleted items</p>

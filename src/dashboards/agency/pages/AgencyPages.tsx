@@ -716,7 +716,7 @@ export function AgencyProjects() {
   return (
     <DashboardLayout sidebarItems={agencySidebarItems} title="Projects" roleLabel="Marketing Agency">
       <div className="p-4 lg:p-6 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-display font-bold text-foreground">Projects</h2>
             <p className="text-sm text-muted-foreground">{projectsList.filter(p => p.status !== 'completed').length} active projects</p>

@@ -1,24 +1,24 @@
 import { useState } from 'react';
-import { Globe, Check, Plus, Settings, Zap, RefreshCw, X, Shield, Code, Save } from 'lucide-react';
+import { Globe, Check, Plus, Settings, Zap, RefreshCw, X, Shield, Code, Save, MessageSquare, Folder, Users as UsersIcon, Package, Target, Palette, ShoppingBag, Zap as ZapIcon, Database, Mail, Pin } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { teamSidebarItems } from '../TeamDashboard';
 import { toast } from '@/components/ui/Toast';
 
 const integrations = [
-  { name: 'Slack', desc: 'Get notified when assets are uploaded or brand violations detected', category: 'Communication', connected: true, icon: '💬', color: 'from-purple-500 to-pink-500' },
-  { name: 'Google Drive', desc: 'Automatically sync brand assets to shared Google Drive folders', category: 'Storage', connected: true, icon: '📁', color: 'from-blue-500 to-green-500' },
-  { name: 'Microsoft Teams', desc: 'Collaborate on designs directly inside Microsoft Teams channels', category: 'Communication', connected: false, icon: '🔷', color: 'from-blue-600 to-blue-400' },
-  { name: 'Dropbox', desc: 'Two-way sync for all brand assets with your Dropbox Business', category: 'Storage', connected: false, icon: '📦', color: 'from-blue-500 to-blue-300' },
-  { name: 'HubSpot', desc: 'Push approved marketing assets directly to HubSpot campaigns', category: 'Marketing', connected: true, icon: '🟠', color: 'from-orange-500 to-red-500' },
-  { name: 'Figma', desc: 'Import Figma designs directly as brand assets with one click', category: 'Design', connected: false, icon: '🎨', color: 'from-pink-500 to-purple-500' },
-  { name: 'Shopify', desc: 'Sync product images and promotional assets with your Shopify store', category: 'E-commerce', connected: false, icon: '🛍️', color: 'from-green-500 to-teal-500' },
-  { name: 'Zapier', desc: 'Connect PixiVisual to 5,000+ apps through automated Zapier workflows', category: 'Automation', connected: false, icon: '⚡', color: 'from-orange-400 to-yellow-400' },
+  { name: 'Slack', desc: 'Get notified when assets are uploaded or brand violations detected', category: 'Communication', connected: true, icon: MessageSquare, color: 'from-purple-500 to-pink-500' },
+  { name: 'Google Drive', desc: 'Automatically sync brand assets to shared Google Drive folders', category: 'Storage', connected: true, icon: Folder, color: 'from-blue-500 to-green-500' },
+  { name: 'Microsoft Teams', desc: 'Collaborate on designs directly inside Microsoft Teams channels', category: 'Communication', connected: false, icon: UsersIcon, color: 'from-blue-600 to-blue-400' },
+  { name: 'Dropbox', desc: 'Two-way sync for all brand assets with your Dropbox Business', category: 'Storage', connected: false, icon: Package, color: 'from-blue-500 to-blue-300' },
+  { name: 'HubSpot', desc: 'Push approved marketing assets directly to HubSpot campaigns', category: 'Marketing', connected: true, icon: Target, color: 'from-orange-500 to-red-500' },
+  { name: 'Figma', desc: 'Import Figma designs directly as brand assets with one click', category: 'Design', connected: false, icon: Palette, color: 'from-pink-500 to-purple-500' },
+  { name: 'Shopify', desc: 'Sync product images and promotional assets with your Shopify store', category: 'E-commerce', connected: false, icon: ShoppingBag, color: 'from-green-500 to-teal-500' },
+  { name: 'Zapier', desc: 'Connect PixiVisual to 5,000+ apps through automated Zapier workflows', category: 'Automation', connected: false, icon: ZapIcon, color: 'from-orange-400 to-yellow-400' },
 ];
 
 const extraIntegrationsList = [
-  { name: 'Airtable', desc: 'Sync asset metadata automatically with Airtable bases', category: 'Automation', connected: false, icon: '🗂️', color: 'from-blue-500 to-indigo-500' },
-  { name: 'Mailchimp', desc: 'Sync marketing designs directly into Mailchimp template gallery', category: 'Marketing', connected: false, icon: '🐵', color: 'from-yellow-500 to-yellow-600' },
-  { name: 'Pinterest', desc: 'Automate pins for new campaign graphics on selected boards', category: 'Marketing', connected: false, icon: '📌', color: 'from-red-500 to-red-700' },
+  { name: 'Airtable', desc: 'Sync asset metadata automatically with Airtable bases', category: 'Automation', connected: false, icon: Database, color: 'from-blue-500 to-indigo-500' },
+  { name: 'Mailchimp', desc: 'Sync marketing designs directly into Mailchimp template gallery', category: 'Marketing', connected: false, icon: Mail, color: 'from-yellow-500 to-yellow-600' },
+  { name: 'Pinterest', desc: 'Automate pins for new campaign graphics on selected boards', category: 'Marketing', connected: false, icon: Pin, color: 'from-red-500 to-red-700' },
 ];
 
 const categories = ['All', 'Communication', 'Storage', 'Marketing', 'Design', 'E-commerce', 'Automation'];
@@ -153,8 +153,8 @@ export default function TeamIntegrations() {
           {filteredIntegrations.map(intg => (
             <div key={intg.name} className={`bg-card border rounded-2xl p-5 transition-all ${intg.connected ? 'border-primary/20 animate-in fade-in-50 duration-300' : 'border-border hover:border-primary/10'}`}>
               <div className="flex items-start gap-4">
-                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${intg.color} flex items-center justify-center text-2xl flex-shrink-0`}>
-                  {intg.icon}
+                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${intg.color} flex items-center justify-center text-white flex-shrink-0`}>
+                  <intg.icon className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
@@ -238,8 +238,8 @@ export default function TeamIntegrations() {
                 return (
                   <div key={extra.name} className="flex items-center justify-between p-3.5 border border-border rounded-xl bg-muted/30">
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${extra.color} flex items-center justify-center text-xl flex-shrink-0`}>
-                        {extra.icon}
+                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${extra.color} flex items-center justify-center text-white flex-shrink-0`}>
+                        <extra.icon className="w-5 h-5" />
                       </div>
                       <div>
                         <div className="flex items-center gap-1.5">
