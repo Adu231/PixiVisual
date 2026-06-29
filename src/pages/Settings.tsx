@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Bell, Shield, CreditCard, Palette, Globe, Save, Check, ChevronRight, X, Lock, Download, AlertTriangle } from 'lucide-react';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
+import { Bell, Shield, CreditCard, Palette, Globe, Save, Check, ChevronRight, X, Lock, Download, AlertTriangle, MessageSquare, Folder, Package, Target, Mail, ShoppingBag } from 'lucide-react';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import { getSidebarItemsForRole, getRoleLabel } from '@/components/layout/sidebarHelpers';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { toast } from '@/components/ui/Toast';
@@ -38,12 +38,12 @@ export default function Settings() {
 
   // Integrations State
   const [integrationsList, setIntegrationsList] = useState([
-    { name: 'Slack', desc: 'Get design notifications in Slack', icon: '💬', connected: true },
-    { name: 'Google Drive', desc: 'Sync designs to Google Drive', icon: '📁', connected: false },
-    { name: 'Dropbox', desc: 'Export directly to Dropbox', icon: '📦', connected: false },
-    { name: 'HubSpot', desc: 'Use designs in HubSpot campaigns', icon: '🔶', connected: false },
-    { name: 'Mailchimp', desc: 'Add visuals to email campaigns', icon: '📧', connected: false },
-    { name: 'Shopify', desc: 'Create product images for Shopify', icon: '🛍️', connected: false },
+    { name: 'Slack', desc: 'Get design notifications in Slack', icon: MessageSquare, connected: true },
+    { name: 'Google Drive', desc: 'Sync designs to Google Drive', icon: Folder, connected: false },
+    { name: 'Dropbox', desc: 'Export directly to Dropbox', icon: Package, connected: false },
+    { name: 'HubSpot', desc: 'Use designs in HubSpot campaigns', icon: Target, connected: false },
+    { name: 'Mailchimp', desc: 'Add visuals to email campaigns', icon: Mail, connected: false },
+    { name: 'Shopify', desc: 'Create product images for Shopify', icon: ShoppingBag, connected: false },
   ]);
 
   const handleToggleIntegration = (name: string) => {
@@ -113,14 +113,16 @@ export default function Settings() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="pt-16">
-        <div className="container max-w-5xl mx-auto px-4 py-12">
-          <div className="mb-8">
-            <h1 className="text-2xl font-display font-bold text-foreground mb-1">Settings</h1>
-            <p className="text-muted-foreground text-sm">Manage your account preferences and configurations.</p>
-          </div>
+    <DashboardLayout
+      sidebarItems={getSidebarItemsForRole(user?.role || 'content-creator')}
+      title="Settings"
+      roleLabel={user ? getRoleLabel(user.role) : 'User'}
+    >
+      <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-xl font-display font-bold text-foreground mb-1">Settings</h1>
+          <p className="text-muted-foreground text-sm">Manage your account preferences and configurations.</p>
+        </div>
 
           <div className="grid lg:grid-cols-4 gap-6">
             {/* Sidebar */}
@@ -501,7 +503,7 @@ export default function Settings() {
                   <div className="space-y-3">
                     {integrationsList.map(integration => (
                       <div key={integration.name} className="flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/20 transition-all">
-                        <span className="text-2xl">{integration.icon}</span>
+                        <integration.icon className="w-6 h-6 text-primary flex-shrink-0" />
                         <div className="flex-1">
                           <p className="text-sm font-medium text-foreground">{integration.name}</p>
                           <p className="text-xs text-muted-foreground">{integration.desc}</p>
@@ -529,8 +531,6 @@ export default function Settings() {
             </div>
           </div>
         </div>
-      </div>
-      <Footer />
-    </div>
+      </DashboardLayout>
   );
 }

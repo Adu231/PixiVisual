@@ -11,7 +11,7 @@ import { getInitials } from '@/lib/utils';
 import { APP_NAME } from '@/constants';
 import { toast } from '@/components/ui/Toast';
 
-interface SidebarItem {
+export interface SidebarItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -31,7 +31,16 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    return localStorage.getItem('pixivisual_sidebar_collapsed') === 'true';
+  });
+  const toggleCollapsed = () => {
+    setCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('pixivisual_sidebar_collapsed', String(next));
+      return next;
+    });
+  };
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQueryState] = useState(() => {
     return new URLSearchParams(window.location.search).get('q') || '';
@@ -392,15 +401,15 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className={`hidden lg:flex flex-col border-r border-border bg-card transition-all duration-300 relative flex-shrink-0 ${
+      <aside className={`hidden lg:flex flex-col border-r border-border bg-card transition-all duration-300 relative flex-shrink-0 z-20 ${
         collapsed ? 'w-16' : 'w-64'
       }`}>
         <SidebarContent />
         <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-card border border-border flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-all duration-200 shadow-sm z-10"
+          onClick={toggleCollapsed}
+          className="absolute -right-4 top-20 w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-all duration-200 shadow-sm z-30 cursor-pointer text-foreground"
         >
-          {collapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
       </aside>
 
@@ -472,7 +481,7 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
               {showNotifications && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
-                  <div className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200">
+                  <div className="absolute right-[-12px] sm:right-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-xs bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200">
                     <div className="p-4 border-b border-border flex items-center justify-between bg-primary/5">
                       <span className="text-sm font-bold text-foreground">Notifications</span>
                       {notifications > 0 && (
