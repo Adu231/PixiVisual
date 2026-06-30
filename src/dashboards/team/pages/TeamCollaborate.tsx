@@ -144,58 +144,60 @@ export default function TeamCollaborate() {
         </div>
 
         <div className="bg-card border border-border rounded-2xl overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border bg-muted/30">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Member</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden sm:table-cell">Department</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell">Joined</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Access</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filtered.map(m => (
-                <tr key={m.id} className="hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="relative flex-shrink-0">
-                        <img src={m.avatar} alt={m.name} className="w-9 h-9 rounded-full object-cover" />
-                        <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-card ${statusDot[m.status]}`} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">{m.name}</p>
-                        <p className="text-xs text-muted-foreground">{m.role}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
-                    <span className="text-xs text-muted-foreground">{m.dept}</span>
-                  </td>
-                  <td className="px-4 py-3 hidden lg:table-cell">
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3" />{m.joined}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1 w-fit ${accessColors[m.access]}`}>
-                      <Shield className="w-2.5 h-2.5" />{m.access}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => { setMessagingMember(m); setMessageText(''); }} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:border-primary/30 hover:text-primary transition-all">
-                        <MessageSquare className="w-3 h-3" />
-                      </button>
-                      <button onClick={() => handleStartEdit(m)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:border-primary/30 hover:text-primary transition-all">
-                        <Edit className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border bg-muted/30">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Member</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden sm:table-cell">Department</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground hidden lg:table-cell">Joined</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Access</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {filtered.map(m => (
+                  <tr key={m.id} className="hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="relative flex-shrink-0">
+                          <img src={m.avatar} alt={m.name} className="w-9 h-9 rounded-full object-cover" />
+                          <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-card ${statusDot[m.status]}`} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{m.name}</p>
+                          <p className="text-xs text-muted-foreground">{m.role}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 hidden sm:table-cell">
+                      <span className="text-xs text-muted-foreground">{m.dept}</span>
+                    </td>
+                    <td className="px-4 py-3 hidden lg:table-cell">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Clock className="w-3 h-3" />{m.joined}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1 w-fit ${accessColors[m.access]}`}>
+                        <Shield className="w-2.5 h-2.5" />{m.access}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        <button onClick={() => { setMessagingMember(m); setMessageText(''); }} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:border-primary/30 hover:text-primary transition-all">
+                          <MessageSquare className="w-3 h-3" />
+                        </button>
+                        <button onClick={() => handleStartEdit(m)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:border-primary/30 hover:text-primary transition-all">
+                          <Edit className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {invitesList.length > 0 && (

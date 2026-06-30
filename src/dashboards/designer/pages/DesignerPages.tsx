@@ -1556,7 +1556,7 @@ export function DesignerAnalytics() {
           </div>
 
           {/* Chart 3: PieChart Distribution */}
-          <div className="bg-card border border-border shadow-md rounded-2xl p-5 flex flex-col justify-between h-[300px] md:col-span-2">
+          <div className="bg-card border border-border shadow-md rounded-2xl p-5 flex flex-col justify-between h-auto min-h-[300px] pb-6 sm:pb-5 md:col-span-2">
             <div>
               <h3 className="text-sm font-semibold text-foreground mb-1">Earnings Distribution Split</h3>
               <p className="text-xs text-muted-foreground mb-4">Revenue breakdown divided by marketplace listing type</p>

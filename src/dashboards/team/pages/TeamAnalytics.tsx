@@ -161,41 +161,43 @@ export default function TeamAnalytics() {
           <div className="p-4 border-b border-border">
             <h3 className="text-sm font-display font-semibold text-foreground">Workspace Performance</h3>
           </div>
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border bg-muted/20">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Workspace</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Assets</th>
-                <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground hidden sm:table-cell">Downloads</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Consistency</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {activeWorkspacePerf.map(ws => (
-                <tr key={ws.name} className="hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg gradient-primary flex items-center justify-center flex-shrink-0">
-                        <Eye className="w-3.5 h-3.5 text-white" />
-                      </div>
-                      <span className="text-sm font-medium text-foreground">{ws.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-right text-sm text-foreground">{ws.assets}</td>
-                  <td className="px-4 py-3 text-right text-sm text-foreground hidden sm:table-cell">{ws.downloads.toLocaleString()}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden max-w-24">
-                        <div className={`h-full rounded-full ${ws.consistency >= 90 ? 'bg-green-500' : ws.consistency >= 80 ? 'bg-blue-500' : 'bg-yellow-500'}`}
-                          style={{ width: `${ws.consistency}%` }} />
-                      </div>
-                      <span className="text-xs font-medium text-foreground">{ws.consistency}%</span>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border bg-muted/20">
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Workspace</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground">Assets</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground hidden sm:table-cell">Downloads</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground">Consistency</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {activeWorkspacePerf.map(ws => (
+                  <tr key={ws.name} className="hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg gradient-primary flex items-center justify-center flex-shrink-0">
+                          <Eye className="w-3.5 h-3.5 text-white" />
+                        </div>
+                        <span className="text-sm font-medium text-foreground">{ws.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-right text-sm text-foreground">{ws.assets}</td>
+                    <td className="px-4 py-3 text-right text-sm text-foreground hidden sm:table-cell">{ws.downloads.toLocaleString()}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden max-w-24">
+                          <div className={`h-full rounded-full ${ws.consistency >= 90 ? 'bg-green-500' : ws.consistency >= 80 ? 'bg-blue-500' : 'bg-yellow-500'}`}
+                            style={{ width: `${ws.consistency}%` }} />
+                        </div>
+                        <span className="text-xs font-medium text-foreground">{ws.consistency}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Top Used Assets */}
