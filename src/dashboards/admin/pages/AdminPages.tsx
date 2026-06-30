@@ -9,6 +9,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { toast } from '@/components/ui/Toast';
 import { formatCurrency } from '@/lib/utils';
 import { MOCK_USERS } from '@/lib/auth';
+import { UserRole } from '@/types';
 
 export const adminSidebarItems = [
   { label: 'Users', href: '/dashboard/admin/users', icon: Users },
@@ -26,8 +27,8 @@ export function AdminUsers() {
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [inviteName, setInviteName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('designer');
-  const [invitePlan, setInvitePlan] = useState('pro');
+  const [inviteRole, setInviteRole] = useState<UserRole>('designer');
+  const [invitePlan, setInvitePlan] = useState<'free' | 'pro' | 'business' | 'enterprise'>('pro');
 
   const [viewUser, setViewUser] = useState<any | null>(null);
   const [activeActionsUserId, setActiveActionsUserId] = useState<string | null>(null);
@@ -252,15 +253,15 @@ export function AdminUsers() {
                             <>
                               <div className="fixed inset-0 z-40" onClick={() => setActiveActionsUserId(null)} />
                               <div className="absolute right-0 mt-1 w-36 rounded-xl border border-border bg-card shadow-lg z-50 py-1.5 animate-in fade-in slide-in-from-top-1 duration-100 text-left">
-                                <button 
-                                  onClick={() => { handleToggleSuspend(u.id); setActiveActionsUserId(null); }} 
+                                <button
+                                  onClick={() => { handleToggleSuspend(u.id); setActiveActionsUserId(null); }}
                                   className="w-full text-left px-3 py-1.5 text-xs text-foreground hover:bg-muted transition-colors flex items-center gap-1.5"
                                 >
                                   {u.status === 'suspended' ? 'Activate User' : 'Suspend User'}
                                 </button>
                                 <div className="h-px bg-border my-1" />
-                                <button 
-                                  onClick={() => { handleDeleteUser(u.id); setActiveActionsUserId(null); }} 
+                                <button
+                                  onClick={() => { handleDeleteUser(u.id); setActiveActionsUserId(null); }}
                                   className="w-full text-left px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10 transition-colors font-medium flex items-center gap-1.5"
                                 >
                                   Delete User
@@ -286,8 +287,8 @@ export function AdminUsers() {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-display font-bold text-foreground">Invite New User</h3>
-              <button 
-                onClick={() => setIsInviteOpen(false)} 
+              <button
+                onClick={() => setIsInviteOpen(false)}
                 className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -298,10 +299,10 @@ export function AdminUsers() {
             <form onSubmit={handleInviteSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Full Name</label>
-                <input 
-                  type="text" 
-                  value={inviteName} 
-                  onChange={e => setInviteName(e.target.value)} 
+                <input
+                  type="text"
+                  value={inviteName}
+                  onChange={e => setInviteName(e.target.value)}
                   placeholder="e.g. Sarah Connor"
                   className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all placeholder:text-muted-foreground"
                 />
@@ -309,10 +310,10 @@ export function AdminUsers() {
 
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Email Address</label>
-                <input 
-                  type="email" 
-                  value={inviteEmail} 
-                  onChange={e => setInviteEmail(e.target.value)} 
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={e => setInviteEmail(e.target.value)}
                   placeholder="e.g. sarah@domain.com"
                   className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all placeholder:text-muted-foreground"
                 />
@@ -321,9 +322,9 @@ export function AdminUsers() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Role</label>
-                  <select 
-                    value={inviteRole} 
-                    onChange={e => setInviteRole(e.target.value)}
+                  <select
+                    value={inviteRole}
+                    onChange={e => setInviteRole(e.target.value as UserRole)}
                     className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all cursor-pointer"
                   >
                     <option value="content-creator">Creator</option>
@@ -338,9 +339,9 @@ export function AdminUsers() {
 
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Subscription Plan</label>
-                  <select 
-                    value={invitePlan} 
-                    onChange={e => setInvitePlan(e.target.value)}
+                  <select
+                    value={invitePlan}
+                    onChange={e => setInvitePlan(e.target.value as 'free' | 'pro' | 'business' | 'enterprise')}
                     className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all cursor-pointer"
                   >
                     <option value="free">Free</option>
@@ -352,14 +353,14 @@ export function AdminUsers() {
               </div>
 
               <div className="pt-4 flex justify-end gap-3 border-t border-border mt-6">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setIsInviteOpen(false)}
                   className="px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-all"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   type="submit"
                   className="px-5 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
                 >
@@ -376,8 +377,8 @@ export function AdminUsers() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-card border border-border w-full max-w-md rounded-2xl p-6 shadow-glow-purple relative animate-in zoom-in-95 duration-200">
             {/* Close button */}
-            <button 
-              onClick={() => setViewUser(null)} 
+            <button
+              onClick={() => setViewUser(null)}
               className="absolute right-4 top-4 p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="w-5 h-5" />
@@ -386,9 +387,9 @@ export function AdminUsers() {
             {/* Profile Content */}
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="relative">
-                <img 
-                  src={viewUser.avatar} 
-                  alt={viewUser.name} 
+                <img
+                  src={viewUser.avatar}
+                  alt={viewUser.name}
                   className={`w-24 h-24 rounded-full object-cover border-2 border-primary/20 ${viewUser.status === 'suspended' ? 'grayscale opacity-70' : ''}`}
                 />
                 {viewUser.status === 'suspended' && (
@@ -445,7 +446,7 @@ export function AdminUsers() {
               </div>
 
               <div className="pt-4 w-full">
-                <button 
+                <button
                   onClick={() => setViewUser(null)}
                   className="w-full px-5 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
                 >
@@ -561,10 +562,10 @@ export function AdminRevenue() {
               <div key={i} className="flex-1 flex flex-col gap-2 h-full">
                 {/* Bar Container */}
                 <div className="flex-1 flex items-end justify-center">
-                  <div 
+                  <div
                     className="w-full rounded-t-lg gradient-primary opacity-70 hover:opacity-100 transition-all duration-300 cursor-pointer"
-                    style={{ height: `${(v / maxVal) * 100}%` }} 
-                    title={`${monthLabels[i]}: ${formatCurrency(v)}`} 
+                    style={{ height: `${(v / maxVal) * 100}%` }}
+                    title={`${monthLabels[i]}: ${formatCurrency(v)}`}
                   />
                 </div>
                 {/* Label */}
@@ -621,11 +622,11 @@ export function AdminRevenue() {
 /* ─── Marketplace ─────────────────────────────────────────────── */
 export function AdminMarketplace() {
   const [templateList, setTemplateList] = useState(() => [
-    { title: 'Minimal Business Card', author: 'Maya Chen', category: 'Branding', sales: 234, price: '$3', status: 'active', preview: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&h=90&fit=crop' },
-    { title: 'Bold Social Media Kit', author: 'Alex Rivera', category: 'Social Media', sales: 189, price: '$5', status: 'active', preview: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=120&h=90&fit=crop' },
-    { title: 'Corporate Presentation', author: 'Sam Torres', category: 'Presentation', sales: 142, price: '$8', status: 'active', preview: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=120&h=90&fit=crop' },
-    { title: 'Modern Logo Pack', author: 'Jordan Lee', category: 'Branding', sales: 98, price: '$12', status: 'pending', preview: 'https://images.unsplash.com/photo-1634942537034-2531766767d1?w=120&h=90&fit=crop' },
-    { title: 'E-commerce Banner Set', author: 'Marcus Williams', category: 'Marketing', sales: 76, price: '$6', status: 'pending', preview: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=120&h=90&fit=crop' },
+    { title: 'Minimal Business Card', author: 'Maya Chen', category: 'Branding', sales: 234, price: '$3', status: 'active', preview: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=120&h=90&fit=crop', featured: false },
+    { title: 'Bold Social Media Kit', author: 'Alex Rivera', category: 'Social Media', sales: 189, price: '$5', status: 'active', preview: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=120&h=90&fit=crop', featured: false },
+    { title: 'Corporate Presentation', author: 'Sam Torres', category: 'Presentation', sales: 142, price: '$8', status: 'active', preview: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=120&h=90&fit=crop', featured: false },
+    { title: 'Modern Logo Pack', author: 'Jordan Lee', category: 'Branding', sales: 98, price: '$12', status: 'pending', preview: 'https://images.unsplash.com/photo-1634942537034-2531766767d1?w=120&h=90&fit=crop', featured: false },
+    { title: 'E-commerce Banner Set', author: 'Marcus Williams', category: 'Marketing', sales: 76, price: '$6', status: 'pending', preview: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=120&h=90&fit=crop', featured: false },
   ]);
 
   const [showSettings, setShowSettings] = useState(false);
@@ -682,7 +683,7 @@ export function AdminMarketplace() {
   return (
     <DashboardLayout sidebarItems={adminSidebarItems} title="Marketplace" roleLabel="Platform Admin">
       <div className="p-4 lg:p-6 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-display font-bold text-foreground">Marketplace Management</h2>
             <p className="text-sm text-muted-foreground">Moderate and manage template listings</p>
@@ -710,8 +711,8 @@ export function AdminMarketplace() {
           <div className="p-4 border-b border-border flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">Template Listings</h3>
             <div className="flex gap-2">
-              <button 
-                onClick={() => setShowFilters(!showFilters)} 
+              <button
+                onClick={() => setShowFilters(!showFilters)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition-all ${showFilters ? 'bg-primary/10 border-primary text-primary font-medium' : 'border-border text-muted-foreground hover:border-primary/30'}`}
               >
                 <Filter className="w-3 h-3" /> Filter
@@ -723,8 +724,8 @@ export function AdminMarketplace() {
             <div className="p-4 border-b border-border bg-muted/20 flex flex-wrap gap-4 items-center animate-in slide-in-from-top-1 duration-200">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Category:</span>
-                <select 
-                  value={filterCategory} 
+                <select
+                  value={filterCategory}
                   onChange={e => setFilterCategory(e.target.value)}
                   className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground outline-none focus:border-primary transition-all cursor-pointer"
                 >
@@ -738,8 +739,8 @@ export function AdminMarketplace() {
 
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Status:</span>
-                <select 
-                  value={filterStatus} 
+                <select
+                  value={filterStatus}
                   onChange={e => setFilterStatus(e.target.value)}
                   className="px-2 py-1 rounded-lg border border-border bg-background text-xs text-foreground outline-none focus:border-primary transition-all cursor-pointer"
                 >
@@ -750,7 +751,7 @@ export function AdminMarketplace() {
               </div>
 
               {(filterCategory !== 'all' || filterStatus !== 'all') && (
-                <button 
+                <button
                   onClick={() => { setFilterCategory('all'); setFilterStatus('all'); }}
                   className="text-xs text-primary hover:underline font-medium"
                 >
@@ -803,8 +804,8 @@ export function AdminMarketplace() {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-display font-bold text-foreground">Marketplace Settings</h3>
-              <button 
-                onClick={() => setShowSettings(false)} 
+              <button
+                onClick={() => setShowSettings(false)}
                 className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -817,16 +818,16 @@ export function AdminMarketplace() {
               toast('success', 'Marketplace settings saved successfully');
               setShowSettings(false);
             }} className="space-y-4">
-              
+
               {/* Allow Uploads toggle */}
               <div className="flex items-center justify-between py-1">
                 <div>
                   <label className="text-sm font-semibold text-foreground block">Allow New Listings</label>
                   <span className="text-xs text-muted-foreground">Let creators upload templates</span>
                 </div>
-                <input 
-                  type="checkbox" 
-                  checked={allowUploads} 
+                <input
+                  type="checkbox"
+                  checked={allowUploads}
                   onChange={e => setAllowUploads(e.target.checked)}
                   className="w-4 h-4 rounded border-border text-primary bg-background focus:ring-primary transition-all cursor-pointer"
                 />
@@ -838,9 +839,9 @@ export function AdminMarketplace() {
                   <label className="text-sm font-semibold text-foreground block">Require Admin Moderation</label>
                   <span className="text-xs text-muted-foreground">Review templates before publishing</span>
                 </div>
-                <input 
-                  type="checkbox" 
-                  checked={moderationRequired} 
+                <input
+                  type="checkbox"
+                  checked={moderationRequired}
                   onChange={e => setModerationRequired(e.target.checked)}
                   className="w-4 h-4 rounded border-border text-primary bg-background focus:ring-primary transition-all cursor-pointer"
                 />
@@ -849,10 +850,10 @@ export function AdminMarketplace() {
               {/* Commission Rate */}
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Platform Commission (%)</label>
-                <input 
-                  type="number" 
-                  value={commissionRate} 
-                  onChange={e => setCommissionRate(Number(e.target.value))} 
+                <input
+                  type="number"
+                  value={commissionRate}
+                  onChange={e => setCommissionRate(Number(e.target.value))}
                   min="0"
                   max="100"
                   placeholder="20"
@@ -863,10 +864,10 @@ export function AdminMarketplace() {
               {/* Max File Size */}
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Max Template Size (MB)</label>
-                <input 
-                  type="number" 
-                  value={maxFileSize} 
-                  onChange={e => setMaxFileSize(Number(e.target.value))} 
+                <input
+                  type="number"
+                  value={maxFileSize}
+                  onChange={e => setMaxFileSize(Number(e.target.value))}
                   min="1"
                   max="1000"
                   placeholder="50"
@@ -875,14 +876,14 @@ export function AdminMarketplace() {
               </div>
 
               <div className="pt-4 flex justify-end gap-3 border-t border-border mt-6">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setShowSettings(false)}
                   className="px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-all"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   type="submit"
                   className="px-5 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
                 >
@@ -901,8 +902,8 @@ export function AdminMarketplace() {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-display font-bold text-foreground">Manage Template</h3>
-              <button 
-                onClick={() => setManageTemplate(null)} 
+              <button
+                onClick={() => setManageTemplate(null)}
                 className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -923,10 +924,10 @@ export function AdminMarketplace() {
             <form onSubmit={handleSaveManagedTemplate} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Template Title</label>
-                <input 
-                  type="text" 
-                  value={manageTemplate.title} 
-                  onChange={e => setManageTemplate({ ...manageTemplate, title: e.target.value })} 
+                <input
+                  type="text"
+                  value={manageTemplate.title}
+                  onChange={e => setManageTemplate({ ...manageTemplate, title: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all"
                 />
               </div>
@@ -934,10 +935,10 @@ export function AdminMarketplace() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Price (USD)</label>
-                  <input 
-                    type="text" 
-                    value={manageTemplate.price} 
-                    onChange={e => setManageTemplate({ ...manageTemplate, price: e.target.value })} 
+                  <input
+                    type="text"
+                    value={manageTemplate.price}
+                    onChange={e => setManageTemplate({ ...manageTemplate, price: e.target.value })}
                     placeholder="$3"
                     className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground outline-none focus:border-primary transition-all"
                   />
@@ -946,9 +947,9 @@ export function AdminMarketplace() {
                 <div className="flex flex-col justify-center">
                   <label className="text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider block">Featured Listing</label>
                   <label className="flex items-center gap-2 mt-2 cursor-pointer select-none">
-                    <input 
-                      type="checkbox" 
-                      checked={manageTemplate.featured || false} 
+                    <input
+                      type="checkbox"
+                      checked={manageTemplate.featured || false}
                       onChange={e => setManageTemplate({ ...manageTemplate, featured: e.target.checked })}
                       className="w-4 h-4 rounded border-border text-primary bg-background focus:ring-primary transition-all cursor-pointer"
                     />
@@ -958,8 +959,8 @@ export function AdminMarketplace() {
               </div>
 
               <div className="pt-4 flex justify-between items-center border-t border-border mt-6">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => {
                     toast('error', `Template "${manageTemplate.title}" deleted successfully`);
                     setTemplateList(prev => prev.filter(item => item.title !== manageTemplate.originalTitle));
@@ -971,14 +972,14 @@ export function AdminMarketplace() {
                 </button>
 
                 <div className="flex gap-3">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setManageTemplate(null)}
                     className="px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-all"
                   >
                     Cancel
                   </button>
-                  <button 
+                  <button
                     type="submit"
                     className="px-5 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
                   >
@@ -1131,7 +1132,7 @@ export function AdminAnalytics() {
                 {/* Bar Container */}
                 <div className="flex-1 flex flex-col justify-end items-center">
                   <span className="text-[10px] sm:text-xs text-primary font-medium mb-1">{v}</span>
-                  <div 
+                  <div
                     className="w-full rounded-t-lg gradient-primary hover:opacity-90 transition-all duration-300 cursor-pointer"
                     style={{ height: `${(v / maxSignups) * 80}%` }}
                     title={`${currentChart.labels[i]}: ${v} signups`}
@@ -1247,8 +1248,8 @@ export function AdminModeration() {
             <h2 className="text-xl font-display font-bold text-foreground">Content Moderation</h2>
             <p className="text-sm text-muted-foreground">{items.length} items pending review</p>
           </div>
-          <button 
-            onClick={handleRefresh} 
+          <button
+            onClick={handleRefresh}
             disabled={isRefreshing}
             className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border text-sm text-foreground hover:border-primary/30 disabled:opacity-55 transition-all"
           >
@@ -1311,14 +1312,14 @@ export function AdminModeration() {
                 </span>
                 <h3 className="text-lg font-bold text-foreground mt-2">{previewItem.title}</h3>
               </div>
-              <button 
+              <button
                 onClick={() => setPreviewItem(null)}
                 className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-            
+
             {/* Modal Body */}
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -1394,13 +1395,13 @@ export function AdminModeration() {
 
             {/* Modal Footer */}
             <div className="p-5 border-t border-border flex justify-end gap-3 bg-secondary/20">
-              <button 
+              <button
                 onClick={() => setPreviewItem(null)}
                 className="px-4 py-2 text-xs font-semibold rounded-xl border border-border text-foreground hover:bg-accent transition-all"
               >
                 Close
               </button>
-              <button 
+              <button
                 onClick={() => {
                   const idx = items.findIndex(it => it.title === previewItem.title);
                   if (idx !== -1) reject(idx);
@@ -1410,7 +1411,7 @@ export function AdminModeration() {
               >
                 Reject Item
               </button>
-              <button 
+              <button
                 onClick={() => {
                   const idx = items.findIndex(it => it.title === previewItem.title);
                   if (idx !== -1) approve(idx);
@@ -1503,7 +1504,7 @@ export function AdminReports() {
 
   const downloadReport = (title: string, type: string) => {
     let csvContent = '';
-    
+
     if (type === 'Financial') {
       csvContent = 'Month,Revenue,Subscriptions,Commission,Payouts\n' +
         'January,124800,1020,12480,112320\n' +
@@ -1552,7 +1553,7 @@ export function AdminReports() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     toast('success', `Downloaded: ${title}`);
   };
 
@@ -1572,8 +1573,8 @@ export function AdminReports() {
             <h2 className="text-xl font-display font-bold text-foreground">Platform Reports</h2>
             <p className="text-sm text-muted-foreground">Generate and download platform reports</p>
           </div>
-          <button 
-            onClick={() => setIsModalOpen(true)} 
+          <button
+            onClick={() => setIsModalOpen(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple"
           >
             Generate Report
@@ -1633,21 +1634,21 @@ export function AdminReports() {
             {/* Header */}
             <div className="p-5 border-b border-border flex items-center justify-between">
               <h3 className="text-lg font-bold text-foreground">Generate Platform Report</h3>
-              <button 
+              <button
                 onClick={() => setIsModalOpen(false)}
                 className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-            
+
             {/* Form */}
             <form onSubmit={handleGenerate}>
               <div className="p-5 space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Report Title</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     required
                     value={titleInput}
                     onChange={e => setTitleInput(e.target.value)}
@@ -1658,7 +1659,7 @@ export function AdminReports() {
 
                 <div>
                   <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Report Type</label>
-                  <select 
+                  <select
                     value={typeInput}
                     onChange={e => setTypeInput(e.target.value)}
                     className="w-full bg-secondary/50 border border-border rounded-xl px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all appearance-none"
@@ -1674,14 +1675,14 @@ export function AdminReports() {
 
               {/* Footer */}
               <div className="p-5 border-t border-border flex justify-end gap-3 bg-secondary/20">
-                <button 
+                <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
                   className="px-4 py-2 text-xs font-semibold rounded-xl border border-border text-foreground hover:bg-accent transition-all"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   type="submit"
                   className="px-5 py-2 text-xs font-semibold rounded-xl gradient-primary text-white hover:opacity-90 transition-all shadow-glow-purple"
                 >

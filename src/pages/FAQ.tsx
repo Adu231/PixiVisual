@@ -7,6 +7,40 @@ import { FAQ_ITEMS } from '@/constants';
 
 const categories = ['All', 'General', 'Features', 'Billing', 'Security', 'Integrations', 'Legal'];
 
+interface FAQAccordionProps {
+  question: string;
+  answer: string;
+  category: string;
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+function FAQAccordion({ question, answer, category, isOpen, onToggle }: FAQAccordionProps) {
+  return (
+    <div className={`border rounded-2xl transition-all duration-300 ${isOpen ? 'border-primary/30 bg-primary/5' : 'border-border bg-card'}`}>
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between p-5 text-left focus:outline-none"
+      >
+        <div className="flex items-start gap-3 flex-1">
+          <span className="flex-shrink-0 text-xs font-bold text-primary/50 mt-0.5">{category}</span>
+          <span className="text-sm font-semibold text-foreground pr-4">{question}</span>
+        </div>
+        {isOpen ? (
+          <ChevronUp className="w-4 h-4 text-primary flex-shrink-0" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+        )}
+      </button>
+      {isOpen && (
+        <div className="px-5 pb-5 animate-slide-up">
+          <p className="text-sm text-muted-foreground leading-relaxed">{answer}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function FAQ() {
   const [openItem, setOpenItem] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -72,24 +106,16 @@ export default function FAQ() {
               {filtered.map((item, i) => (
                 <div
                   key={item.id}
-                  className={`border rounded-2xl transition-all duration-300 reveal-up ${openItem === item.id ? 'border-primary/30 bg-primary/5' : 'border-border bg-card'}`}
+                  className="reveal-up"
                   style={{ transitionDelay: `${i * 0.04}s` }}
                 >
-                  <button
-                    onClick={() => setOpenItem(openItem === item.id ? null : item.id)}
-                    className="w-full flex items-center justify-between p-5 text-left"
-                  >
-                    <div className="flex items-start gap-3 flex-1">
-                      <span className="flex-shrink-0 text-xs font-bold text-primary/50 mt-0.5">{item.category}</span>
-                      <span className="text-sm font-semibold text-foreground pr-4">{item.question}</span>
-                    </div>
-                    {openItem === item.id ? <ChevronUp className="w-4 h-4 text-primary flex-shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
-                  </button>
-                  {openItem === item.id && (
-                    <div className="px-5 pb-5 animate-slide-up">
-                      <p className="text-sm text-muted-foreground leading-relaxed">{item.answer}</p>
-                    </div>
-                  )}
+                  <FAQAccordion
+                    question={item.question}
+                    answer={item.answer}
+                    category={item.category}
+                    isOpen={openItem === item.id}
+                    onToggle={() => setOpenItem(openItem === item.id ? null : item.id)}
+                  />
                 </div>
               ))}
             </div>

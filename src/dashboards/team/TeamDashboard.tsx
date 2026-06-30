@@ -1,4 +1,5 @@
-import { Users, Palette, Layers, BarChart2, Shield, Globe, Settings, Plus, TrendingUp, Check, ArrowRight, FileText, Bell } from 'lucide-react';
+import { useState } from 'react';
+import { Users, Palette, Layers, BarChart2, Shield, Globe, Settings, Plus, TrendingUp, Check, ArrowRight, FileText, Bell, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/context/AuthContext';
@@ -16,7 +17,7 @@ export const teamSidebarItems = [
 ];
 
 const teamMembers = [
-  { name: 'Sara Kim', role: 'Brand Designer', dept: 'Design', status: 'online', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b5e5?w=40&h=40&fit=crop&crop=face' },
+  { name: 'Sara Kim', role: 'Brand Designer', dept: 'Design', status: 'online', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face' },
   { name: 'David Park', role: 'Content Lead', dept: 'Marketing', status: 'online', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face' },
   { name: 'Aisha Patel', role: 'UX Designer', dept: 'Product', status: 'away', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face' },
   { name: 'Tom Walsh', role: 'Campaign Manager', dept: 'Marketing', status: 'offline', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face' },
@@ -38,15 +39,55 @@ const recentActivity = [
 
 export default function TeamDashboard() {
   const { user } = useAuth();
+  const [teamList, setTeamList] = useState(teamMembers);
+  const [showInvite, setShowInvite] = useState(false);
+  const [inviteName, setInviteName] = useState('');
+  const [inviteRole, setInviteRole] = useState('');
+  const [inviteDept, setInviteDept] = useState('Design');
+
+  const [messagingMember, setMessagingMember] = useState<any | null>(null);
+  const [messageText, setMessageText] = useState('');
 
   const stats = [
-    { label: 'Team Members', value: '44', delta: '+4 this month', icon: Users, color: 'from-purple-500 to-pink-500' },
+    { label: 'Team Members', value: teamList.length.toString(), delta: '+4 this month', icon: Users, color: 'from-purple-500 to-pink-500' },
     { label: 'Brand Assets', value: '1,172', delta: '+89 this week', icon: Palette, color: 'from-blue-500 to-purple-500' },
     { label: 'Active Workspaces', value: '4', delta: '3 regions', icon: Layers, color: 'from-green-500 to-blue-500' },
     { label: 'Brand Score', value: '91%', delta: '+3 this month', icon: TrendingUp, color: 'from-orange-500 to-pink-500' },
   ];
 
   const statusDot: Record<string, string> = { online: 'bg-green-500', away: 'bg-yellow-500', offline: 'bg-muted' };
+
+  const handleInvite = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteName.trim()) {
+      toast('warning', 'Please enter a name');
+      return;
+    }
+    const newMember = {
+      name: inviteName.trim(),
+      role: inviteRole.trim() || 'Brand Designer',
+      dept: inviteDept,
+      status: 'online',
+      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b5e5?w=40&h=40&fit=crop&crop=face'
+    };
+    setTeamList(prev => [...prev, newMember]);
+    setShowInvite(false);
+    setInviteName('');
+    setInviteRole('');
+    setInviteDept('Design');
+    toast('success', `Member "${newMember.name}" invited successfully!`);
+  };
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!messageText.trim()) {
+      toast('warning', 'Please enter a message');
+      return;
+    }
+    toast('success', `Message sent successfully to ${messagingMember.name}!`);
+    setMessagingMember(null);
+    setMessageText('');
+  };
 
   return (
     <DashboardLayout sidebarItems={teamSidebarItems} title="Enterprise Team Hub" roleLabel="Enterprise Team">
@@ -69,7 +110,7 @@ export default function TeamDashboard() {
               <Layers className="w-4 h-4" /> Workspaces
             </Link>
             <button
-              onClick={() => toast('info', 'Opening team invite...')}
+              onClick={() => setShowInvite(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-primary text-white font-semibold text-sm hover:opacity-90 transition-all shadow-glow-purple"
             >
               <Plus className="w-4 h-4" /> Invite Member
@@ -150,11 +191,6 @@ export default function TeamDashboard() {
                 </div>
               ))}
             </div>
-            <div className="p-3 border-t border-border">
-              <button onClick={() => toast('info', 'Creating new workspace...')} className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-border text-muted-foreground hover:border-primary/30 hover:text-primary text-xs font-medium transition-all">
-                <Plus className="w-3 h-3" /> Create Workspace
-              </button>
-            </div>
           </div>
 
           {/* Team Members */}
@@ -166,7 +202,7 @@ export default function TeamDashboard() {
               </Link>
             </div>
             <div className="divide-y divide-border">
-              {teamMembers.map(m => (
+              {teamList.map(m => (
                 <div key={m.name} className="p-4 flex items-center gap-3 hover:bg-muted/30 transition-colors">
                   <div className="relative flex-shrink-0">
                     <img src={m.avatar} alt={m.name} className="w-9 h-9 rounded-full object-cover" />
@@ -176,14 +212,9 @@ export default function TeamDashboard() {
                     <p className="text-sm font-semibold text-foreground truncate">{m.name}</p>
                     <p className="text-xs text-muted-foreground">{m.role} · {m.dept}</p>
                   </div>
-                  <button onClick={() => toast('info', `Messaging ${m.name}...`)} className="text-xs text-primary hover:underline">Message</button>
+                  <button onClick={() => { setMessagingMember(m); setMessageText(''); }} className="text-xs text-primary hover:underline font-medium">Message</button>
                 </div>
               ))}
-            </div>
-            <div className="p-3 border-t border-border">
-              <button onClick={() => toast('info', 'Opening invite flow...')} className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-border text-muted-foreground hover:border-primary/30 hover:text-primary text-xs font-medium transition-all">
-                <Plus className="w-3 h-3" /> Invite Team Member
-              </button>
             </div>
           </div>
         </div>
@@ -232,6 +263,105 @@ export default function TeamDashboard() {
           ))}
         </div>
       </div>
+
+      {/* Invite Member Modal */}
+      {showInvite && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setShowInvite(false)} />
+          <div className="relative z-10 bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
+              <h3 className="text-base font-display font-bold text-foreground">Invite Team Member</h3>
+              <button onClick={() => setShowInvite(false)} className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleInvite} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Name</label>
+                <input 
+                  type="text"
+                  required
+                  value={inviteName} 
+                  onChange={e => setInviteName(e.target.value)} 
+                  placeholder="e.g. Sara Kim" 
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Role</label>
+                <input 
+                  type="text"
+                  required
+                  value={inviteRole} 
+                  onChange={e => setInviteRole(e.target.value)} 
+                  placeholder="e.g. Brand Designer" 
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Department</label>
+                <select
+                  value={inviteDept}
+                  onChange={e => setInviteDept(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 appearance-none font-medium"
+                >
+                  <option value="Design">Design</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Product">Product</option>
+                  <option value="Strategy">Strategy</option>
+                </select>
+              </div>
+
+              <div className="flex gap-3 pt-3 border-t border-border">
+                <button type="button" onClick={() => setShowInvite(false)} className="flex-1 py-2.5 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted transition-all">Cancel</button>
+                <button type="submit" className="flex-1 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">Send Invite</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Message Modal */}
+      {messagingMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setMessagingMember(null)} />
+          <div className="relative z-10 bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
+              <h3 className="text-base font-display font-bold text-foreground">Send Message</h3>
+              <button onClick={() => setMessagingMember(null)} className="p-1.5 rounded-lg border border-border hover:bg-accent text-muted-foreground transition-all">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleSendMessage} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1">To</label>
+                <div className="px-3 py-2 bg-muted/40 border border-border rounded-xl text-xs font-medium text-foreground">
+                  {messagingMember.name} ({messagingMember.role})
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Message</label>
+                <textarea 
+                  required
+                  rows={4}
+                  value={messageText} 
+                  onChange={e => setMessageText(e.target.value)} 
+                  placeholder={`Write your message to ${messagingMember.name}...`} 
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none" 
+                />
+              </div>
+
+              <div className="flex gap-3 pt-3 border-t border-border">
+                <button type="button" onClick={() => setMessagingMember(null)} className="flex-1 py-2.5 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted transition-all">Cancel</button>
+                <button type="submit" className="flex-1 py-2.5 rounded-xl gradient-primary text-white text-sm font-semibold hover:opacity-90 transition-all shadow-glow-purple">Send Message</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

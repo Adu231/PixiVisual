@@ -4,14 +4,7 @@ import { ArrowRight, Users, Globe, Award, Heart, Zap, Target, Sparkles } from 'l
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 
-const team = [
-  { name: 'Jessica Park', role: 'CEO & Co-Founder', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b5e5?w=120&h=120&fit=crop&crop=face', bio: 'Former VP Design at Adobe. Passionate about democratizing visual creativity.' },
-  { name: 'David Okonkwo', role: 'CTO & Co-Founder', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=face', bio: 'Built AI systems at Google DeepMind. Expert in generative models.' },
-  { name: 'Priya Mehta', role: 'Head of Product', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=120&h=120&fit=crop&crop=face', bio: 'Led product at Figma for 5 years. UX researcher and design strategist.' },
-  { name: 'Carlos Rivera', role: 'Head of Design', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&crop=face', bio: 'Award-winning creative director. Previously at Apple Design Studio.' },
-  { name: 'Emma Tanaka', role: 'Head of Growth', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&h=120&fit=crop&crop=face', bio: 'Scaled Canva from 1M to 10M users. Growth marketing expert.' },
-  { name: 'Alex Novak', role: 'Head of Engineering', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&h=120&fit=crop&crop=face', bio: 'Full-stack architect. Previously at Stripe and Linear.' },
-];
+
 
 const values = [
   { icon: Heart, title: 'Creativity First', desc: 'We believe every person deserves powerful creative tools regardless of design experience or budget.' },
@@ -138,29 +131,7 @@ export default function About() {
           </div>
         </section>
 
-        {/* Team */}
-        <section className="py-20 bg-surface/50" id="team">
-          <div className="container max-w-7xl mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl lg:text-4xl font-display font-bold text-foreground mb-3 reveal-up">
-                Meet the <span className="gradient-primary-text">team</span>
-              </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto reveal-up stagger-1">
-                We're a team of designers, engineers, and creatives obsessed with building tools that matter.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {team.map((member, i) => (
-                <div key={member.name} className="p-6 rounded-2xl border border-border bg-card hover:border-primary/20 hover:shadow-card-hover text-center transition-all reveal-up" style={{ transitionDelay: `${i * 0.08}s` }}>
-                  <img src={member.avatar} alt={member.name} className="w-16 h-16 rounded-2xl object-cover mx-auto mb-4" />
-                  <h3 className="text-base font-semibold text-foreground mb-0.5">{member.name}</h3>
-                  <p className="text-xs font-medium text-primary mb-3">{member.role}</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{member.bio}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+
 
         {/* CTA */}
         <section className="py-20">

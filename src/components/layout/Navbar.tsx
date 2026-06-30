@@ -8,17 +8,7 @@ import { getInitials } from '@/lib/utils';
 import { APP_NAME } from '@/constants';
 
 const navLinks = [
-  {
-    label: 'Features',
-    href: '/features',
-    children: [
-      { label: 'AI Design Studio', href: '/features#ai-studio', icon: Sparkles, desc: 'Generate visuals with AI' },
-      { label: 'Design Editor', href: '/features#editor', icon: Layout, desc: 'Professional drag-and-drop editor' },
-      { label: 'Team Collaboration', href: '/features#collaboration', icon: Users, desc: 'Work together seamlessly' },
-      { label: 'Analytics', href: '/features#analytics', icon: BarChart, desc: 'Track creative performance' },
-      { label: 'Marketplace', href: '/features#marketplace', icon: Store, desc: 'Templates & assets' },
-    ],
-  },
+  { label: 'Features', href: '/features' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'Blog', href: '/blog' },
   { label: 'About', href: '/about' },
@@ -142,7 +132,14 @@ export default function Navbar() {
                   className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border hover:border-primary/30 hover:bg-primary/5 transition-all duration-200"
                 >
                   {user.avatar ? (
-                    <img src={user.avatar} alt={user.name} className="w-7 h-7 rounded-full object-cover" />
+                    <img 
+                      src={user.avatar} 
+                      alt={user.name} 
+                      className="w-7 h-7 rounded-full object-cover" 
+                      onError={(e) => {
+                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=7c3aed&color=fff`;
+                      }}
+                    />
                   ) : (
                     <div className="w-7 h-7 rounded-full gradient-primary flex items-center justify-center text-white text-xs font-bold">
                       {getInitials(user.name)}
@@ -151,6 +148,7 @@ export default function Navbar() {
                   <span className="text-sm font-medium text-foreground max-w-[120px] truncate">{user.name}</span>
                   <ChevronDown className="w-3 h-3 text-muted-foreground" />
                 </button>
+
 
                 {userMenuOpen && (
                   <div className="absolute right-0 top-full mt-2 w-56 bg-card border border-border rounded-2xl shadow-2xl p-2 animate-scale-in">
@@ -222,12 +220,22 @@ export default function Navbar() {
                 )}
               </div>
             ))}
+
+
+
             <div className="pt-4 border-t border-border space-y-2">
               {isAuthenticated && user ? (
                 <>
                   <div className="px-4 py-3 rounded-xl bg-muted flex items-center gap-3">
                     {user.avatar ? (
-                      <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full" />
+                      <img 
+                        src={user.avatar} 
+                        alt={user.name} 
+                        className="w-8 h-8 rounded-full object-cover" 
+                        onError={(e) => {
+                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=7c3aed&color=fff`;
+                        }}
+                      />
                     ) : (
                       <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center text-white text-xs font-bold">
                         {getInitials(user.name)}

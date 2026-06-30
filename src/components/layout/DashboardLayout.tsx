@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, Zap, ChevronLeft, ChevronRight, Bell, Search,
@@ -11,7 +11,7 @@ import { getInitials } from '@/lib/utils';
 import { APP_NAME } from '@/constants';
 import { toast } from '@/components/ui/Toast';
 
-interface SidebarItem {
+export interface SidebarItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -26,20 +26,237 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children, sidebarItems, title, roleLabel }: DashboardLayoutProps) {
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [notifications, setNotifications] = useState(3);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notificationsList, setNotificationsList] = useState([
-    { id: 1, title: 'New System Submission', message: 'Modern Business Card Set has been submitted for review.', time: '2h ago', read: false },
-    { id: 2, title: 'Security Alert', message: 'New login detected from dynamic IP address.', time: '5h ago', read: false },
-    { id: 3, title: 'Billing Generated', message: 'Monthly platform transaction invoice generated.', time: '1d ago', read: false }
-  ]);
   const { isDark, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [collapsed, setCollapsed] = useState(() => {
+    return localStorage.getItem('pixivisual_sidebar_collapsed') === 'true';
+  });
+  const toggleCollapsed = () => {
+    setCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('pixivisual_sidebar_collapsed', String(next));
+      return next;
+    });
+  };
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchQuery, setSearchQueryState] = useState(() => {
+    return new URLSearchParams(window.location.search).get('q') || '';
+  });
+  const setSearchQuery = (val: string) => {
+    setSearchQueryState(val);
+    const params = new URLSearchParams(window.location.search);
+    if (val) {
+      params.set('q', val);
+    } else {
+      params.delete('q');
+    }
+    const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+    window.history.replaceState(null, '', newUrl);
+    window.dispatchEvent(new Event('creator_search_changed'));
+  };
+
+  useEffect(() => {
+    const handleUrlChange = () => {
+      const q = new URLSearchParams(window.location.search).get('q') || '';
+      setSearchQueryState(q);
+    };
+    window.addEventListener('popstate', handleUrlChange);
+    window.addEventListener('creator_search_changed', handleUrlChange);
+    return () => {
+      window.removeEventListener('popstate', handleUrlChange);
+      window.removeEventListener('creator_search_changed', handleUrlChange);
+    };
+  }, []);
+
+  const isCreatorPath = location.pathname.includes('/creator');
+  const isDesignerPath = location.pathname.includes('/designer');
+  const isFreelancerPath = location.pathname.includes('/freelancer');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notificationsList, setNotificationsList] = useState(() => {
+    const pathIsCreator = window.location.pathname.includes('/creator');
+    const pathIsDesigner = window.location.pathname.includes('/designer');
+    const pathIsFreelancer = window.location.pathname.includes('/freelancer');
+    if (pathIsCreator) {
+      const stored = localStorage.getItem('pixivisual_creator_notifications_list');
+      if (stored !== null) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          // ignore error
+        }
+      }
+      const initialCreatorList = [
+        { id: 1, title: 'AI Video Render Complete', message: 'Your video "Summer Promo 2026" has finished generating.', time: '10m ago', read: false },
+        { id: 2, title: 'Trending Alert', message: 'Your YouTube Thumbnail template is trending under #creator-hub.', time: '2h ago', read: false },
+        { id: 3, title: 'New System Notification', message: 'System updates scheduled for Sunday at 02:00 AM UTC.', time: '4h ago', read: false },
+        { id: 4, title: 'Social Integration Connected', message: 'Instagram and Twitter accounts synced successfully.', time: '1d ago', read: false }
+      ];
+      localStorage.setItem('pixivisual_creator_notifications_list', JSON.stringify(initialCreatorList));
+      return initialCreatorList;
+    } else if (pathIsDesigner) {
+      const stored = localStorage.getItem('pixivisual_designer_notifications_list');
+      if (stored !== null) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          // ignore error
+        }
+      }
+      const initialDesignerList = [
+        { id: 1, title: 'New System Submission', message: 'Modern Business Card Set has been submitted for review.', time: '2h ago', read: false },
+        { id: 2, title: 'Security Alert', message: 'New login detected from dynamic IP address.', time: '5h ago', read: false },
+        { id: 3, title: 'Billing Generated', message: 'Monthly platform transaction invoice generated.', time: '1d ago', read: false }
+      ];
+      localStorage.setItem('pixivisual_designer_notifications_list', JSON.stringify(initialDesignerList));
+      return initialDesignerList;
+    } else if (pathIsFreelancer) {
+      const stored = localStorage.getItem('pixivisual_freelancer_notifications_list');
+      if (stored !== null) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          // ignore
+        }
+      }
+      const initialFreelancerList = [
+        { id: 1, title: 'New Project Proposal Accepted', message: 'Your proposal for "App Icon Set" has been accepted by MobileStart.', time: '1h ago', read: false },
+        { id: 2, title: 'Invoice Paid', message: 'StartupX has paid your invoice for "Brand Identity Package" ($1,200).', time: '1d ago', read: false },
+        { id: 3, title: 'New Job Invite', message: 'DesignAgency invited you to apply for "Social Media Visuals".', time: '3d ago', read: false }
+      ];
+      localStorage.setItem('pixivisual_freelancer_notifications_list', JSON.stringify(initialFreelancerList));
+      return initialFreelancerList;
+    } else {
+      return [
+        { id: 1, title: 'New System Submission', message: 'Modern Business Card Set has been submitted for review.', time: '2h ago', read: false },
+        { id: 2, title: 'Security Alert', message: 'New login detected from dynamic IP address.', time: '5h ago', read: false },
+        { id: 3, title: 'Billing Generated', message: 'Monthly platform transaction invoice generated.', time: '1d ago', read: false }
+      ];
+    }
+  });
+
+  const [notifications, setNotifications] = useState(() => {
+    const pathIsCreator = window.location.pathname.includes('/creator');
+    const pathIsDesigner = window.location.pathname.includes('/designer');
+    const pathIsFreelancer = window.location.pathname.includes('/freelancer');
+    if (pathIsCreator) {
+      const stored = localStorage.getItem('pixivisual_creator_notifications_count');
+      if (stored !== null) {
+        const parsed = parseInt(stored, 10);
+        if (!isNaN(parsed)) return parsed;
+      }
+      localStorage.setItem('pixivisual_creator_notifications_count', '4');
+      return 4;
+    } else if (pathIsDesigner) {
+      const stored = localStorage.getItem('pixivisual_designer_notifications_count');
+      if (stored !== null) {
+        const parsed = parseInt(stored, 10);
+        if (!isNaN(parsed)) return parsed;
+      }
+      localStorage.setItem('pixivisual_designer_notifications_count', '3');
+      return 3;
+    } else if (pathIsFreelancer) {
+      const stored = localStorage.getItem('pixivisual_freelancer_notifications_count');
+      if (stored !== null) {
+        const parsed = parseInt(stored, 10);
+        if (!isNaN(parsed)) return parsed;
+      }
+      localStorage.setItem('pixivisual_freelancer_notifications_count', '3');
+      return 3;
+    } else {
+      return 3;
+    }
+  });
+
+  useEffect(() => {
+    if (isCreatorPath) {
+      localStorage.setItem('pixivisual_creator_notifications_list', JSON.stringify(notificationsList));
+    } else if (isDesignerPath) {
+      localStorage.setItem('pixivisual_designer_notifications_list', JSON.stringify(notificationsList));
+    } else if (isFreelancerPath) {
+      localStorage.setItem('pixivisual_freelancer_notifications_list', JSON.stringify(notificationsList));
+    }
+  }, [notificationsList, isCreatorPath, isDesignerPath, isFreelancerPath]);
+
+  useEffect(() => {
+    if (isCreatorPath) {
+      localStorage.setItem('pixivisual_creator_notifications_count', notifications.toString());
+    } else if (isDesignerPath) {
+      localStorage.setItem('pixivisual_designer_notifications_count', notifications.toString());
+    } else if (isFreelancerPath) {
+      localStorage.setItem('pixivisual_freelancer_notifications_count', notifications.toString());
+    }
+  }, [notifications, isCreatorPath, isDesignerPath, isFreelancerPath]);
+
+  useEffect(() => {
+    if (isCreatorPath) {
+      const storedList = localStorage.getItem('pixivisual_creator_notifications_list');
+      if (storedList !== null) {
+        try {
+          const parsed = JSON.parse(storedList);
+          if (JSON.stringify(parsed) !== JSON.stringify(notificationsList)) {
+            setNotificationsList(parsed);
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+      const storedCount = localStorage.getItem('pixivisual_creator_notifications_count');
+      if (storedCount !== null) {
+        const parsed = parseInt(storedCount, 10);
+        if (!isNaN(parsed) && parsed !== notifications) {
+          setNotifications(parsed);
+        }
+      }
+    } else if (isDesignerPath) {
+      const storedList = localStorage.getItem('pixivisual_designer_notifications_list');
+      if (storedList !== null) {
+        try {
+          const parsed = JSON.parse(storedList);
+          if (JSON.stringify(parsed) !== JSON.stringify(notificationsList)) {
+            setNotificationsList(parsed);
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+      const storedCount = localStorage.getItem('pixivisual_designer_notifications_count');
+      if (storedCount !== null) {
+        const parsed = parseInt(storedCount, 10);
+        if (!isNaN(parsed) && parsed !== notifications) {
+          setNotifications(parsed);
+        }
+      }
+    } else if (isFreelancerPath) {
+      const storedList = localStorage.getItem('pixivisual_freelancer_notifications_list');
+      if (storedList !== null) {
+        try {
+          const parsed = JSON.parse(storedList);
+          if (JSON.stringify(parsed) !== JSON.stringify(notificationsList)) {
+            setNotificationsList(parsed);
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+      const storedCount = localStorage.getItem('pixivisual_freelancer_notifications_count');
+      if (storedCount !== null) {
+        const parsed = parseInt(storedCount, 10);
+        if (!isNaN(parsed) && parsed !== notifications) {
+          setNotifications(parsed);
+        }
+      }
+    } else {
+      setNotificationsList([
+        { id: 1, title: 'New System Submission', message: 'Modern Business Card Set has been submitted for review.', time: '2h ago', read: false },
+        { id: 2, title: 'Security Alert', message: 'New login detected from dynamic IP address.', time: '5h ago', read: false },
+        { id: 3, title: 'Billing Generated', message: 'Monthly platform transaction invoice generated.', time: '1d ago', read: false }
+      ]);
+      setNotifications(3);
+    }
+  }, [location.pathname, isCreatorPath, isDesignerPath, isFreelancerPath]);
 
   const handleLogout = () => {
     logout();
@@ -63,7 +280,14 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
         <div className="p-4 border-b border-border">
           <div className="flex items-center gap-3">
             {user.avatar ? (
-              <img src={user.avatar} alt={user.name} className="w-9 h-9 rounded-full object-cover" />
+              <img 
+                src={user.avatar} 
+                alt={user.name} 
+                className="w-9 h-9 rounded-full object-cover" 
+                onError={(e) => {
+                  e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=7c3aed&color=fff`;
+                }}
+              />
             ) : (
               <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                 {getInitials(user.name)}
@@ -79,7 +303,14 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
       {collapsed && user && (
         <div className="p-4 border-b border-border flex justify-center">
           {user.avatar ? (
-            <img src={user.avatar} alt={user.name} className="w-9 h-9 rounded-full object-cover" />
+            <img 
+              src={user.avatar} 
+              alt={user.name} 
+              className="w-9 h-9 rounded-full object-cover" 
+              onError={(e) => {
+                e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=7c3aed&color=fff`;
+              }}
+            />
           ) : (
             <div className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center text-white text-sm font-bold">
               {getInitials(user.name)}
@@ -92,6 +323,7 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         <Link
           to={user ? getDashboardRoute(user.role) : '/'}
+          onClick={() => setMobileOpen(false)}
           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
             location.pathname === (user ? getDashboardRoute(user.role) : '/')
               ? 'bg-primary/10 text-primary font-medium'
@@ -107,6 +339,7 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
           <Link
             key={item.href}
             to={item.href}
+            onClick={() => setMobileOpen(false)}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative ${
               location.pathname === item.href
                 ? 'bg-primary/10 text-primary font-medium'
@@ -134,6 +367,7 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
       <div className="p-3 border-t border-border space-y-1">
         <Link
           to="/settings"
+          onClick={() => setMobileOpen(false)}
           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all ${collapsed ? 'justify-center' : ''}`}
           title={collapsed ? 'Settings' : undefined}
         >
@@ -142,6 +376,7 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
         </Link>
         <Link
           to="/profile"
+          onClick={() => setMobileOpen(false)}
           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all ${collapsed ? 'justify-center' : ''}`}
           title={collapsed ? 'Profile' : undefined}
         >
@@ -149,7 +384,10 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
           {!collapsed && <span className="text-sm">Profile</span>}
         </Link>
         <button
-          onClick={handleLogout}
+          onClick={() => {
+            setMobileOpen(false);
+            handleLogout();
+          }}
           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all ${collapsed ? 'justify-center' : ''}`}
           title={collapsed ? 'Sign Out' : undefined}
         >
@@ -163,15 +401,15 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className={`hidden lg:flex flex-col border-r border-border bg-card transition-all duration-300 relative flex-shrink-0 ${
+      <aside className={`hidden lg:flex flex-col border-r border-border bg-card transition-all duration-300 relative flex-shrink-0 z-20 ${
         collapsed ? 'w-16' : 'w-64'
       }`}>
         <SidebarContent />
         <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-card border border-border flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-all duration-200 shadow-sm z-10"
+          onClick={toggleCollapsed}
+          className="absolute -right-4 top-[16px] w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-all duration-200 shadow-sm z-30 cursor-pointer text-foreground"
         >
-          {collapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
       </aside>
 
@@ -203,7 +441,13 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-2 bg-muted rounded-xl px-3 py-1.5 max-w-xs">
+            <div 
+              onClick={(e) => {
+                const input = e.currentTarget.querySelector('input');
+                if (input) input.focus();
+              }}
+              className="hidden sm:flex items-center gap-2 bg-muted rounded-xl px-3 py-1.5 max-w-xs cursor-text"
+            >
               <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               <input
                 type="text"
@@ -237,7 +481,7 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
               {showNotifications && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
-                  <div className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200">
+                  <div className="absolute right-0 sm:right-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-xs bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200">
                     <div className="p-4 border-b border-border flex items-center justify-between bg-primary/5">
                       <span className="text-sm font-bold text-foreground">Notifications</span>
                       {notifications > 0 && (

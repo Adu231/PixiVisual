@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, Zap, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { PRICING_PLANS, FAQ_ITEMS } from '@/constants';
 
 export default function Pricing() {
+  const { isAuthenticated } = useAuth();
   const [yearly, setYearly] = useState(false);
   const [openFAQ, setOpenFAQ] = useState<string | null>(null);
 
@@ -76,7 +78,7 @@ export default function Pricing() {
                     )}
                     {!yearly && plan.price.monthly === 0 && <p className="text-xs text-muted-foreground">Free forever</p>}
                   </div>
-                  <Link to="/register" className={`w-full text-center py-2.5 rounded-xl text-sm font-semibold transition-all mb-6 ${
+                  <Link to={isAuthenticated && plan.price.monthly > 0 ? `/payment?plan=${plan.id}&yearly=${yearly}` : '/register'} className={`w-full text-center py-2.5 rounded-xl text-sm font-semibold transition-all mb-6 ${
                     plan.highlighted
                       ? 'gradient-primary text-white hover:opacity-90 shadow-glow-purple'
                       : 'border border-border bg-background text-foreground hover:border-primary/30 hover:bg-primary/5'

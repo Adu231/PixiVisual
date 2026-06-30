@@ -20,6 +20,17 @@ import FAQ from '@/pages/FAQ';
 import Privacy from '@/pages/Privacy';
 import Terms from '@/pages/Terms';
 import NotFound from '@/pages/NotFound';
+import Payment from '@/pages/Payment';
+import Careers from '@/pages/Careers';
+import Press from '@/pages/Press';
+import Partners from '@/pages/Partners';
+import Docs from '@/pages/Docs';
+import Tutorials from '@/pages/Tutorials';
+import Community from '@/pages/Community';
+import Status from '@/pages/Status';
+import Changelog from '@/pages/Changelog';
+import Cookies from '@/pages/Cookies';
+import Help from '@/pages/Help';
 
 // Auth Pages
 import Login from '@/pages/auth/Login';
@@ -66,6 +77,7 @@ import {
   DesignerClients,
   DesignerEarnings,
   DesignerAnalytics,
+  DesignerHistory,
 } from '@/dashboards/designer/pages/DesignerPages';
 
 // ── Marketing Agency Sub-pages ─────────────────────────────────────
@@ -85,6 +97,7 @@ import {
   FreelancerProposals,
   FreelancerEarnings,
   FreelancerAnalytics,
+  FreelancerHistory,
 } from '@/dashboards/freelancer/pages/FreelancerPages';
 
 // ── Enterprise Team Sub-pages ──────────────────────────────────────
@@ -110,8 +123,20 @@ import {
 function ScrollRestoration() {
   const location = useLocation();
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }, [location.pathname]);
+    if (location.hash) {
+      const id = location.hash.slice(1);
+      // Brief timeout to ensure DOM content is fully loaded
+      const timer = setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [location.pathname, location.hash]);
   return null;
 }
 
@@ -131,6 +156,16 @@ function AppRoutes() {
         <Route path="/faq" element={<FAQ />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/careers" element={<Careers />} />
+        <Route path="/press" element={<Press />} />
+        <Route path="/partners" element={<Partners />} />
+        <Route path="/docs" element={<Docs />} />
+        <Route path="/tutorials" element={<Tutorials />} />
+        <Route path="/community" element={<Community />} />
+        <Route path="/status" element={<Status />} />
+        <Route path="/changelog" element={<Changelog />} />
+        <Route path="/cookies" element={<Cookies />} />
+        <Route path="/help" element={<Help />} />
 
         {/* ── Auth ─────────────────────────────────── */}
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
@@ -140,6 +175,7 @@ function AppRoutes() {
         {/* ── Protected Pages ───────────────────────── */}
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
 
         {/* ── Content Creator ───────────────────────── */}
         <Route path="/dashboard/creator" element={<ProtectedRoute><CreatorDashboard /></ProtectedRoute>} />
@@ -166,6 +202,7 @@ function AppRoutes() {
         <Route path="/dashboard/designer/clients" element={<ProtectedRoute><DesignerClients /></ProtectedRoute>} />
         <Route path="/dashboard/designer/earnings" element={<ProtectedRoute><DesignerEarnings /></ProtectedRoute>} />
         <Route path="/dashboard/designer/analytics" element={<ProtectedRoute><DesignerAnalytics /></ProtectedRoute>} />
+        <Route path="/dashboard/designer/history" element={<ProtectedRoute><DesignerHistory /></ProtectedRoute>} />
 
         {/* ── Marketing Agency ──────────────────────── */}
         <Route path="/dashboard/agency" element={<ProtectedRoute><AgencyDashboard /></ProtectedRoute>} />
@@ -183,6 +220,7 @@ function AppRoutes() {
         <Route path="/dashboard/freelancer/proposals" element={<ProtectedRoute><FreelancerProposals /></ProtectedRoute>} />
         <Route path="/dashboard/freelancer/earnings" element={<ProtectedRoute><FreelancerEarnings /></ProtectedRoute>} />
         <Route path="/dashboard/freelancer/analytics" element={<ProtectedRoute><FreelancerAnalytics /></ProtectedRoute>} />
+        <Route path="/dashboard/freelancer/history" element={<ProtectedRoute><FreelancerHistory /></ProtectedRoute>} />
 
         {/* ── Enterprise Team ───────────────────────── */}
         <Route path="/dashboard/team" element={<ProtectedRoute><TeamDashboard /></ProtectedRoute>} />

@@ -56,7 +56,7 @@ const features = [
     color: 'from-orange-500 to-pink-500',
   },
   {
-    id: 'marketplace',
+    id: 'templates',
     icon: Store,
     title: 'Template Marketplace',
     subtitle: 'Buy, sell, and discover premium designs',
