@@ -1130,7 +1130,7 @@ export function FreelancerAnalytics() {
           </div>
 
           {/* Proposal status pie chart */}
-          <div className="bg-card border border-border shadow-md rounded-2xl p-5 flex flex-col justify-between h-[300px]">
+          <div className="bg-card border border-border shadow-md rounded-2xl p-5 flex flex-col justify-between h-auto min-h-[300px] pb-6 sm:pb-5">
             <div>
               <h3 className="text-sm font-semibold text-foreground mb-1">Proposal Win Distribution</h3>
               <p className="text-xs text-muted-foreground mb-4">Acceptance status splits across all job applications</p>

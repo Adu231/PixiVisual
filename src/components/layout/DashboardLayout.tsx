@@ -407,7 +407,7 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
         <SidebarContent />
         <button
           onClick={toggleCollapsed}
-          className="absolute -right-4 top-20 w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-all duration-200 shadow-sm z-30 cursor-pointer text-foreground"
+          className="absolute -right-4 top-[16px] w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-all duration-200 shadow-sm z-30 cursor-pointer text-foreground"
         >
           {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
@@ -481,7 +481,7 @@ export default function DashboardLayout({ children, sidebarItems, title, roleLab
               {showNotifications && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
-                  <div className="absolute right-[-12px] sm:right-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-xs bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200">
+                  <div className="absolute right-0 sm:right-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-xs bg-card border border-border rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200">
                     <div className="p-4 border-b border-border flex items-center justify-between bg-primary/5">
                       <span className="text-sm font-bold text-foreground">Notifications</span>
                       {notifications > 0 && (

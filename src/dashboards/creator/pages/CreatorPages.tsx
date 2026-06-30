@@ -1304,7 +1304,7 @@ export function CreatorAnalytics() {
           </div>
 
           {/* 3. Pie Chart: Views distribution by platform */}
-          <div className="bg-card border border-border shadow-md rounded-2xl p-5 flex flex-col justify-between h-[300px] md:col-span-2">
+          <div className="bg-card border border-border shadow-md rounded-2xl p-5 flex flex-col justify-between h-auto min-h-[300px] pb-6 sm:pb-5 md:col-span-2">
             <div>
               <h3 className="text-sm font-semibold text-foreground mb-1">Views Split by Platform</h3>
               <p className="text-xs text-muted-foreground mb-4">Distribution of impressions across connected networks</p>
